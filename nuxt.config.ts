@@ -3,7 +3,9 @@ import { defineNuxtConfig } from "nuxt/config";
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   modules: [
-    "@pinia/nuxt",
+    "@nuxt/test-utils/module",
+    "@nuxtjs/tailwindcss",
+    "@nuxt/eslint",
     [
       "@vee-validate/nuxt",
       {

@@ -3,22 +3,19 @@ import Aura from "@primeuix/themes/aura";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
-
-  css: [
-    "~/../node_modules/primeicons/primeicons.css",
-    "~/assets/styles/fonts.css",
-    "~/assets/styles/variables.css",
-  ],
-
-  modules: ["@primevue/nuxt-module"],
-
-  primevue: {
-    options: {
-      theme: {
-        preset: Aura,
-        options: {
-          darkModeSelector: false,
-          cssLayer: false,
+  css: ["~/assets/css/main.css", "~/../node_modules/primeicons/primeicons.css"],
+  modules: [
+    "@nuxt/test-utils/module",
+    "@nuxt/eslint",
+    [
+      "@vee-validate/nuxt",
+      {
+        autoImports: true,
+        componentNames: {
+          Form: "VeeForm",
+          Field: "VeeField",
+          FieldArray: "VeeFieldArray",
+          ErrorMessage: "VeeErrorMessage",
         },
       },
       ripple: true,

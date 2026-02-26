@@ -2,9 +2,9 @@ import { defineNuxtConfig } from "nuxt/config";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
+  css: ["~/assets/css/main.css", "~/../node_modules/primeicons/primeicons.css"],
   modules: [
     "@nuxt/test-utils/module",
-    "@nuxtjs/tailwindcss",
     "@nuxt/eslint",
     [
       "@vee-validate/nuxt",

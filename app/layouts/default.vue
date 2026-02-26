@@ -1,7 +1,6 @@
-<!-- layouts/default.vue -->
 <template>
   <div class="app-layout">
-    <Sidebar />
+    <SidebarMenu />
 
     <main class="main-content">
       <slot />
@@ -10,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-  import Sidebar from "~/components/Sidebar.vue";
+  import SidebarMenu from "~/components/SidebarMenu.vue";
 
   useHead({
     bodyAttrs: {

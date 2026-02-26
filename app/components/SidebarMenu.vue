@@ -11,7 +11,7 @@
           <IconSkills
             v-if="item.name === 'skills'"
             class="sidebar__icon"
-            :color="item.isActive ? 'rgba(46, 46, 46, 1)' : '#666'" />
+            :color="item.isActive ? '#2E2E2E' : '#666'" />
           <i v-else :class="['sidebar__icon', item.icon]" />
           <span class="sidebar__text">{{ item.title }}</span>
         </div>
@@ -23,6 +23,7 @@
 <script setup lang="ts">
   import Panel from "primevue/panel";
   import IconSkills from "~/components/IconSkills.vue";
+
   import { useRoute } from "vue-router";
 
   const route = useRoute();

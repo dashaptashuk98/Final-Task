@@ -42,7 +42,7 @@
         <template #header>
           <div class="department-header">
             <span>Department</span>
-            <i class="pi pi-arrow-up department-sort-icon"/>
+            <i class="pi pi-arrow-up department-sort-icon" />
           </div>
         </template>
       </Column>
@@ -54,7 +54,7 @@
       </Column>
 
       <Column header-style="width: 5rem">
-        <template #header> <span/> </template>
+        <template #header> <span /> </template>
         <template #body>
           <Button
             icon="pi pi-angle-right"
@@ -76,7 +76,7 @@
         <div class="text-center p-4">Нет данных для отображения</div>
       </template>
     </DataTable>
-    <div v-if="loading" class="loading"><i class="pi pi-spin pi-spinner"/> Загрузка...</div>
+    <div v-if="loading" class="loading"><i class="pi pi-spin pi-spinner" /> Загрузка...</div>
 
     <div v-else class="error">
       {{ error }}
@@ -84,20 +84,22 @@
   </div>
 </template>
 
-<script setup>
-  import { ref, onMounted } from "vue";
+<script setup lang="ts">
+  import { ref } from "vue";
   import { getUsers } from "../../services/users";
+  import type { User } from "../../types/user";
 
-  const users = ref([]);
-  const loading = ref(false);
-  const error = ref(null);
-  const auth = ref(false);
-  const getInitial = (email) => {
+  const users = ref<User[]>([]);
+  const loading = ref<boolean>(false);
+  const error = ref<string | null>(null);
+  const auth = ref<boolean>(false);
+
+  const getInitial = (email: string): string => {
     if (!email) return "?";
     return email.charAt(0).toUpperCase();
   };
 
-  const loadUsers = async () => {
+  const loadUsers = async (): Promise<void> => {
     loading.value = true;
     error.value = null;
 
@@ -105,28 +107,18 @@
       const response = await getUsers();
       users.value = Array.isArray(response) ? response : response.data || [];
     } catch (err) {
-      error.value = err.message || "Ошибка загрузки данных";
+      error.value = err instanceof Error ? err.message : "Ошибка загрузки данных";
     } finally {
       loading.value = false;
     }
   };
 
-  onMounted(() => {
-    loadUsers();
-  });
+  loadUsers();
 </script>
 
 <style scoped>
   .users-page {
     padding: 20px;
-  }
-
-  h1 {
-    font-family: "Roboto", sans-serif;
-    font-size: 24px;
-    font-weight: 500;
-    margin-bottom: 20px;
-    color: #333;
   }
 
   span {

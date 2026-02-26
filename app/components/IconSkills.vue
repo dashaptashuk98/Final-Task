@@ -12,12 +12,12 @@
 </template>
 
 <script setup lang="ts">
-  interface Props {
+  interface IconAttr {
     size?: number;
     color?: string;
   }
 
-  withDefaults(defineProps<Props>(), {
+  withDefaults(defineProps<IconAttr>(), {
     size: 24,
     color: "#666",
   });

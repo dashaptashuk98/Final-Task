@@ -1,23 +1,4 @@
 import api from "./api";
-
-export interface User {
-  id: string;
-  email: string;
-  role?: string;
-  is_verified?: boolean;
-  profile?: {
-    first_name: string;
-    last_name: string;
-    full_name: string;
-  };
-  department?: {
-    name: string;
-  };
-  position?: {
-    name: string;
-  };
-}
-
 export const getUsers = async () => {
   const response = await api.post("", {
     query: `

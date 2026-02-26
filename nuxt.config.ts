@@ -1,4 +1,5 @@
 import { defineNuxtConfig } from "nuxt/config";
+import Aura from "@primeuix/themes/aura";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -17,15 +18,18 @@ export default defineNuxtConfig({
           ErrorMessage: "VeeErrorMessage",
         },
       },
-    ],
-    [
-      "@primevue/nuxt-module",
-      {
-        unstyled: true,
-        autoImport: true,
+      ripple: true,
+    },
+  },
+
+  nitro: {
+    devProxy: {
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
       },
-    ],
-    "@nuxt/test-utils/module",
-  ],
+    },
+  },
+
   devtools: { enabled: true },
 });

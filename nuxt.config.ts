@@ -1,31 +1,38 @@
 import { defineNuxtConfig } from "nuxt/config";
+import Aura from "@primeuix/themes/aura";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
-  modules: [
-    "@nuxt/test-utils/module",
-    "@nuxtjs/tailwindcss",
-    "@nuxt/eslint",
-    [
-      "@vee-validate/nuxt",
-      {
-        autoImports: true,
-        componentNames: {
-          Form: "VeeForm",
-          Field: "VeeField",
-          FieldArray: "VeeFieldArray",
-          ErrorMessage: "VeeErrorMessage",
+
+  css: [
+    "~/../node_modules/primeicons/primeicons.css",
+    "~/assets/styles/fonts.css",
+    "~/assets/styles/variables.css",
+  ],
+
+  modules: ["@primevue/nuxt-module"],
+
+  primevue: {
+    options: {
+      theme: {
+        preset: Aura,
+        options: {
+          darkModeSelector: false,
+          cssLayer: false,
         },
       },
-    ],
-    [
-      "@primevue/nuxt-module",
-      {
-        unstyled: true,
-        autoImport: true,
+      ripple: true,
+    },
+  },
+
+  nitro: {
+    devProxy: {
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
       },
-    ],
-    "@nuxt/test-utils/module",
-  ],
+    },
+  },
+
   devtools: { enabled: true },
 });

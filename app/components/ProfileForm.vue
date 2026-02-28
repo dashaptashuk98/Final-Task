@@ -1,21 +1,28 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+  import type { ProfileForm } from "~~/types/user";
+  import type { InputType } from "~~/types/types";
+
+  const { data } = defineProps<{ data: Record<ProfileForm, InputType> | null }>();
+</script>
 
 <template>
   <div class="form">
     <Form>
       <div class="form-input-wrapper">
-        <template v-for="item in 2" :key="item">
+        <template v-for="item in data" :key="item.key">
           <div class="form-input-container">
-            <label for="first-name" class="form-input-container__label">First name</label>
-            <InputText id="first-name" />
-          </div>
-          <div class="form-input-container">
-            <label for="first-name" class="form-input-container__label">First name</label>
-            <Select :options="[null]" option-label="name"/>
+            <label :for="item.key" class="form-input-container__label">{{ item.label }}</label>
+            <InputText v-if="item.type === 'InputText'" :id="item.key" v-model="item.value" />
+            <Select
+              v-else-if="item.type === 'Select'"
+              v-model="item.value"
+              :options="item.values"
+              option-label="name"
+              option-value="name" />
           </div>
         </template>
       </div>
-      <Button :label="'Update'.toLocaleUpperCase()" disabled/>
+      <Button :label="'Update'.toLocaleUpperCase()" disabled />
     </Form>
   </div>
 </template>

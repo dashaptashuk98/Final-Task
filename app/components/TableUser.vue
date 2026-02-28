@@ -86,7 +86,7 @@
 
 <script setup lang="ts">
   import { ref } from "vue";
-  import { getUsers } from "../../services/users";
+  import { getUsers } from "../../server/services/users";
   import type { User } from "../../types/user";
 
   const users = ref<User[]>([]);

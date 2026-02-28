@@ -1,12 +1,17 @@
 import { defineNuxtConfig } from "nuxt/config";
-import Aura from "@primeuix/themes/aura";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
-  css: ["~/assets/css/main.css", "~/../node_modules/primeicons/primeicons.css"],
+  css: [
+    "~/assets/css/main.css",
+    "~/../node_modules/primeicons/primeicons.css",
+    "~/assets/styles/fonts.css",
+    "~/assets/styles/variables.css",
+  ],
   modules: [
     "@nuxt/test-utils/module",
     "@nuxt/eslint",
+    "@pinia/nuxt",
     [
       "@vee-validate/nuxt",
       {
@@ -18,18 +23,15 @@ export default defineNuxtConfig({
           ErrorMessage: "VeeErrorMessage",
         },
       },
-      ripple: true,
-    },
-  },
-
-  nitro: {
-    devProxy: {
-      "/api": {
-        target: "http://localhost:3001",
-        changeOrigin: true,
+    ],
+    [
+      "@primevue/nuxt-module",
+      {
+        unstyled: true,
+        autoImport: true,
       },
-    },
-  },
-
+    ],
+    "@nuxt/test-utils/module",
+  ],
   devtools: { enabled: true },
 });

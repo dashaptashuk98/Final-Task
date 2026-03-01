@@ -11,11 +11,11 @@
           </div>
           <div class="form-input-container">
             <label for="first-name" class="form-input-container__label">First name</label>
-            <Select :options="[null]" option-label="name"/>
+            <Select :options="[null]" option-label="name" />
           </div>
         </template>
       </div>
-      <Button :label="'Update'.toLocaleUpperCase()" disabled/>
+      <Button :label="'Update'.toLocaleUpperCase()" disabled />
     </Form>
   </div>
 </template>

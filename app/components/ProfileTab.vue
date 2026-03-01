@@ -6,7 +6,7 @@
       <Avatar label="P" shape="circle" />
       <div class="profile-avatar__container">
         <div class="profile-avatar__container-info">
-          <span class="pi pi-upload" style="font-size: 32px; color: #2e2e2e; height: 32px"/>
+          <span class="pi pi-upload" style="font-size: 32px; color: #2e2e2e; height: 32px" />
           <h3 class="profile-avatar__container-title">Upload avatar image</h3>
         </div>
         <p class="profile-avatar__container-description">png, jpg or gif no more than 0.5MB</p>

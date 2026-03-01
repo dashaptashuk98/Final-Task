@@ -2,6 +2,7 @@ export interface UserProfile {
   first_name: string;
   last_name: string;
   full_name: string;
+  avatar?: string;
 }
 
 export interface UserDepartment {
@@ -20,4 +21,16 @@ export interface User {
   profile?: UserProfile;
   department?: UserDepartment;
   position?: UserPosition;
+}
+
+export interface UserUI {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  department: string;
+  position: string;
+  avatar: string | null;
+  role: string;
+  isVerified: boolean;
 }

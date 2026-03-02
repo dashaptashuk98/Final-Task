@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import type { AxiosError } from "axios";
 import axios from "axios";
-import type { User, UserUI } from "../types/user";
+import type { User, UserUI } from "../types/userTable";
 import type { ApiErrorResponse } from "../types/auth";
 
 export const useUsersStore = defineStore("users", () => {

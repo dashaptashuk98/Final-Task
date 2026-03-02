@@ -70,7 +70,7 @@
   import { useUsersStore } from "~~/stores/users";
   import { useAuthStore } from "~~/stores/auth";
   import { ref, onMounted, watch } from "vue";
-  import type { UserUI } from "~~/types/user";
+  import type { UserUI } from "~~/types/userTable";
 
   const usersStore = useUsersStore();
   const authStore = useAuthStore();

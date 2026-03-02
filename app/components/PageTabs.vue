@@ -1,15 +1,20 @@
 <script setup lang="ts">
   const { tabs } = defineProps<{ tabs: string[] }>();
+  const currentTab = ref<string | number>(tabs[0] ? tabs[0] : "page");
 </script>
 
 <template>
-  <Tabs :value="tabs[0] ? tabs[0] : 'page'">
+  <Tabs :value="currentTab">
     <TabList>
-      <Tab v-for="tab in tabs" :key="tab" :value="tab">{{ tab.toLocaleUpperCase() }}</Tab>
+      <Tab v-for="tab in tabs" :key="tab" :value="tab" @click="() => (currentTab = tab)">
+        <NuxtLink :to="tab" class="tab__link">
+          {{ tab.toLocaleUpperCase() }}
+        </NuxtLink>
+      </Tab>
     </TabList>
     <TabPanels>
-      <TabPanel v-for="tab in tabs" :key="tab" :value="tab">
-        <ProfileTab v-if="tab === 'profile'" />
+      <TabPanel :value="currentTab">
+        <slot />
       </TabPanel>
     </TabPanels>
   </Tabs>
@@ -36,5 +41,14 @@
   :deep(.p-tab-active) {
     border-bottom: 2px #c63031 solid;
     color: #c63031;
+  }
+
+  .tab__link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-decoration: none;
+    color: #2e2e2e;
   }
 </style>

@@ -31,6 +31,13 @@ export default defineNuxtConfig({
         autoImport: true,
       },
     ],
+    [
+      "@primevue/nuxt-module",
+      {
+        unstyled: true,
+        autoImport: true,
+      },
+    ],
     "@nuxt/test-utils/module",
     "@pinia/nuxt",
   ],

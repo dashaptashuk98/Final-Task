@@ -4,8 +4,7 @@ import type {
   UsersResponse,
   GraphQLResponse,
   UpdateTokenResponse,
-} from "../../../types/auth";
-import type { User, UserUI } from "../../../types/user";
+} from "../../../app/types/auth";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -29,6 +28,7 @@ export default defineEventHandler(async (event) => {
             query {
               users {
                 id
+                created_at
                 email
                 role
                 is_verified
@@ -132,22 +132,7 @@ export default defineEventHandler(async (event) => {
       return [];
     }
 
-    const users: UserUI[] = data.users.map((user: User) => ({
-      id: user.id,
-      firstName: user.profile?.first_name || "",
-      lastName: user.profile?.last_name || "",
-      fullName:
-        user.profile?.full_name ||
-        [user.profile?.first_name, user.profile?.last_name].filter(Boolean).join(" ").trim(),
-      email: user.email,
-      department: user.department?.name || "",
-      position: user.position?.name || "",
-      avatar: user.profile?.avatar || null,
-      role: user.role || "user",
-      isVerified: user.is_verified || false,
-    }));
-
-    return users;
+    return data.users;
   } catch (error: unknown) {
     if (error && typeof error === "object" && "statusCode" in error) {
       throw error;

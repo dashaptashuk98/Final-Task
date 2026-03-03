@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import type { ProfileForm } from "~~/types/user";
-  import type { InputType } from "~~/types/types";
+  import type { ProfileForm } from "~/types/user";
+  import type { InputType } from "~/types/types";
 
   const { data } = defineProps<{ data: Record<ProfileForm, InputType> | null }>();
 </script>

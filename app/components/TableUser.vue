@@ -1,6 +1,6 @@
 <template>
   <div class="users-page">
-    <div v-if="usersStore.loading" class="loading-container">Загрузка пользователей...</div>
+    <div v-if="loading" class="loading-container">Загрузка пользователей...</div>
     <div v-else>
       <DataTable
         :value="displayUsers"
@@ -15,7 +15,11 @@
         <Column header-style="width: 4rem">
           <template #body="{ data }">
             <div class="avatar-container">
-              <img v-if="data.avatar" :src="data.avatar" :alt="data.email" class="avatar-image" >
+              <img
+                v-if="data.profile?.avatar"
+                :src="data.profile.avatar"
+                :alt="data.email"
+                class="avatar-image" >
               <div v-else class="avatar-placeholder">
                 {{ getInitial(data.email) }}
               </div>
@@ -23,26 +27,43 @@
           </template>
         </Column>
 
-        <Column field="firstName" header="First Name" sortable />
-        <Column field="lastName" header="Last Name" sortable />
+        <Column field="profile.first_name" header="First Name" sortable>
+          <template #body="{ data }">
+            {{ data.profile?.first_name || "-" }}
+          </template>
+        </Column>
+
+        <Column field="profile.last_name" header="Last Name" sortable>
+          <template #body="{ data }">
+            {{ data.profile?.last_name || "-" }}
+          </template>
+        </Column>
+
         <Column field="email" header="Email" sortable />
 
-        <Column field="department" sortable>
+        <Column field="department.name" sortable>
           <template #header>
             <div class="department-header">
               <span>Department</span>
               <i class="pi pi-arrow-up department-sort-icon" />
             </div>
           </template>
+          <template #body="{ data }">
+            {{ data.department?.name || "-" }}
+          </template>
         </Column>
 
-        <Column field="position" header="Position" sortable />
+        <Column field="position.name" header="Position" sortable>
+          <template #body="{ data }">
+            {{ data.position?.name || "-" }}
+          </template>
+        </Column>
 
         <Column header-style="width: 5rem">
           <template #header> <span /> </template>
           <template #body="{ data }">
             <Button
-              v-if="data.email === authStore.user?.email"
+              v-if="data.email === currentUserEmail"
               icon="pi pi-ellipsis-v"
               class="action-button"
               text
@@ -67,53 +88,53 @@
 </template>
 
 <script setup lang="ts">
-  import { useUsersStore } from "~~/stores/users";
-  import { useAuthStore } from "~~/stores/auth";
-  import { ref, onMounted, watch } from "vue";
-  import type { UserUI } from "~~/types/userTable";
+  import { ref, onMounted, watch, computed } from "vue";
+  import type { User } from "~/types/userTable";
+  import { useUsers } from "~/composables/useUsers";
+  import { useAuth } from "~/composables/useAuth";
 
-  const usersStore = useUsersStore();
-  const authStore = useAuthStore();
+  const { users, loading, fetchUsers } = useUsers();
+  const { user: currentUser, reloadUser } = useAuth();
 
-  const displayUsers = ref<UserUI[]>([]);
+  const displayUsers = ref<User[]>([]);
+
+  const currentUserEmail = computed(() => currentUser.value?.email);
 
   const getInitial = (email: string): string => {
     if (!email) return "?";
     return email.charAt(0).toUpperCase();
   };
-  const sortUsers = () => {
-    const users = [...usersStore.users] as UserUI[];
-    const currentUserEmail = authStore.user?.email;
 
-    if (!users.length) {
+  const sortUsers = () => {
+    const usersList = [...users.value] as User[];
+    const email = currentUserEmail.value;
+
+    if (!usersList.length) {
       displayUsers.value = [];
       return;
     }
 
-    if (!currentUserEmail) {
-      displayUsers.value = users;
+    if (!email) {
+      displayUsers.value = usersList;
       return;
     }
 
-    const currentUser = users.find((u) => u.email === currentUserEmail);
+    const currentUserInList = usersList.find((u) => u.email === email);
 
-    if (!currentUser) {
-      displayUsers.value = users;
+    if (!currentUserInList) {
+      displayUsers.value = usersList;
       return;
     }
-    const otherUsers = users.filter((u) => u.email !== currentUserEmail);
-    displayUsers.value = [currentUser as UserUI, ...otherUsers];
+
+    const otherUsers = usersList.filter((u) => u.email !== email);
+    displayUsers.value = [currentUserInList as User, ...otherUsers];
   };
 
-  watch(
-    () => [usersStore.users, authStore.user],
-    () => sortUsers(),
-    { deep: true },
-  );
+  watch([users, currentUser], () => sortUsers(), { deep: true });
 
   onMounted(async () => {
-    authStore.reloadUser();
-    await usersStore.fetchUsers();
+    reloadUser();
+    await fetchUsers();
     sortUsers();
   });
 </script>

@@ -1,6 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
-import { useAuthStore } from "../../stores/auth";
-import type { GraphQLError } from "../../types/auth";
+import type { GraphQLError } from "../../app/types/auth";
+import { useAuth } from "../../app/composables/useAuth";
 
 const GRAPHQL_URL = process.env.VITE_GRAPHQL_URL;
 
@@ -20,8 +20,8 @@ export const graphqlClient = axios.create({
 graphqlClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (import.meta.client) {
-      const authStore = useAuthStore();
-      const token = authStore.accessToken;
+      const { accessToken } = useAuth();
+      const token = accessToken.value;
 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -49,8 +49,8 @@ graphqlClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const authStore = useAuthStore();
-        const newToken = await authStore.refreshAccessToken();
+        const { refreshAccessToken } = useAuth();
+        const newToken = await refreshAccessToken();
 
         if (newToken && originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${newToken}`;

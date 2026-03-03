@@ -21,7 +21,11 @@
 
       <div class="sidebar__bottom">
         <NuxtLink to="/" class="sidebar__profile-link">
-          <span class="sidebar__profile-email">{{ authStore.user?.email || "Профиль" }}</span>
+          <Avatar
+            :image="user?.profile ? (user?.profile?.avatar as string) : undefined"
+            :label="user && user.profile?.avatar ? undefined : user?.email"
+            shape="circle" />
+          <span class="sidebar__profile-email">{{ user?.position || "Профиль" }}</span>
         </NuxtLink>
       </div>
     </div>
@@ -29,29 +33,22 @@
 </template>
 
 <script setup lang="ts">
-  import Panel from "primevue/panel";
   import IconSkills from "~/components/IconSkills.vue";
-  import { useAuthStore } from "~~/stores/auth";
+  import { useAuth } from "~/composables/useAuth";
+  import type { MenuItem } from "~/types/userTable";
   import { useRoute } from "vue-router";
   import { computed } from "vue";
 
-  const authStore = useAuthStore();
-  const route = useRoute();
+  const { user } = useAuth();
 
-  interface MenuItem {
-    icon?: string;
-    name: string;
-    title: string;
-    to: string;
-    isActive: boolean;
-  }
+  const route = useRoute();
 
   const baseMenuItems = [
     {
       icon: "pi pi-users",
-      name: "employees",
+      name: "users",
       title: "Employees",
-      to: "/employee",
+      to: "/users",
     },
     {
       name: "skills",

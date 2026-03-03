@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { GraphQLResponse, SecureSessionData } from "../../types/auth";
+import type { GraphQLResponse, SecureSessionData } from "../../app/types/auth";
 
 export default defineEventHandler(async (event) => {
   try {

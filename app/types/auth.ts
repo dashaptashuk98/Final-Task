@@ -1,8 +1,16 @@
-import type { User, UserProfile, UserDepartment, UserPosition } from "./user";
+import type { User, UserProfile, UserDepartment, UserPosition } from "./userTable";
 
 export interface LoginCredentials {
   email: string;
   password: string;
+}
+
+export interface AuthField {
+  key: string;
+  label: string;
+  type: "email" | "password" | "text";
+  value: string;
+  placeholder?: string;
 }
 
 export interface LoginResponse {

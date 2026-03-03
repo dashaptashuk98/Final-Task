@@ -1,10 +1,13 @@
 <script setup lang="ts">
-  const { tabs } = defineProps<{ tabs: string[] }>();
+  const { tabs, centered = false } = defineProps<{
+    tabs: string[];
+    centered?: boolean;
+  }>();
   const currentTab = ref<string | number>(tabs[0] ? tabs[0] : "page");
 </script>
 
 <template>
-  <Tabs :value="currentTab">
+  <Tabs :value="currentTab" :class="{ centered }">
     <TabList>
       <Tab v-for="tab in tabs" :key="tab" :value="tab" @click="() => (currentTab = tab)">
         <NuxtLink :to="tab" class="tab__link">
@@ -38,6 +41,10 @@
     color: #2e2e2e;
     border-bottom: 2px #ffffff solid;
   }
+  .centered :deep(.p-tablist-tab-list) {
+    justify-content: center;
+  }
+
   :deep(.p-tab-active) {
     border-bottom: 2px #c63031 solid;
     color: #c63031;

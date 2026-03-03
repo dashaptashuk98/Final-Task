@@ -1,153 +1,265 @@
 <template>
   <div class="users-page">
-    <DataTable
-      :value="users"
-      :loading="loading"
-      paginator
-      :rows="10"
-      :rows-per-page-options="[5, 10, 25, 50]"
-      table-style="min-width: 70rem"
-      striped-rows
-      sort-mode="single">
-      <Column header-style="width: 4rem">
-        <template #body="{ data }">
-          <div class="avatar-container">
-            <img v-if="data.avatar" :src="data.avatar" :alt="data.email" class="avatar-image" >
-            <div v-else class="avatar-placeholder">
-              {{ getInitial(data.email) }}
+    <div v-if="loading" class="loading-container">Загрузка пользователей...</div>
+    <div v-else>
+      <DataTable
+        :value="displayUsers"
+        paginator
+        :rows="10"
+        :rows-per-page-options="[5, 10, 25, 50]"
+        table-style="min-width: 70rem"
+        striped-rows
+        sort-mode="single"
+        class="custom-table"
+        paginator-template="PageLinks RowsPerPageDropdown">
+        <Column header-style="width: 4rem">
+          <template #body="{ data }">
+            <div class="avatar-container">
+              <img
+                v-if="data.profile?.avatar"
+                :src="data.profile.avatar"
+                :alt="data.email"
+                class="avatar-image" >
+              <div v-else class="avatar-placeholder">
+                {{ getInitial(data.email) }}
+              </div>
             </div>
-          </div>
+          </template>
+        </Column>
+
+        <Column field="profile.first_name" header="First Name" sortable>
+          <template #body="{ data }">
+            {{ data.profile?.first_name || "-" }}
+          </template>
+        </Column>
+
+        <Column field="profile.last_name" header="Last Name" sortable>
+          <template #body="{ data }">
+            {{ data.profile?.last_name || "-" }}
+          </template>
+        </Column>
+
+        <Column field="email" header="Email" sortable />
+
+        <Column field="department.name" sortable>
+          <template #header>
+            <div class="department-header">
+              <span>Department</span>
+              <i class="pi pi-arrow-up department-sort-icon" />
+            </div>
+          </template>
+          <template #body="{ data }">
+            {{ data.department?.name || "-" }}
+          </template>
+        </Column>
+
+        <Column field="position.name" header="Position" sortable>
+          <template #body="{ data }">
+            {{ data.position?.name || "-" }}
+          </template>
+        </Column>
+
+        <Column header-style="width: 5rem">
+          <template #header> <span /> </template>
+          <template #body="{ data }">
+            <Button
+              v-if="data.email === currentUserEmail"
+              icon="pi pi-ellipsis-v"
+              class="action-button"
+              text
+              rounded
+              severity="secondary" />
+            <Button
+              v-else
+              icon="pi pi-angle-right"
+              class="action-button"
+              text
+              rounded
+              severity="secondary" />
+          </template>
+        </Column>
+
+        <template #empty>
+          <div class="text-center p-4">Нет данных для отображения</div>
         </template>
-      </Column>
-
-      <Column field="firstName" sortable>
-        <template #header>
-          <span>First Name</span>
-        </template>
-      </Column>
-
-      <Column field="lastName" sortable>
-        <template #header>
-          <span>Last Name</span>
-        </template>
-      </Column>
-
-      <Column field="email" sortable>
-        <template #header>
-          <span>Email</span>
-        </template>
-      </Column>
-
-      <Column field="department" sortable>
-        <template #header>
-          <div class="department-header">
-            <span>Department</span>
-            <i class="pi pi-arrow-up department-sort-icon" />
-          </div>
-        </template>
-      </Column>
-
-      <Column field="position" sortable>
-        <template #header>
-          <span>Position</span>
-        </template>
-      </Column>
-
-      <Column header-style="width: 5rem">
-        <template #header> <span /> </template>
-        <template #body>
-          <Button
-            icon="pi pi-angle-right"
-            class="action-button"
-            text
-            rounded
-            severity="secondary" />
-          <Button
-            v-if="auth"
-            icon="pi pi-ellipsis-v"
-            class="action-button"
-            text
-            rounded
-            severity="secondary" />
-        </template>
-      </Column>
-
-      <template #empty>
-        <div class="text-center p-4">Нет данных для отображения</div>
-      </template>
-    </DataTable>
-    <div v-if="loading" class="loading"><i class="pi pi-spin pi-spinner" /> Загрузка...</div>
-
-    <div v-else class="error">
-      {{ error }}
+      </DataTable>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref } from "vue";
-  import { getUsers } from "../../server/services/users";
-  import type { User } from "../../types/user";
+  import { ref, onMounted, watch, computed } from "vue";
+  import type { User } from "~/types/userTable";
+  import { useUsers } from "~/composables/useUsers";
+  import { useAuth } from "~/composables/useAuth";
 
-  const users = ref<User[]>([]);
-  const loading = ref<boolean>(false);
-  const error = ref<string | null>(null);
-  const auth = ref<boolean>(false);
+  const { users, loading, fetchUsers } = useUsers();
+  const { user: currentUser, reloadUser } = useAuth();
+
+  const displayUsers = ref<User[]>([]);
+
+  const currentUserEmail = computed(() => currentUser.value?.email);
 
   const getInitial = (email: string): string => {
     if (!email) return "?";
     return email.charAt(0).toUpperCase();
   };
 
-  const loadUsers = async (): Promise<void> => {
-    loading.value = true;
-    error.value = null;
+  const sortUsers = () => {
+    const usersList = [...users.value] as User[];
+    const email = currentUserEmail.value;
 
-    try {
-      const response = await getUsers();
-      users.value = Array.isArray(response) ? response : response.data || [];
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : "Ошибка загрузки данных";
-    } finally {
-      loading.value = false;
+    if (!usersList.length) {
+      displayUsers.value = [];
+      return;
     }
+
+    if (!email) {
+      displayUsers.value = usersList;
+      return;
+    }
+
+    const currentUserInList = usersList.find((u) => u.email === email);
+
+    if (!currentUserInList) {
+      displayUsers.value = usersList;
+      return;
+    }
+
+    const otherUsers = usersList.filter((u) => u.email !== email);
+    displayUsers.value = [currentUserInList as User, ...otherUsers];
   };
 
-  loadUsers();
+  watch([users, currentUser], () => sortUsers(), { deep: true });
+
+  onMounted(async () => {
+    reloadUser();
+    await fetchUsers();
+    sortUsers();
+  });
 </script>
 
 <style scoped>
   .users-page {
     padding: 20px;
+    font-family: "Roboto", sans-serif;
   }
 
-  span {
-    font-family: "Roboto";
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    font-size: 16px;
+    color: #666;
+  }
+
+  :deep(.custom-table) {
+    border-collapse: collapse;
+  }
+
+  :deep(.custom-table .p-datatable-thead > tr > th) {
+    padding: 16px 16px;
+    background-color: white;
+    border-bottom: 1px solid #e0e0e0;
     font-weight: 500;
     font-size: 14px;
     line-height: 24px;
     color: #2e2e2e;
+    white-space: nowrap;
   }
 
-  tr > td {
+  :deep(.custom-table .p-datatable-tbody > tr) {
+    height: 73px;
+  }
+
+  :deep(.custom-table .p-datatable-tbody > tr > td) {
+    padding: 8px 16px;
+    border-bottom: 1px solid #e0e0e0;
     font-family: "Roboto";
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
     line-height: 20px;
-
     color: #2e2e2e;
+    vertical-align: middle;
   }
 
-  .loading,
-  .error {
-    padding: 40px;
-    text-align: center;
-    font-size: 16px;
+  :deep(.p-paginator) {
+    padding: 20px 0;
+    background-color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    font-family: "Roboto", sans-serif;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 16px;
   }
 
-  .error {
-    color: #e74c3c;
+  :deep(.p-paginator .p-paginator-pages) {
+    display: flex;
+    gap: 8px;
+  }
+
+  :deep(.p-paginator .p-paginator-page) {
+    min-width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 400;
+    color: #2e2e2e;
+    background-color: transparent;
+    transition: all 0.2s;
+    margin: 0;
+    border: none;
+  }
+
+  :deep(.p-paginator .p-paginator-page:hover) {
+    background-color: #f0f0f0;
+  }
+
+  :deep(.p-datatable-paginator-bottom) {
+    border-style: none;
+  }
+
+  :deep(.p-paginator .p-paginator-page.p-highlight) {
+    background-color: #2e2e2e;
+    color: white;
+    font-weight: 500;
+  }
+
+  :deep(.p-paginator .p-paginator-first),
+  :deep(.p-paginator .p-paginator-prev),
+  :deep(.p-paginator .p-paginator-next),
+  :deep(.p-paginator .p-paginator-last) {
+    display: none;
+  }
+
+  :deep(.p-paginator .p-paginator-rpp-options) {
+    min-width: 70px;
+    height: 36px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #2e2e2e;
+    background-color: white;
+    padding: 0 8px;
+    cursor: pointer;
+  }
+
+  :deep(.p-paginator .p-paginator-rpp-options:hover) {
+    border-color: #2e2e2e;
+  }
+
+  :deep(.p-paginator .p-paginator-current) {
+    font-size: 14px;
+    color: #666;
+  }
+
+  :deep(.p-icon) {
+    display: none !important;
   }
 
   .avatar-container {
@@ -176,10 +288,6 @@
     justify-content: center;
     font-weight: 500;
     font-size: 18px;
-  }
-
-  :deep(.p-icon) {
-    display: none !important;
   }
 
   .department-header {

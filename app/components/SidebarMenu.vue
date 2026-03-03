@@ -1,47 +1,54 @@
 <template>
   <Panel class="sidebar sidebar--left">
-    <div class="sidebar__icons">
-      <NuxtLink
-        v-for="item in menuItems"
-        :key="item.name"
-        :to="item.to"
-        class="sidebar__item"
-        active-class="sidebar__item--active">
-        <div class="sidebar__item-content">
-          <IconSkills
-            v-if="item.name === 'skills'"
-            class="sidebar__icon"
-            :color="item.isActive ? '#2E2E2E' : '#666'" />
-          <i v-else :class="['sidebar__icon', item.icon]" />
-          <span class="sidebar__text">{{ item.title }}</span>
-        </div>
-      </NuxtLink>
+    <div class="sidebar__content">
+      <div class="sidebar__icons">
+        <NuxtLink
+          v-for="item in menuItems"
+          :key="item.name"
+          :to="item.to"
+          class="sidebar__item"
+          active-class="sidebar__item--active">
+          <div class="sidebar__item-content">
+            <IconSkills
+              v-if="item.name === 'skills'"
+              class="sidebar__icon"
+              :color="item.isActive ? '#2E2E2E' : '#666'" />
+            <i v-else :class="['sidebar__icon', item.icon]" />
+            <span class="sidebar__text">{{ item.title }}</span>
+          </div>
+        </NuxtLink>
+      </div>
+
+      <div class="sidebar__bottom">
+        <NuxtLink to="/" class="sidebar__profile-link">
+          <Avatar
+            :image="user?.profile ? (user?.profile?.avatar as string) : undefined"
+            :label="user && user.profile?.avatar ? undefined : user?.email"
+            shape="circle" />
+          <span class="sidebar__profile-email">{{ user?.position || "Профиль" }}</span>
+        </NuxtLink>
+      </div>
     </div>
   </Panel>
 </template>
 
 <script setup lang="ts">
-  import Panel from "primevue/panel";
   import IconSkills from "~/components/IconSkills.vue";
-
+  import { useAuth } from "~/composables/useAuth";
+  import type { MenuItem } from "~/types/userTable";
   import { useRoute } from "vue-router";
+  import { computed } from "vue";
+
+  const { user } = useAuth();
 
   const route = useRoute();
-
-  interface MenuItem {
-    icon?: string;
-    name: string;
-    title: string;
-    to: string;
-    isActive: boolean;
-  }
 
   const baseMenuItems = [
     {
       icon: "pi pi-users",
-      name: "employees",
+      name: "users",
       title: "Employees",
-      to: "/employees",
+      to: "/users",
     },
     {
       name: "skills",
@@ -69,6 +76,7 @@
     })),
   );
 </script>
+
 <style scoped>
   .sidebar--left {
     width: 200px;
@@ -85,15 +93,57 @@
   }
 
   .sidebar--left :deep(.p-panel-content) {
-    padding: 1rem 0;
+    padding: 0;
     border: none;
     background: transparent;
+    height: 100vh;
+  }
+
+  .sidebar__content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 1rem 0;
+    width: 200px;
   }
 
   .sidebar__icons {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    flex: 1;
+    width: 200px;
+  }
+
+  .sidebar__bottom {
+    margin-top: auto;
+    padding: 16px;
+    border-top: 1px solid #e0e0e0;
+    width: 200px;
+  }
+
+  .sidebar__profile-link {
+    display: block;
+    text-decoration: none;
+    color: #2e2e2e;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    width: 100%;
+  }
+
+  .sidebar__profile-email {
+    display: block;
+    width: 100%;
+    word-break: break-word;
+    white-space: normal;
+    line-height: 1.4;
+    padding: 4px 0;
+  }
+
+  .sidebar__profile-link:hover {
+    color: #000;
   }
 
   .sidebar__item {
@@ -102,6 +152,7 @@
     border-bottom-right-radius: 200px;
     border-top-right-radius: 200px;
     transition: all 0.2s ease;
+    width: 200px;
   }
 
   .sidebar__item:hover {
@@ -128,6 +179,7 @@
     align-items: center;
     gap: 12px;
     padding: 16px;
+    width: 200px;
   }
 
   .sidebar__icon {
@@ -140,6 +192,7 @@
     color: #666;
     opacity: 0.7;
     transition: all 0.2s ease;
+    flex-shrink: 0;
   }
 
   .sidebar__icon :deep(svg) {
@@ -172,24 +225,47 @@
       width: 60px;
     }
 
-    .sidebar__text {
-      display: none;
+    .sidebar__content {
+      width: 60px;
+    }
+
+    .sidebar__icons {
+      width: 60px;
+    }
+
+    .sidebar__item {
+      width: 60px;
     }
 
     .sidebar__item-content {
+      width: 60px;
       justify-content: center;
       padding: 0.75rem 0;
+    }
+
+    .sidebar__text {
+      display: none;
     }
 
     .sidebar__icon {
       font-size: 28px;
       width: 28px;
       height: 28px;
+      flex-shrink: 0;
     }
 
     .sidebar__icon :deep(svg) {
       width: 28px;
       height: 16px;
+    }
+
+    .sidebar__bottom {
+      width: 60px;
+      padding: 12px 8px;
+    }
+
+    .sidebar__profile-email {
+      display: none;
     }
   }
 </style>

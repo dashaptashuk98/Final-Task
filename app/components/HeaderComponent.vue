@@ -1,19 +1,13 @@
 <template>
-  <Breadcrumb
-    :home="home"
-    :model="breadcrumbItems"
-    class="page-breadcrumb"
-    :style="{
-      background: 'transparent',
-      border: 'none',
-      padding: '0',
-      margin: '0 0 10px 0',
-    }">
-    <template #separator>
-      <span class="separator">/</span>
-    </template>
+  <Breadcrumb :home="null" :model="items">
+    <template #separator>/</template>
     <template #item="{ item, props }">
-      <span v-bind="props.action">
+      <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+        <a :href="href" v-bind="props.action" @click="navigate">
+          <span class="breadcrumb-label">{{ item.label }}</span>
+        </a>
+      </router-link>
+      <span v-else v-bind="props.action">
         <span class="breadcrumb-label">{{ item.label }}</span>
       </span>
     </template>
@@ -21,44 +15,43 @@
 </template>
 
 <script setup>
-  import { computed } from "vue";
+  import { ref } from "vue";
   import { useRoute } from "vue-router";
 
   const route = useRoute();
 
-  const home = null;
-
-  const breadcrumbItems = computed(() => {
-    const path = route.path.replace("/", "");
-
-    if (!path) return [];
-
-    return [
-      {
-        label: path.charAt(0).toUpperCase() + path.slice(1).toLowerCase(),
-        to: route.path,
-      },
-    ];
-  });
+  const items = ref([]);
+  watch(
+    () => route.path,
+    (newPath) => {
+      if (newPath === "/users" || newPath.startsWith("/users/")) {
+        items.value = [{ label: "Employee", route: "/users" }];
+      } else if (newPath === "/skills") {
+        items.value = [{ label: "Skills", route: "/skills" }];
+      } else if (newPath === "/languages") {
+        items.value = [{ label: "Languages", route: "/languages" }];
+      } else if (newPath === "/cvs") {
+        items.value = [{ label: "Cvs", route: "/cvs" }];
+      } else {
+        items.value = [];
+      }
+    },
+    { immediate: true },
+  );
 </script>
 
 <style scoped>
-  .page-breadcrumb {
-    font-family: "Roboto";
-    font-style: normal;
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 24px;
-    display: block;
-  }
-
-  .separator {
-    color: rgba(0, 0, 0, 0.6);
-    margin: 0 8px;
-  }
-
   .breadcrumb-label {
     color: rgba(0, 0, 0, 0.6);
+    font-family: "Roboto";
+    font-size: 16px;
+  }
+
+  :deep(.p-breadcrumb) {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0 0 10px 0;
   }
 
   :deep(.p-breadcrumb-list) {
@@ -66,17 +59,12 @@
     margin: 0 !important;
   }
 
-  :deep(.p-breadcrumb-list li) {
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  :deep(.p-breadcrumb-list-item) {
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
   :deep(.p-breadcrumb-home) {
     display: none !important;
+  }
+
+  :deep(.p-breadcrumb-separator) {
+    color: rgba(0, 0, 0, 0.6);
+    margin: 0 8px;
   }
 </style>

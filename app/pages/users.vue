@@ -13,6 +13,9 @@
   import { ref } from "vue";
 
   const searchQuery = ref("");
+  definePageMeta({
+    layout: "default",
+  });
 </script>
 
 <style scoped>
@@ -52,6 +55,11 @@
   :deep(.p-inputtext:focus) {
     box-shadow: none;
     border-color: #3498db;
+  }
+
+  :deep(.p-iconfield .p-inputicon:first-child) {
+    position: absolute;
+    left: 14px;
   }
 
   :deep(.p-inputicon) {

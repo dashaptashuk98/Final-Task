@@ -1,57 +1,63 @@
 <script setup lang="ts">
-  import { useUsersStore } from "~/stores/users";
-  import type { InputType } from "~~/types/types";
-  import type { ProfileForm } from "~~/types/user";
-  const store = useUsersStore();
-  const route = useRoute();
+  import { useUsers } from "~/composables/useUsers";
+  import type { InputType } from "~/types/types";
+  import type { ProfileForm } from "~/types/user";
 
+  const { user, departments, positions, fetchUser, fetchDepartments, fetchPositions } = useUsers();
+
+  const route = useRoute();
   const userId = ref<string>(route.params.userID as string);
+
   const profileFormData = computed<Record<ProfileForm, InputType> | null>(() => {
+    if (!user.value) return null;
+
     const formData: Record<ProfileForm, InputType> = {
       firstName: {
         key: "firstName",
         label: "First Name",
-        value: store.user?.profile.first_name as string,
+        value: user.value?.profile?.first_name ?? "",
         type: "InputText",
       },
       lastName: {
         key: "lastName",
         label: "Last Name",
-        value: store.user?.profile.last_name as string,
+        value: user.value?.profile?.last_name ?? "",
         type: "InputText",
       },
       department: {
         key: "department",
         label: "Department",
-        value: store.user?.department_name as string,
+        value: user.value?.department_name ?? "",
         type: "Select",
-        values: store.departments?.map((item) => {
+        values: departments.value?.map((item) => {
           return { name: item.name };
         }),
       },
       position: {
         key: "position",
         label: "Position",
-        value: store.user?.position_name as string,
+        value: user.value?.position_name ?? "",
         type: "Select",
-        values: store.positions?.map((item) => {
+        values: positions.value?.map((item) => {
           return { name: item.name };
         }),
       },
     };
-    return store.user ? formData : null;
+
+    return formData;
   });
-  await store.fetchDepartments();
-  await store.fetchPositions();
-  await store.fetchUser(userId.value);
+
+  await fetchDepartments();
+  await fetchPositions();
+  await fetchUser(userId.value);
 </script>
 
 <template>
-  <section v-if="store.user" class="profile">
+  <section v-if="user" class="profile">
     <div class="profile-avatar">
       <Avatar
-        :image="store.user ? (store.user.profile.avatar as string) : undefined"
-        :label="store.user && store.user.profile.avatar ? undefined : store.user.email[0]"
+        :image="user.profile?.avatar ?? undefined"
+        :label="!user.profile?.avatar ? user.email[0] : undefined"
         shape="circle" />
       <div class="profile-avatar__container">
         <div class="profile-avatar__container-info">
@@ -62,9 +68,9 @@
       </div>
     </div>
     <div class="profile-data">
-      <h2 class="profile-data__title">{{ store.user?.profile.full_name }}</h2>
-      <a href="mailto:#" class="profile-data__email">{{ store.user?.email }}</a>
-      <p class="profile-data__member">{{ store.user?.created_at }}</p>
+      <h2 class="profile-data__title">{{ user.profile?.full_name }}</h2>
+      <a :href="`mailto:${user.email}`" class="profile-data__email">{{ user.email }}</a>
+      <p class="profile-data__member">{{ user.created_at }}</p>
     </div>
     <ProfileForm :data="profileFormData" />
   </section>

@@ -11,7 +11,7 @@ export default defineNuxtConfig({
   modules: [
     "@nuxt/test-utils/module",
     "@nuxt/eslint",
-    "@pinia/nuxt",
+    "nuxt-auth-utils",
     [
       "@vee-validate/nuxt",
       {
@@ -31,7 +31,15 @@ export default defineNuxtConfig({
         autoImport: true,
       },
     ],
+    [
+      "@primevue/nuxt-module",
+      {
+        unstyled: true,
+        autoImport: true,
+      },
+    ],
     "@nuxt/test-utils/module",
+    "@pinia/nuxt",
   ],
   devtools: { enabled: true },
 });

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import type { ProfileForm } from "~~/types/user";
-  import type { InputType } from "~~/types/types";
+  import type { ProfileForm } from "~/types/user";
+  import type { InputType } from "~/types/types";
 
   const { data } = defineProps<{ data: Record<ProfileForm, InputType> | null }>();
 </script>
@@ -12,7 +12,10 @@
         <template v-for="item in data" :key="item.key">
           <div class="form-input-container">
             <label :for="item.key" class="form-input-container__label">{{ item.label }}</label>
-            <InputText v-if="item.type === 'InputText'" :id="item.key" v-model="item.value" />
+            <InputText
+              v-if="item.type === 'InputText'"
+              :id="item.key"
+              v-model="item.value as string" />
             <Select
               v-else-if="item.type === 'Select'"
               v-model="item.value"

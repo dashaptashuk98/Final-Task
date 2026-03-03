@@ -1,6 +1,7 @@
 <template>
-  <h1>start</h1>
+  <div />
 </template>
-<script setup lang="ts">
-  await navigateTo("/employees");
+
+<script setup>
+  await navigateTo("/auth/login");
 </script>

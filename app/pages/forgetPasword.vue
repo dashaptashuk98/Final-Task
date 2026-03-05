@@ -5,19 +5,18 @@
       <p class="welcome-subtitle">Мы вышлем вам на почту необходимые интсрукции</p>
 
       <AuthForm :fields="resetFields" button-text="СБРОС ПАРОЛЯ" :loading="isLoading" />
-    </div>
+      <div class="button-wrapper">
+        <Button
+          type="submit"
+          label="СБРОС ПАРОЛЯ"
+          :loading="isLoading"
+          :disabled="isLoading"
+          class="auth-button" />
+      </div>
 
-    <div class="button-wrapper">
-      <Button
-        type="submit"
-        label="СБРОС ПАРОЛЯ"
-        :loading="isLoading"
-        :disabled="isLoading"
-        class="auth-button" />
-    </div>
-
-    <div class="auth-links">
-      <Button link label="ОТМЕНА" class="link-button" @click="navigateTo('/auth/login')" />
+      <div class="auth-links">
+        <Button link label="ОТМЕНА" class="link-button" @click="navigateTo('/auth/login')" />
+      </div>
     </div>
   </div>
 </template>

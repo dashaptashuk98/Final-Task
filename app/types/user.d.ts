@@ -5,6 +5,9 @@ import type { Position } from "./positions";
 import type { SkillMastery } from "./skills";
 import type { Nullable } from "./types";
 
+export interface UserResponse {
+  users: User[];
+}
 export interface User {
   id: string;
   created_at: string;
@@ -30,9 +33,6 @@ export interface Profile {
   languages: LanguageProficiency[];
 }
 
-export interface UserRole {
-  Employee: "Employee";
-  Admin: "Admin";
-}
+export type UserRole = "Employee" | "Admin";
 
 export type ProfileForm = "firstName" | "lastName" | "department" | "position";

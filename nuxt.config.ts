@@ -39,7 +39,27 @@ export default defineNuxtConfig({
       },
     ],
     "@nuxt/test-utils/module",
-    "@pinia/nuxt",
+    "@nuxtjs/apollo",
   ],
+  apollo: {
+    autoImports: true,
+    authType: "Bearer",
+    authHeader: "Authorization",
+    tokenStorage: "cookie",
+    proxyCookies: true,
+    clients: {
+      default: {
+        httpEndpoint: import.meta.env.VITE_GRAPHQL_URL,
+        httpLinkOptions: {
+          credentials: "same-origin",
+        },
+        connectToDevTools: false,
+        tokenName: "token",
+        tokenStorage: "cookie",
+        authType: "Bearer",
+        authHeader: "Authorization",
+      },
+    },
+  },
   devtools: { enabled: true },
 });

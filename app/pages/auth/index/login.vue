@@ -4,9 +4,9 @@
       <h1 class="welcome-title">С возвращением</h1>
       <p class="welcome-subtitle">Рады вас видеть! Войдите, чтобы продолжить</p>
 
-      <Message v-if="error" severity="error" :closable="false" class="error-message">
+      <!-- <Message v-if="error" severity="error" :closable="false" class="error-message">
         {{ error }}
-      </Message>
+      </Message> -->
 
       <AuthForm :fields="loginFields" button-text="ВОЙТИ" :loading="isLoading" />
 
@@ -34,7 +34,7 @@
 <script setup lang="ts">
   import { useToast } from "primevue/usetoast";
   import Button from "primevue/button";
-  import Message from "primevue/message";
+  // import Message from "primevue/message";
   import AuthForm from "~/components/AuthForm.vue";
   import type { AuthField } from "~/types/auth";
   import { useAuth } from "~/composables/useAuth";
@@ -44,7 +44,7 @@
   });
 
   // Используем композабл вместо стора
-  const { login, isLoading, error, clearError } = useAuth();
+  const { login, isLoading } = useAuth();
   const toast = useToast();
   const router = useRouter();
 
@@ -68,19 +68,9 @@
   async function handleLogin() {
     const email = loginFields.value.find((f) => f.key === "email")?.value || "";
     const password = loginFields.value.find((f) => f.key === "password")?.value || "";
+    const result = await login(email, password);
 
-    if (!email || !password) {
-      // Здесь нужно установить ошибку - можно через composable или локально
-      error.value = "Пожалуйста, заполните все поля";
-      return;
-    }
-
-    // Очищаем предыдущие ошибки
-    clearError();
-
-    const result = await login({ email, password });
-
-    if (result.success) {
+    if (result) {
       toast.add({
         severity: "success",
         summary: "Успешно",
@@ -92,7 +82,7 @@
       toast.add({
         severity: "error",
         summary: "Ошибка",
-        detail: result.error,
+        detail: "Unauthorized",
         life: 5000,
       });
     }

@@ -1,7 +1,11 @@
 <template>
-  <HeaderComponent />
+  <div />
 </template>
 
-<script setup></script>
+<script setup lang="ts">
+  const router = useRouter();
 
-<style scoped></style>
+  onMounted(() => {
+    router.push("/posts/users/[userID]/skills");
+  });
+</script>

@@ -4,11 +4,16 @@
       <h1 class="welcome-title">С возвращением</h1>
       <p class="welcome-subtitle">Рады вас видеть! Войдите, чтобы продолжить</p>
 
-      <Message v-if="error" severity="error" :closable="false" class="error-message">
-        {{ error }}
-      </Message>
-
       <AuthForm :fields="loginFields" button-text="ВОЙТИ" :loading="isLoading" />
+
+      <div v-if="v$.$invalid && v$.$dirty" class="validation-errors">
+        <div v-if="v$.email.$errors.length" class="error-text">
+          {{ v$.email.$errors[0]?.$message }}
+        </div>
+        <div v-if="v$.password.$errors.length" class="error-text">
+          {{ v$.password.$errors[0]?.$message }}
+        </div>
+      </div>
 
       <div class="button-wrapper">
         <Button
@@ -33,17 +38,17 @@
 
 <script setup lang="ts">
   import { useToast } from "primevue/usetoast";
+  import { useVuelidate } from "@vuelidate/core";
+  import { required, email, minLength } from "@vuelidate/validators";
   import Button from "primevue/button";
-  import Message from "primevue/message";
   import AuthForm from "~/components/AuthForm.vue";
-  import type { AuthField } from "~/types/auth";
+  import type { ApiError, AuthField } from "~/types/auth";
   import { useAuth } from "~/composables/useAuth";
 
   definePageMeta({
     layout: false,
   });
 
-  // Используем композабл вместо стора
   const { login, isLoading, error, clearError } = useAuth();
   const toast = useToast();
   const router = useRouter();
@@ -65,34 +70,108 @@
     },
   ]);
 
-  async function handleLogin() {
-    const email = loginFields.value.find((f) => f.key === "email")?.value || "";
-    const password = loginFields.value.find((f) => f.key === "password")?.value || "";
+  const formData = computed(() => ({
+    email: loginFields.value.find((f) => f.key === "email")?.value || "",
+    password: loginFields.value.find((f) => f.key === "password")?.value || "",
+  }));
 
-    if (!email || !password) {
-      // Здесь нужно установить ошибку - можно через composable или локально
-      error.value = "Пожалуйста, заполните все поля";
-      return;
+  const rules = {
+    email: {
+      required,
+      email,
+    },
+    password: {
+      required,
+      minLength: minLength(6),
+    },
+  };
+
+  const v$ = useVuelidate(rules, formData);
+
+  const isFieldInvalid = (fieldName: string) => {
+    return v$.value[fieldName]?.$invalid && v$.value[fieldName]?.$dirty;
+  };
+
+  watchEffect(() => {
+    const emailField = loginFields.value.find((f) => f.key === "email");
+    const passwordField = loginFields.value.find((f) => f.key === "password");
+
+    if (emailField) {
+      emailField.error = isFieldInvalid("email");
     }
+    if (passwordField) {
+      passwordField.error = isFieldInvalid("password");
+    }
+  });
 
-    // Очищаем предыдущие ошибки
-    clearError();
+  async function handleLogin() {
+    try {
+      v$.value.$touch();
 
-    const result = await login({ email, password });
+      const isValid = await v$.value.$validate();
 
-    if (result.success) {
-      toast.add({
-        severity: "success",
-        summary: "Успешно",
-        detail: "Вы вошли в систему",
-        life: 3000,
-      });
-      await router.push("/users");
-    } else {
+      if (!isValid) {
+        error.value = "Пожалуйста, исправьте ошибки в форме";
+        return;
+      }
+
+      const email = loginFields.value.find((f) => f.key === "email")?.value || "";
+      const password = loginFields.value.find((f) => f.key === "password")?.value || "";
+
+      clearError();
+
+      const result = await login({ email, password });
+
+      if (result?.success) {
+        toast.add({
+          severity: "success",
+          summary: "Успешно",
+          detail: "Вы успешно вошли в систему",
+          life: 3000,
+        });
+        await router.push("/users");
+      } else {
+        let errorMessage = "Неверный email или пароль";
+
+        if (result?.error) {
+          const error = result.error as ApiError;
+
+          if (typeof error === "string") {
+            errorMessage = error;
+          } else if (error && typeof error === "object") {
+            if ("message" in error && typeof error.message === "string") {
+              errorMessage = error.message;
+            } else if ("error" in error && typeof error.error === "string") {
+              errorMessage = error.error;
+            } else {
+              errorMessage = JSON.stringify(error);
+            }
+          } else {
+            errorMessage = String(error);
+          }
+        }
+
+        error.value = errorMessage;
+
+        toast.add({
+          severity: "error",
+          summary: "Ошибка входа",
+          detail: errorMessage,
+          life: 5000,
+        });
+      }
+    } catch (err) {
+      let errorDetail = "Произошла непредвиденная ошибка";
+      if (err instanceof Error) {
+        errorDetail = err.message;
+      } else if (typeof err === "string") {
+        errorDetail = err;
+      }
+
       toast.add({
         severity: "error",
         summary: "Ошибка",
-        detail: result.error,
+        detail: errorDetail,
         life: 5000,
       });
     }
@@ -108,7 +187,6 @@
     align-items: center;
     justify-content: flex-start;
     font-family: "Inter", "Roboto", "Open Sans", sans-serif;
-    padding: 2rem 1rem 0;
   }
 
   .auth-content {
@@ -149,6 +227,18 @@
     color: #c63031;
     border-radius: 8px;
     padding: 0.75rem 1rem;
+  }
+
+  .validation-errors {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+
+  .error-text {
+    color: #c63031;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    text-align: left;
   }
 
   .button-wrapper {

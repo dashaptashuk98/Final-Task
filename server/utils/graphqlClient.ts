@@ -2,7 +2,7 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import type { GraphQLError } from "../../app/types/auth";
 import { useAuth } from "../../app/composables/useAuth";
 
-const GRAPHQL_URL = process.env.VITE_GRAPHQL_URL;
+const GRAPHQL_URL = process.env.VITE_GRAPHQL_URL || "http://localhost:3001/api/graphql";
 
 interface ErrorResponse {
   errors?: GraphQLError[];

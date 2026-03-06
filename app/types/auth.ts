@@ -1,4 +1,19 @@
-import type { User, UserProfile, UserDepartment, UserPosition } from "./userTable";
+import type { User } from "./user";
+import type { UserProfile, UserDepartment, UserPosition } from "./userTable";
+
+export interface AuthResponse {
+  login: AuthResult;
+}
+export interface AuthResult {
+  user: User;
+  access_token: string;
+  refresh_token: string;
+}
+
+export interface AuthInput {
+  email: string;
+  password: string;
+}
 
 export interface LoginCredentials {
   email: string;
@@ -99,8 +114,6 @@ export interface UpdateTokenResponse {
   };
 }
 
-export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
-
 export interface PageInfo {
   hasNextPage: boolean;
   hasPreviousPage: boolean;
@@ -113,28 +126,6 @@ export interface UsersWithPagination {
   totalCount: number;
   pageInfo?: PageInfo;
 }
-
-export interface GraphQLLocation {
-  line: number;
-  column: number;
-}
-
-export interface GraphQLErrorExtensions {
-  [key: string]: unknown;
-}
-
-export interface GraphQLError {
-  message: string;
-  extensions?: GraphQLErrorExtensions;
-  locations?: GraphQLLocation[];
-  path?: (string | number)[];
-}
-
-export interface GraphQLResponse<T = Record<string, unknown>> {
-  data?: T;
-  errors?: GraphQLError[];
-}
-
 export interface UsersResponse {
   users: User[];
 }

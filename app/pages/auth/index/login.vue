@@ -40,7 +40,7 @@
     layout: false,
   });
 
-  const { login, isLoading, error, clearError } = useAuth();
+  const { login, isLoading } = useAuth();
   const toast = useToast();
   const router = useRouter();
 
@@ -106,18 +106,15 @@
       const isValid = await v$.value.$validate();
 
       if (!isValid) {
-        error.value = "Пожалуйста, исправьте ошибки в форме";
         return;
       }
 
       const email = loginFields.value.find((f) => f.key === "email")?.value || "";
       const password = loginFields.value.find((f) => f.key === "password")?.value || "";
 
-      clearError();
+      const result = await login(email, password);
 
-      const result = await login({ email, password });
-
-      if (result?.success) {
+      if (result?.login) {
         toast.add({
           severity: "success",
           summary: "Успешно",
@@ -126,37 +123,10 @@
         });
         await router.push("/users");
       } else {
-        let errorMessage = "Неверный email или пароль";
-        let errorSummary = "Ошибка входа";
-
-        if (result?.error) {
-          const errorText = result.error as string;
-
-          errorMessage = errorText;
-          if (
-            errorText.toLowerCase().includes("not found") ||
-            errorText.toLowerCase().includes("не найден") ||
-            errorText.toLowerCase().includes("user not found")
-          ) {
-            errorSummary = "Пользователь не найден";
-            errorMessage = "Пользователь с таким email не зарегистрирован";
-          } else if (
-            errorText.toLowerCase().includes("invalid credentials") ||
-            errorText.toLowerCase().includes("password") ||
-            errorText.toLowerCase().includes("пароль") ||
-            errorText.toLowerCase().includes("invalid password")
-          ) {
-            errorSummary = "Неверные данные";
-            errorMessage = "Неверный email или пароль";
-          }
-        }
-
-        error.value = errorMessage;
-
         toast.add({
           severity: "error",
-          summary: errorSummary,
-          detail: errorMessage,
+          summary: "Ошибка входа",
+          detail: "Неверный email или пароль",
           life: 5000,
         });
       }

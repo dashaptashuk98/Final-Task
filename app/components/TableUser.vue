@@ -89,12 +89,12 @@
 
 <script setup lang="ts">
   import { ref, onMounted, watch, computed } from "vue";
-  import type { User } from "~/types/userTable";
   import { useUsers } from "~/composables/useUsers";
   import { useAuth } from "~/composables/useAuth";
+  import type { User } from "~/types/user";
 
   const { users, loading, fetchUsers } = useUsers();
-  const { user: currentUser, reloadUser } = useAuth();
+  const { user: currentUser } = useAuth();
 
   const displayUsers = ref<User[]>([]);
 
@@ -106,7 +106,7 @@
   };
 
   const sortUsers = () => {
-    const usersList = [...users.value] as User[];
+    const usersList: User[] = users.value;
     const email = currentUserEmail.value;
 
     if (!usersList.length) {
@@ -133,7 +133,6 @@
   watch([users, currentUser], () => sortUsers(), { deep: true });
 
   onMounted(async () => {
-    reloadUser();
     await fetchUsers();
     sortUsers();
   });

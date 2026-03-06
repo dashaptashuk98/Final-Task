@@ -94,11 +94,11 @@
   import type { User } from "~/types/user";
 
   const { users, loading, fetchUsers } = useUsers();
-  const { user: currentUser } = useAuth();
+  const { authUser } = useAuth();
 
   const displayUsers = ref<User[]>([]);
 
-  const currentUserEmail = computed(() => currentUser.value?.email);
+  const currentUserEmail = computed(() => authUser.value?.email);
 
   const getInitial = (email: string): string => {
     if (!email) return "?";
@@ -130,10 +130,11 @@
     displayUsers.value = [currentUserInList as User, ...otherUsers];
   };
 
-  watch([users, currentUser], () => sortUsers(), { deep: true });
+  watch([users, authUser], () => sortUsers(), { deep: true });
+
+  await fetchUsers();
 
   onMounted(async () => {
-    await fetchUsers();
     sortUsers();
   });
 </script>

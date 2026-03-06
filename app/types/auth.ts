@@ -95,7 +95,7 @@ export interface RefreshResponse {
   };
 }
 
-export interface UpdateTokenResponse {
+export interface UpdateTokenResult {
   updateToken: {
     access_token: string;
     refresh_token: string;

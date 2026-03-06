@@ -7,7 +7,11 @@
       <h3 class="category-title">{{ categoryName }}</h3>
 
       <div class="skills-list">
-        <div v-for="skill in categorySkills" :key="skill.id" class="skill-item">
+        <div
+          v-for="skill in categorySkills"
+          :key="skill.id"
+          class="skill-item"
+          @click="$emit('skill-click', skill)">
           <ProgressBar
             :value="getMasteryPercentage(skill.mastery)"
             class="skill-progress"
@@ -36,6 +40,10 @@
     category_name: string | null;
     category_parent_name: string | null;
   }
+
+  defineEmits<{
+    "skill-click": [skill: Skill];
+  }>();
 
   interface Props {
     skills: Skill[];
@@ -74,11 +82,13 @@
 <style scoped>
   .skills-container {
     width: 100%;
+    max-width: 800px;
     margin: 0 auto;
+    padding: 1rem;
   }
 
   .category-block {
-    margin-bottom: 16px;
+    margin-bottom: 2rem;
     padding: 1rem;
   }
 

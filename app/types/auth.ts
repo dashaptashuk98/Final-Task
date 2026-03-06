@@ -12,6 +12,7 @@ export interface AuthField {
   value: string;
   placeholder?: string;
   error?: boolean;
+  errorMessage?: string;
 }
 
 interface ErrorWithMessage {

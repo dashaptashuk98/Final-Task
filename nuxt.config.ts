@@ -12,18 +12,7 @@ export default defineNuxtConfig({
     "@nuxt/test-utils/module",
     "@nuxt/eslint",
     "nuxt-auth-utils",
-    [
-      "@vee-validate/nuxt",
-      {
-        autoImports: true,
-        componentNames: {
-          Form: "VeeForm",
-          Field: "VeeField",
-          FieldArray: "VeeFieldArray",
-          ErrorMessage: "VeeErrorMessage",
-        },
-      },
-    ],
+
     [
       "@primevue/nuxt-module",
       {
@@ -31,14 +20,6 @@ export default defineNuxtConfig({
         autoImport: true,
       },
     ],
-    [
-      "@primevue/nuxt-module",
-      {
-        unstyled: true,
-        autoImport: true,
-      },
-    ],
-    "@nuxt/test-utils/module",
     "@pinia/nuxt",
   ],
   devtools: { enabled: true },

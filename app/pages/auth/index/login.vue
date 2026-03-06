@@ -6,15 +6,6 @@
 
       <AuthForm :fields="loginFields" button-text="ВОЙТИ" :loading="isLoading" />
 
-      <div v-if="v$.$invalid && v$.$dirty" class="validation-errors">
-        <div v-if="v$.email.$errors.length" class="error-text">
-          {{ v$.email.$errors[0]?.$message }}
-        </div>
-        <div v-if="v$.password.$errors.length" class="error-text">
-          {{ v$.password.$errors[0]?.$message }}
-        </div>
-      </div>
-
       <div class="button-wrapper">
         <Button
           type="submit"
@@ -42,7 +33,7 @@
   import { required, email, minLength } from "@vuelidate/validators";
   import Button from "primevue/button";
   import AuthForm from "~/components/AuthForm.vue";
-  import type { ApiError, AuthField } from "~/types/auth";
+  import type { AuthField } from "~/types/auth";
   import { useAuth } from "~/composables/useAuth";
 
   definePageMeta({
@@ -60,6 +51,7 @@
       type: "email",
       value: "",
       placeholder: "Почта",
+      errorMessage: "",
     },
     {
       key: "password",
@@ -67,6 +59,7 @@
       type: "password",
       value: "",
       placeholder: "Пароль",
+      errorMessage: "",
     },
   ]);
 
@@ -98,9 +91,11 @@
 
     if (emailField) {
       emailField.error = isFieldInvalid("email");
+      emailField.errorMessage = (v$.value.email.$errors[0]?.$message as string) || "";
     }
     if (passwordField) {
       passwordField.error = isFieldInvalid("password");
+      passwordField.errorMessage = (v$.value.password.$errors[0]?.$message as string) || "";
     }
   });
 
@@ -132,22 +127,27 @@
         await router.push("/users");
       } else {
         let errorMessage = "Неверный email или пароль";
+        let errorSummary = "Ошибка входа";
 
         if (result?.error) {
-          const error = result.error as ApiError;
+          const errorText = result.error as string;
 
-          if (typeof error === "string") {
-            errorMessage = error;
-          } else if (error && typeof error === "object") {
-            if ("message" in error && typeof error.message === "string") {
-              errorMessage = error.message;
-            } else if ("error" in error && typeof error.error === "string") {
-              errorMessage = error.error;
-            } else {
-              errorMessage = JSON.stringify(error);
-            }
-          } else {
-            errorMessage = String(error);
+          errorMessage = errorText;
+          if (
+            errorText.toLowerCase().includes("not found") ||
+            errorText.toLowerCase().includes("не найден") ||
+            errorText.toLowerCase().includes("user not found")
+          ) {
+            errorSummary = "Пользователь не найден";
+            errorMessage = "Пользователь с таким email не зарегистрирован";
+          } else if (
+            errorText.toLowerCase().includes("invalid credentials") ||
+            errorText.toLowerCase().includes("password") ||
+            errorText.toLowerCase().includes("пароль") ||
+            errorText.toLowerCase().includes("invalid password")
+          ) {
+            errorSummary = "Неверные данные";
+            errorMessage = "Неверный email или пароль";
           }
         }
 
@@ -155,7 +155,7 @@
 
         toast.add({
           severity: "error",
-          summary: "Ошибка входа",
+          summary: errorSummary,
           detail: errorMessage,
           life: 5000,
         });

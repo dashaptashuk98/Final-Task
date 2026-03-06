@@ -12,7 +12,7 @@ export const useUsers = () => {
   const positions = useState<Position[]>("positions", () => []);
   const users = useState<User[]>("users", () => []);
 
-  const loading = ref(false);
+  const isLoading = ref<boolean>(false);
 
   const getUser = computed<Nullable<User>>(() => user.value);
   const getUsers = computed<User[]>(() => users.value);
@@ -60,7 +60,7 @@ export const useUsers = () => {
   };
 
   const fetchUsers = async (): Promise<Nullable<User[]>> => {
-    loading.value = true;
+    isLoading.value = true;
 
     try {
       const { data } = await useAsyncQuery<UserResponse>(usersQuery);
@@ -72,7 +72,7 @@ export const useUsers = () => {
     } catch {
       return null;
     } finally {
-      loading.value = false;
+      isLoading.value = false;
     }
   };
 
@@ -85,7 +85,7 @@ export const useUsers = () => {
     departments,
     positions,
     users,
-    loading,
+    loading: isLoading,
 
     getUser,
     getUsers,

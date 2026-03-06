@@ -1,29 +1,41 @@
-import type { User } from "~/types/userTable";
-import type { AuthInput, AuthResponse } from "~/types/auth";
+import type { User } from "~/types/user";
+import type { AuthInput, AuthResponse, UpdateTokenResult } from "~/types/auth";
 import type { Nullable } from "~/types/types";
 import { loginQuery } from "~/graphQL/auth/auth.query";
-// import { updateTokenMutation } from "~/graphQL/auth/auth.mutation";
 
 export const useAuth = () => {
-  const authUser = useState<Nullable<User>>(() => null);
-  const isLoading = ref(false);
-  const accessToken = computed<Nullable<string>>(() =>
+  const { fetchUser } = useUsers();
+  const authId = computed<Nullable<string>>(() =>
+    useCookie("authId").value ? (useCookie("authId").value as string) : null,
+  );
+  const authUser = useState<Nullable<User>>("authUser", () => null);
+  const isLoading = ref<boolean>(false);
+  const accessTokenCookie = computed<Nullable<string>>(() =>
     useCookie("token").value ? (useCookie("token").value as string) : null,
   );
-  const isAuth = computed<boolean>(() => !!authUser.value && !!accessToken.value);
+  const refreshTokenCookie = computed<Nullable<string>>(() =>
+    useCookie("refreshToken").value ? (useCookie("refreshToken").value as string) : null,
+  );
+  const isAuth = computed<boolean>(() => !!authUser.value && !!accessTokenCookie.value);
 
   const { onLogin, onLogout } = useApollo();
 
+  const loadAuthUser = async () => {
+    if (authId.value) {
+      authUser.value = await fetchUser(authId.value);
+    }
+  };
+
   const login = async (email: string, password: string): Promise<Nullable<AuthResponse>> => {
     isLoading.value = true;
-    const refreshTokenCookie = useCookie("refresh_token");
     const { data } = await useAsyncQuery<Record<"auth", AuthInput>, AuthResponse>(loginQuery, {
       auth: { email, password },
     });
     if (data.value) {
       const token = data.value.login.access_token;
       authUser.value = data.value.login.user as User;
-      refreshTokenCookie.value = data.value.login.refresh_token;
+      useCookie("refreshToken").value = data.value.login.refresh_token;
+      useCookie("authId").value = data.value.login.user.id;
       onLogin(token);
     }
     return data.value;
@@ -31,57 +43,59 @@ export const useAuth = () => {
 
   const logout = (): void => {
     onLogout();
+    useCookie("authId").value = null;
+    useCookie("refreshToken").value = null;
     isLoading.value = false;
   };
 
-  // async function refreshAccessToken(): Promise<Nullable<string>> {
-  //   try {
-  //     const currentRefreshToken =
-  //       _refreshToken.value || (import.meta.client ? localStorage.getItem("refresh_token") : null);
+  const refreshToken = async (): Promise<boolean> => {
+    if (!refreshTokenCookie.value) {
+      return false;
+    }
+    try {
+      const graphqlUrl: string = import.meta.env.VITE_GRAPHQL_URL;
+      const response: Record<"data", UpdateTokenResult> = await $fetch(graphqlUrl, {
+        method: "POST",
+        body: {
+          query: `
+            mutation UpdateToken {
+              updateToken {
+                access_token
+                refresh_token
+              }
+            }
+          `,
+        },
+        headers: {
+          Authorization: `Bearer ${refreshTokenCookie.value}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-  //     if (!currentRefreshToken) {
-  //       return null;
-  //     }
+      if (response.data.updateToken) {
+        const token = response.data.updateToken.access_token;
+        onLogin(token);
+        useCookie("refreshToken").value = response.data.updateToken.refresh_token;
+        // loadAuthUser();
+        return true;
+      }
 
-  //     const data = await $fetch<RefreshResponse>("/api/refresh", {
-  //       method: "POST",
-  //       body: { refresh_token: currentRefreshToken },
-  //       credentials: "include",
-  //     });
-
-  //     if (data.success && data.updateToken?.access_token) {
-  //       _accessToken.value = data.updateToken.access_token;
-  //       _refreshToken.value = data.updateToken.refresh_token;
-
-  //       return data.updateToken.access_token;
-  //     }
-
-  //     return null;
-  //   } catch {
-  //     return null;
-  //   }
-  // }
-
-  // const refreshAgain = async () => {
-  //   try {
-  //     const { data } = await useAsyncQuery(updateTokenMutation);
-  //     const newToken = data.value.updateToken.access_token;
-  //     await onLogin(newToken);
-  //   } catch (e) {
-  //     console.error('Не удалось обновить токен:', e);
-  //     await logoutAgain();
-  //   }
-  // };
+      return false;
+    } catch {
+      return false;
+    }
+  };
 
   return {
-    user: authUser,
+    authUser,
     isLoading,
 
-    accessToken,
-    isAuthenticated: isAuth,
+    accessTokenCookie,
+    refreshToken,
+    isAuth,
 
     login,
     logout,
-    // refreshAgain
+    loadAuthUser,
   };
 };

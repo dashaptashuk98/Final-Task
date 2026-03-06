@@ -1,17 +1,23 @@
 <script setup lang="ts">
+  import type { Tabs } from "~/types/types";
+
   const { tabs, centered = false } = defineProps<{
-    tabs: string[];
+    tabs: Tabs[];
     centered?: boolean;
   }>();
-  const currentTab = ref<string | number>(tabs[0] ? tabs[0] : "page");
+  const currentTab = ref<string | number>(tabs[0]?.label ? tabs[0].label : "page");
 </script>
 
 <template>
   <Tabs :value="currentTab" :class="{ centered }">
     <TabList>
-      <Tab v-for="tab in tabs" :key="tab" :value="tab" @click="() => (currentTab = tab)">
-        <NuxtLink :to="tab" class="tab__link">
-          {{ tab.toLocaleUpperCase() }}
+      <Tab
+        v-for="tab in tabs"
+        :key="tab.label"
+        :value="tab.label"
+        @click="() => (currentTab = tab.label)">
+        <NuxtLink :to="tab.to" class="tab__link">
+          {{ tab.label.toLocaleUpperCase() }}
         </NuxtLink>
       </Tab>
     </TabList>

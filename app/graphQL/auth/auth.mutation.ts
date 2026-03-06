@@ -1,6 +1,4 @@
-import type { LoginCredentials } from "~/types/auth";
-
-export const updateTokenMutation: LoginCredentials = gql`
+export const updateTokenMutation = gql`
   mutation UpdateToken {
     updateToken {
       access_token

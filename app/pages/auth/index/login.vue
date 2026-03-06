@@ -4,10 +4,6 @@
       <h1 class="welcome-title">С возвращением</h1>
       <p class="welcome-subtitle">Рады вас видеть! Войдите, чтобы продолжить</p>
 
-      <Message v-if="error" severity="error" :closable="false" class="error-message">
-        {{ error }}
-      </Message>
-
       <AuthForm :fields="loginFields" button-text="ВОЙТИ" :loading="isLoading" />
 
       <div class="button-wrapper">
@@ -33,8 +29,9 @@
 
 <script setup lang="ts">
   import { useToast } from "primevue/usetoast";
+  import { useVuelidate } from "@vuelidate/core";
+  import { required, email, minLength } from "@vuelidate/validators";
   import Button from "primevue/button";
-  import Message from "primevue/message";
   import AuthForm from "~/components/AuthForm.vue";
   import type { AuthField } from "~/types/auth";
   import { useAuth } from "~/composables/useAuth";
@@ -43,7 +40,6 @@
     layout: false,
   });
 
-  // Используем композабл вместо стора
   const { login, isLoading, error, clearError } = useAuth();
   const toast = useToast();
   const router = useRouter();
@@ -55,6 +51,7 @@
       type: "email",
       value: "",
       placeholder: "Почта",
+      errorMessage: "",
     },
     {
       key: "password",
@@ -62,37 +59,119 @@
       type: "password",
       value: "",
       placeholder: "Пароль",
+      errorMessage: "",
     },
   ]);
 
-  async function handleLogin() {
-    const email = loginFields.value.find((f) => f.key === "email")?.value || "";
-    const password = loginFields.value.find((f) => f.key === "password")?.value || "";
+  const formData = computed(() => ({
+    email: loginFields.value.find((f) => f.key === "email")?.value || "",
+    password: loginFields.value.find((f) => f.key === "password")?.value || "",
+  }));
 
-    if (!email || !password) {
-      // Здесь нужно установить ошибку - можно через composable или локально
-      error.value = "Пожалуйста, заполните все поля";
-      return;
+  const rules = {
+    email: {
+      required,
+      email,
+    },
+    password: {
+      required,
+      minLength: minLength(6),
+    },
+  };
+
+  const v$ = useVuelidate(rules, formData);
+
+  const isFieldInvalid = (fieldName: string) => {
+    return v$.value[fieldName]?.$invalid && v$.value[fieldName]?.$dirty;
+  };
+
+  watchEffect(() => {
+    const emailField = loginFields.value.find((f) => f.key === "email");
+    const passwordField = loginFields.value.find((f) => f.key === "password");
+
+    if (emailField) {
+      emailField.error = isFieldInvalid("email");
+      emailField.errorMessage = (v$.value.email.$errors[0]?.$message as string) || "";
     }
+    if (passwordField) {
+      passwordField.error = isFieldInvalid("password");
+      passwordField.errorMessage = (v$.value.password.$errors[0]?.$message as string) || "";
+    }
+  });
 
-    // Очищаем предыдущие ошибки
-    clearError();
+  async function handleLogin() {
+    try {
+      v$.value.$touch();
 
-    const result = await login({ email, password });
+      const isValid = await v$.value.$validate();
 
-    if (result.success) {
-      toast.add({
-        severity: "success",
-        summary: "Успешно",
-        detail: "Вы вошли в систему",
-        life: 3000,
-      });
-      await router.push("/users");
-    } else {
+      if (!isValid) {
+        error.value = "Пожалуйста, исправьте ошибки в форме";
+        return;
+      }
+
+      const email = loginFields.value.find((f) => f.key === "email")?.value || "";
+      const password = loginFields.value.find((f) => f.key === "password")?.value || "";
+
+      clearError();
+
+      const result = await login({ email, password });
+
+      if (result?.success) {
+        toast.add({
+          severity: "success",
+          summary: "Успешно",
+          detail: "Вы успешно вошли в систему",
+          life: 3000,
+        });
+        await router.push("/users");
+      } else {
+        let errorMessage = "Неверный email или пароль";
+        let errorSummary = "Ошибка входа";
+
+        if (result?.error) {
+          const errorText = result.error as string;
+
+          errorMessage = errorText;
+          if (
+            errorText.toLowerCase().includes("not found") ||
+            errorText.toLowerCase().includes("не найден") ||
+            errorText.toLowerCase().includes("user not found")
+          ) {
+            errorSummary = "Пользователь не найден";
+            errorMessage = "Пользователь с таким email не зарегистрирован";
+          } else if (
+            errorText.toLowerCase().includes("invalid credentials") ||
+            errorText.toLowerCase().includes("password") ||
+            errorText.toLowerCase().includes("пароль") ||
+            errorText.toLowerCase().includes("invalid password")
+          ) {
+            errorSummary = "Неверные данные";
+            errorMessage = "Неверный email или пароль";
+          }
+        }
+
+        error.value = errorMessage;
+
+        toast.add({
+          severity: "error",
+          summary: errorSummary,
+          detail: errorMessage,
+          life: 5000,
+        });
+      }
+    } catch (err) {
+      let errorDetail = "Произошла непредвиденная ошибка";
+      if (err instanceof Error) {
+        errorDetail = err.message;
+      } else if (typeof err === "string") {
+        errorDetail = err;
+      }
+
       toast.add({
         severity: "error",
         summary: "Ошибка",
-        detail: result.error,
+        detail: errorDetail,
         life: 5000,
       });
     }
@@ -108,7 +187,6 @@
     align-items: center;
     justify-content: flex-start;
     font-family: "Inter", "Roboto", "Open Sans", sans-serif;
-    padding: 2rem 1rem 0;
   }
 
   .auth-content {
@@ -149,6 +227,18 @@
     color: #c63031;
     border-radius: 8px;
     padding: 0.75rem 1rem;
+  }
+
+  .validation-errors {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+
+  .error-text {
+    color: #c63031;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    text-align: left;
   }
 
   .button-wrapper {

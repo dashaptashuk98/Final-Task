@@ -3,7 +3,7 @@
     <HeaderComponent />
     <IconField>
       <InputIcon class="pi pi-search search-icon" />
-      <InputText v-model="searchQuery" placeholder="Search" class="custom-search" />
+      <InputText v-model="searchQuery" class="custom-search" />
     </IconField>
     <TableUser />
   </div>

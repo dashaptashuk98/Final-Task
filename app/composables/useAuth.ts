@@ -1,10 +1,5 @@
 import type { User } from "~/types/userTable";
-import type {
-  LoginCredentials,
-  LoginResponse,
-  ApiErrorResponse,
-  RefreshResponse,
-} from "~/types/auth";
+import type { LoginCredentials, LoginResponse, RefreshResponse } from "~/types/auth";
 import type { Nullable } from "~/types/types";
 
 export const useAuth = () => {
@@ -113,8 +108,8 @@ export const useAuth = () => {
       let errorMessage = "Ошибка при входе";
 
       if (err && typeof err === "object" && "data" in err) {
-        const errorData = err.data as ApiErrorResponse;
-        errorMessage = errorData.error || errorData.message || errorMessage;
+        const errorData = err.data as { message?: string; statusMessage?: string };
+        errorMessage = errorData.message || errorData.statusMessage || errorMessage;
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }

@@ -11,7 +11,19 @@ export interface AuthField {
   type: "email" | "password" | "text";
   value: string;
   placeholder?: string;
+  error?: boolean;
+  errorMessage?: string;
 }
+
+interface ErrorWithMessage {
+  message: string;
+}
+
+interface ErrorWithError {
+  error: string;
+}
+
+export type ApiError = string | ErrorWithMessage | ErrorWithError | null;
 
 export interface LoginResponse {
   success: boolean;

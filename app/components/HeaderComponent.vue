@@ -51,12 +51,12 @@
     background: transparent;
     border: none;
     padding: 0;
-    margin: 0 0 10px 0;
+    margin: 0 0 20px 0;
   }
 
   :deep(.p-breadcrumb-list) {
     padding: 0 !important;
-    margin: 0 !important;
+    margin: 0 0 10px !important;
   }
 
   :deep(.p-breadcrumb-home) {

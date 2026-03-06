@@ -15,10 +15,13 @@
         <InputText
           :id="field.key"
           v-model="field.value"
-          :class="{ 'p-invalid': false }"
+          :class="{ 'p-invalid': field.error }"
           :disabled="loading"
           :placeholder="field.placeholder"
           class="custom-input" />
+        <small v-if="field.error && field.errorMessage" class="error-message">
+          {{ field.errorMessage }}
+        </small>
       </span>
 
       <span v-if="field.type === 'password'" class="password-wrapper">
@@ -27,11 +30,19 @@
           v-model="field.value"
           :feedback="false"
           toggle-mask
-          :class="{ 'p-invalid': false }"
+          :class="{ 'p-invalid': field.error }"
           :disabled="loading"
           :placeholder="field.placeholder"
           class="custom-password"
-          :input-style="{ width: '100%' }" />
+          :input-style="{ width: '100%' }"
+          :pt="{
+            input: {
+              style: field.error ? { borderColor: '#c63031 !important' } : {},
+            },
+          }" />
+        <small v-if="field.error && field.errorMessage" class="error-message">
+          {{ field.errorMessage }}
+        </small>
       </span>
     </div>
   </div>
@@ -48,6 +59,14 @@
 
   .form-group {
     width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .error-message {
+    color: #c63031;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: block;
   }
 
   .input-wrapper,
@@ -73,14 +92,10 @@
     color: #bbb;
   }
 
-  .custom-input :deep(.p-inputtext:focus) {
+  .custom-input:focus {
     border-color: #c63031 !important;
     box-shadow: 0 0 0 2px rgba(198, 48, 49, 0.1) !important;
     outline: none !important;
-  }
-
-  .custom-input :deep(.p-inputtext.p-invalid) {
-    border-color: #c63031 !important;
   }
 
   .custom-password :deep(.p-password) {
@@ -102,13 +117,9 @@
   }
 
   .custom-password :deep(.p-password input:focus) {
-    border-color: #c63031 !important;
+    border: 2px solid #c63031 !important;
     box-shadow: 0 0 0 2px rgba(198, 48, 49, 0.1) !important;
     outline: none !important;
-  }
-
-  .custom-password :deep(.p-password input.p-invalid) {
-    border-color: #c63031 !important;
   }
 
   .custom-password :deep(.p-password-input::placeholder) {

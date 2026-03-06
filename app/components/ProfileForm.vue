@@ -21,7 +21,11 @@
               v-model="item.value"
               :options="item.values"
               option-label="name"
-              option-value="name" />
+              option-value="name"
+              :pt="{
+                optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
+                list: { style: { backgroundColor: '#FFFFFF' } },
+              }" />
           </div>
         </template>
       </div>
@@ -67,11 +71,15 @@
   .p-select {
     width: 410px;
     height: 48px;
-    font:
-      400 24px/40px "Roboto",
-      sans-serif;
     border: 1px solid #0000003b;
     padding: 0 10px;
+  }
+
+  :deep(.p-inputtext),
+  :deep(.p-select-label) {
+    font:
+      400 24px/46px "Roboto",
+      sans-serif;
   }
 
   .p-button {

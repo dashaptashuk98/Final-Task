@@ -10,3 +10,8 @@ export interface InputType {
 export interface SelectValues {
   name: string;
 }
+
+export interface Tabs {
+  label: string;
+  to: string;
+}

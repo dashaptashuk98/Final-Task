@@ -22,10 +22,10 @@
       <div class="sidebar__bottom">
         <NuxtLink to="/" class="sidebar__profile-link">
           <Avatar
-            :image="user?.profile ? (user?.profile?.avatar as string) : undefined"
-            :label="user && user.profile?.avatar ? undefined : user?.email"
+            :image="authUser?.profile ? (authUser?.profile?.avatar as string) : undefined"
+            :label="authUser && authUser.profile?.avatar ? undefined : authUser?.email"
             shape="circle" />
-          <span class="sidebar__profile-email">{{ user?.position || "Профиль" }}</span>
+          <span class="sidebar__profile-email">{{ authUser?.position || "Профиль" }}</span>
         </NuxtLink>
       </div>
     </div>
@@ -39,7 +39,7 @@
   import { useRoute } from "vue-router";
   import { computed } from "vue";
 
-  const { user } = useAuth();
+  const { authUser } = useAuth();
 
   const route = useRoute();
 

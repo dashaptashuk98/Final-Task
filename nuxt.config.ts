@@ -11,8 +11,6 @@ export default defineNuxtConfig({
   modules: [
     "@nuxt/test-utils/module",
     "@nuxt/eslint",
-    "nuxt-auth-utils",
-
     [
       "@primevue/nuxt-module",
       {

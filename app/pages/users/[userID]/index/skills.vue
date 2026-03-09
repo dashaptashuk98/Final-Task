@@ -15,6 +15,7 @@
         class="btn-add"
         @click="visible = true" />
 
+<<<<<<< HEAD
       <Dialog
         v-model:visible="visible"
         header="Add Skill"
@@ -45,11 +46,45 @@
         <IconRemove />
         <Button type="button" label="Remove skills" class="btn-remove" />
       </div>
+=======
+      <div v-if="!deleteMode" class="button__wrapper">
+        <IconRemove />
+        <Button type="button" label="Remove skills" class="btn-remove" @click="deleteMode = true" />
+      </div>
+
+      <button v-if="deleteMode" type="button" class="btn-cancel" @click="cancelDeleteMode">
+        CANCEL
+      </button>
+
+      <button
+        v-if="deleteMode && selectedSkillsToDelete.size > 0"
+        type="button"
+        class="btn-delete"
+        @click="handleDeleteSkills">
+        DELETE
+        <span class="badge">{{ selectedSkillsToDelete.size }}</span>
+      </button>
+      <ModalDialog v-model:visible="visible" header="Add Skill">
+        <SkillForm
+          :data="formData"
+          :loading="mutationLoading"
+          @cancel="handleCancel"
+          @save="handleSaveSkill" />
+      </ModalDialog>
+      <ModalDialog v-model:visible="visibleUpdate" header="Update skill">
+        <SkillForm
+          :data="formData"
+          :loading="mutationLoading"
+          @cancel="handleCancel"
+          @save="handleSkillUpdate" />
+      </ModalDialog>
+>>>>>>> 13e0d03 (fix: add modal component)
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+<<<<<<< HEAD
   import { ref } from "vue";
   import IconRemove from "~/components/IconRemove.vue";
   import SkillsForm from "~/components/SkillForm.vue";
@@ -63,6 +98,22 @@
 
   type Mastery = "Novice" | "Advanced" | "Competent" | "Proficient" | "Expert";
   type SkillForm = "skill" | "mastery";
+=======
+  import { ref, computed, onMounted, reactive, watch } from "vue";
+  import { useUsers } from "~/composables/useUsers";
+  import SkillsComponent from "~/components/SkillsComponent.vue";
+  import SkillForm from "~/components/SkillForm.vue";
+  import ModalDialog from "~/components/ModalDialog.vue";
+  import type { InputType } from "~/types/types";
+  import type { UserSkill, SkillFormKey } from "~/types/skills.d";
+  import { MASTERY_OPTIONS } from "~/types/skills.d";
+  import { updateSkillMutation } from "~/graphQL/skills/skillsUpdate.mutation";
+  import { createSkillMutation } from "~/graphQL/skills/skillsCreate.mutations";
+  import { deleteProfileSkillMutation } from "~/graphQL/skills/skillDelete.mutation";
+
+  const { user, userSkills, fetchUserSkills, fetchSkillCategories, fetchSkills, skills } =
+    useUsers();
+>>>>>>> 13e0d03 (fix: add modal component)
 
   const visible = ref(false);
   const visibleUpdate = ref(false);
@@ -148,6 +199,7 @@
     },
   });
 
+<<<<<<< HEAD
   const skills = ref<Skill[]>(mockUserSkills);
   const pending = ref(false);
   const error = ref<string | null>(null);
@@ -156,10 +208,18 @@
     selectedSkill.value = skill;
     formData.skill.value = skill.name;
     formData.mastery.value = skill.mastery;
+=======
+  const handleSkillClick = (skill: UserSkill) => {
+    selectedSkill.value = skill;
+    const matchingSkill = skills.value?.find((s) => s.name === skill.name);
+    formData.skill.value = matchingSkill?.name || skill.name;
+    formData.mastery.value = skill.mastery || "Novice";
+>>>>>>> 13e0d03 (fix: add modal component)
     visibleUpdate.value = true;
     isEditMode.value = true;
   };
 
+<<<<<<< HEAD
   const handleSkillSave = (data: Record<SkillForm, InputType>) => {
     if (isEditMode.value && selectedSkill.value) {
       skills.value = skills.value.map((e) =>
@@ -171,6 +231,73 @@
             }
           : e,
       );
+=======
+  const handleSaveSkill = async (data: Record<SkillFormKey, InputType>) => {
+    try {
+      if (!user.value?.id || !data.skill.value) return;
+
+      const selectedSkillData = skills.value?.find(
+        (s) => s.id === data.skill.value || s.name === data.skill.value,
+      );
+
+      if (!selectedSkillData || userSkills.value?.some((s) => s.name === selectedSkillData.name))
+        return;
+
+      mutationLoading.value = true;
+      const { $apollo } = useNuxtApp();
+
+      const response = await $apollo.clients.default.mutate({
+        mutation: createSkillMutation,
+        variables: {
+          skill: {
+            userId: String(user.value.id),
+            name: selectedSkillData.name,
+            categoryId: String(selectedSkillData.category?.id),
+            mastery: data.mastery.value,
+          },
+        },
+      });
+
+      if (response?.data?.addProfileSkill) {
+        userSkills.value = response.data.addProfileSkill.skills;
+        visible.value = false;
+        handleCancel();
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : "Error saving skill";
+    } finally {
+      mutationLoading.value = false;
+    }
+  };
+
+  const handleSkillUpdate = async (data: Record<SkillFormKey, InputType>) => {
+    try {
+      if (!selectedSkill.value || !user.value?.id) return;
+
+      mutationLoading.value = true;
+      const { $apollo } = useNuxtApp();
+
+      const response = await $apollo.clients.default.mutate({
+        mutation: updateSkillMutation,
+        variables: {
+          skill: {
+            name: selectedSkill.value.name,
+            mastery: data.mastery.value,
+            userId: String(user.value.id),
+          },
+        },
+      });
+
+      if (response?.data?.updateProfileSkill) {
+        userSkills.value = response.data.updateProfileSkill.skills;
+        visibleUpdate.value = false;
+        handleCancel();
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : "Error updating skill";
+    } finally {
+      mutationLoading.value = false;
+>>>>>>> 13e0d03 (fix: add modal component)
     }
   };
 
@@ -204,17 +331,92 @@
     error.value = null;
 
     try {
+<<<<<<< HEAD
       // const response = await $fetch('/api/user/skills');
       // skills.value = response;
       await new Promise((resolve) => setTimeout(resolve, 500));
       skills.value = mockUserSkills;
+=======
+      if (!user.value?.id || selectedSkillsToDelete.value.size === 0) return;
+
+      mutationLoading.value = true;
+      const { $apollo } = useNuxtApp();
+
+      for (const skillName of selectedSkillsToDelete.value) {
+        const response = await $apollo.clients.default.mutate({
+          mutation: deleteProfileSkillMutation,
+          variables: {
+            skill: {
+              userId: String(user.value.id),
+              name: skillName,
+            },
+          },
+        });
+
+        if (response?.data?.deleteProfileSkill) {
+          userSkills.value = response.data.deleteProfileSkill.skills;
+        }
+      }
+
+      cancelDeleteMode();
+>>>>>>> 13e0d03 (fix: add modal component)
     } catch (err) {
       error.value = err instanceof Error ? err.message : "Unknown error";
     } finally {
       pending.value = false;
     }
   };
+<<<<<<< HEAD
   fetchSkills();
+=======
+
+  watch(
+    () => skills.value,
+    (newSkills) => {
+      if (newSkills && newSkills.length > 0) {
+        formData.skill.values = newSkills.map((skill) => ({
+          name: skill.name,
+          value: skill.id,
+          category: skill.category,
+          category_name: skill.category_name,
+        }));
+      }
+    },
+    { immediate: true },
+  );
+
+  onMounted(async () => {
+    try {
+      loading.value = true;
+      error.value = null;
+
+      if (!user.value?.id) {
+        error.value = "User not authenticated";
+        return;
+      }
+
+      await Promise.all([fetchSkillCategories(), fetchSkills(), fetchUserSkills(user.value.id)]);
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : "Error loading skills";
+    } finally {
+      loading.value = false;
+    }
+  });
+
+  const userSkillsList = computed(() => {
+    if (!userSkills.value || userSkills.value.length === 0) return [];
+
+    return userSkills.value.map((userSkill) => {
+      const skillInfo = skills.value?.find((s) => s.name === userSkill.name);
+      const categoryName = skillInfo?.category_name || "Без категории";
+
+      return {
+        ...userSkill,
+        category_name: categoryName,
+      };
+    });
+  });
+>>>>>>> 13e0d03 (fix: add modal component)
 </script>
 
 <style scoped>

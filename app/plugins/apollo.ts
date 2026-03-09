@@ -20,17 +20,11 @@ export default defineNuxtPlugin((nuxtApp) => {
 
       if (!success) {
         await logout();
-
-        if (router.currentRoute.value.path !== "auth/login") {
-          await router.push("/auth/login");
-        }
+        await router.push("/auth/login");
       }
     } catch {
       await logout();
-
-      if (router.currentRoute.value.path !== "auth/login") {
-        await router.push("/auth/login");
-      }
+      await router.push("/auth/login");
     }
   });
 });

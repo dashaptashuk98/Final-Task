@@ -15,6 +15,7 @@
   const searchQuery = ref("");
   definePageMeta({
     layout: "default",
+    middleware: "auth",
   });
 </script>
 

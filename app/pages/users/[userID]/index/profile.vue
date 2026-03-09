@@ -3,6 +3,10 @@
   import type { InputType } from "~/types/types";
   import type { ProfileForm } from "~/types/user";
 
+  definePageMeta({
+    middleware: "auth",
+  });
+
   const { user, departments, positions, fetchUser, fetchDepartments, fetchPositions } = useUsers();
 
   const route = useRoute();

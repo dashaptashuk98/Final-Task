@@ -3,5 +3,8 @@
 </template>
 
 <script setup>
-  await navigateTo("/auth/login");
+  definePageMeta({
+    middleware: "auth",
+  });
+  await navigateTo("/users");
 </script>

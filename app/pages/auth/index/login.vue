@@ -14,6 +14,9 @@
 </template>
 
 <script setup lang="ts">
+  definePageMeta({
+    layout: false,
+  });
   const { isLoading } = useAuth();
   const { loginFields, handleAuth } = useValidateAuth();
 </script>

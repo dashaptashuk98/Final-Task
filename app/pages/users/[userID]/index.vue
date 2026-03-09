@@ -1,5 +1,8 @@
 <script setup lang="ts">
   import type { Tabs } from "~/types/types";
+  definePageMeta({
+    middleware: "auth",
+  });
   const route = useRoute();
 
   const tabs: Tabs[] = [

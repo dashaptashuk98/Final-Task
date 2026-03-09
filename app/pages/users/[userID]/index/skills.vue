@@ -57,6 +57,10 @@
   import HeaderComponent from "~/components/HeaderComponent.vue";
   import type { InputType } from "~/types/types";
 
+  definePageMeta({
+    middleware: "auth",
+  });
+
   type Mastery = "Novice" | "Advanced" | "Competent" | "Proficient" | "Expert";
   type SkillForm = "skill" | "mastery";
 

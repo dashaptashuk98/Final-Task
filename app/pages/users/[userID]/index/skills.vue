@@ -37,61 +37,39 @@
         DELETE
         <span class="badge">{{ selectedSkillsToDelete.size }}</span>
       </button>
-      <Dialog
-        v-model:visible="visible"
-        header="Add Skill"
-        :style="{ width: '450px' }"
-        modal
-        :closable="true"
-        :dismissable-mask="true">
+      <ModalDialog v-model:visible="visible" header="Add Skill">
         <SkillForm
           :data="formData"
           :loading="mutationLoading"
           @cancel="handleCancel"
           @save="handleSaveSkill" />
-      </Dialog>
-      <Dialog
-        v-model:visible="visibleUpdate"
-        header="Update skill"
-        :style="{ width: '450px' }"
-        modal
-        :closable="true"
-        :dismissable-mask="true">
+      </ModalDialog>
+      <ModalDialog v-model:visible="visibleUpdate" header="Update skill">
         <SkillForm
           :data="formData"
           :loading="mutationLoading"
           @cancel="handleCancel"
           @save="handleSkillUpdate" />
-      </Dialog>
+      </ModalDialog>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
   import { ref, computed, onMounted, reactive, watch } from "vue";
-
   import { useUsers } from "~/composables/useUsers";
-
   import SkillsComponent from "~/components/SkillsComponent.vue";
   import SkillForm from "~/components/SkillForm.vue";
-
+  import ModalDialog from "~/components/ModalDialog.vue";
   import type { InputType } from "~/types/types";
   import type { UserSkill, SkillFormKey } from "~/types/skills.d";
   import { MASTERY_OPTIONS } from "~/types/skills.d";
-
   import { updateSkillMutation } from "~/graphQL/skills/skillsUpdate.mutation";
   import { createSkillMutation } from "~/graphQL/skills/skillsCreate.mutations";
   import { deleteProfileSkillMutation } from "~/graphQL/skills/skillDelete.mutation";
 
-  const {
-    user,
-    userSkills,
-    skillCategories,
-    fetchUserSkills,
-    fetchSkillCategories,
-    fetchSkills,
-    skills,
-  } = useUsers();
+  const { user, userSkills, fetchUserSkills, fetchSkillCategories, fetchSkills, skills } =
+    useUsers();
 
   const loading = ref(true);
   const error = ref<string | null>(null);
@@ -119,126 +97,77 @@
     },
   });
 
-  watch(
-    () => skills.value,
-    (newSkills) => {
-      if (newSkills && newSkills.length > 0) {
-        formData.skill.values = newSkills.map((skill) => ({
-          name: skill.name,
-          value: skill.id,
-          category: skill.category,
-          category_name: skill.category_name,
-        }));
-      }
-    },
-    { immediate: true },
-  );
-
   const handleSkillClick = (skill: UserSkill) => {
     selectedSkill.value = skill;
     const matchingSkill = skills.value?.find((s) => s.name === skill.name);
     formData.skill.value = matchingSkill?.name || skill.name;
     formData.mastery.value = skill.mastery || "Novice";
-
     visibleUpdate.value = true;
-  };
-
-  const handleSkillUpdate = async (data: Record<SkillFormKey, InputType>) => {
-    try {
-      if (!selectedSkill.value || !user.value?.id) {
-        error.value = "No skill selected or user not authenticated";
-        return;
-      }
-
-      mutationLoading.value = true;
-      const { $apollo } = useNuxtApp();
-
-      const variables = {
-        skill: {
-          name: selectedSkill.value.name,
-          mastery: data.mastery.value,
-          userId: String(user.value.id),
-        },
-      };
-      const response = await $apollo.clients.default.mutate({
-        mutation: updateSkillMutation,
-        variables,
-      });
-
-      if (response?.data?.updateProfileSkill) {
-        userSkills.value = response.data.updateProfileSkill.skills;
-        visibleUpdate.value = false;
-        handleCancel();
-        error.value = null;
-      } else {
-        error.value = "Failed to update skill";
-      }
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : "Error updating skill";
-    } finally {
-      mutationLoading.value = false;
-    }
   };
 
   const handleSaveSkill = async (data: Record<SkillFormKey, InputType>) => {
     try {
-      if (!user.value?.id) {
-        error.value = "User not authenticated";
-        return;
-      }
-
-      if (!data.skill.value) {
-        error.value = "Please select a skill";
-        return;
-      }
+      if (!user.value?.id || !data.skill.value) return;
 
       const selectedSkillData = skills.value?.find(
         (s) => s.id === data.skill.value || s.name === data.skill.value,
       );
 
-      if (!selectedSkillData) {
-        error.value = "Selected skill not found";
+      if (!selectedSkillData || userSkills.value?.some((s) => s.name === selectedSkillData.name))
         return;
-      }
-      if (userSkills.value?.some((s) => s.name === selectedSkillData.name)) {
-        return;
-      }
+
       mutationLoading.value = true;
       const { $apollo } = useNuxtApp();
 
-      const variables = {
-        skill: {
-          userId: String(user.value.id),
-          name: selectedSkillData.name,
-          categoryId: String(selectedSkillData.category?.id),
-          mastery: data.mastery.value,
-        },
-      };
       const response = await $apollo.clients.default.mutate({
         mutation: createSkillMutation,
-        variables,
+        variables: {
+          skill: {
+            userId: String(user.value.id),
+            name: selectedSkillData.name,
+            categoryId: String(selectedSkillData.category?.id),
+            mastery: data.mastery.value,
+          },
+        },
       });
 
       if (response?.data?.addProfileSkill) {
         userSkills.value = response.data.addProfileSkill.skills;
         visible.value = false;
         handleCancel();
-        error.value = null;
-      } else {
-        error.value = "Failed to add skill";
       }
     } catch (err) {
-      let errorMessage: string;
-      if (err instanceof Error && "graphQLErrors" in err) {
-        const graphQLError = (err as { graphQLErrors?: Array<{ message: string }> })
-          .graphQLErrors?.[0];
-        errorMessage = graphQLError?.message || err.message;
-      } else if (err instanceof Error) {
-        errorMessage = err.message;
-      } else {
-        errorMessage = "Error saving skill";
+      error.value = err instanceof Error ? err.message : "Error saving skill";
+    } finally {
+      mutationLoading.value = false;
+    }
+  };
+
+  const handleSkillUpdate = async (data: Record<SkillFormKey, InputType>) => {
+    try {
+      if (!selectedSkill.value || !user.value?.id) return;
+
+      mutationLoading.value = true;
+      const { $apollo } = useNuxtApp();
+
+      const response = await $apollo.clients.default.mutate({
+        mutation: updateSkillMutation,
+        variables: {
+          skill: {
+            name: selectedSkill.value.name,
+            mastery: data.mastery.value,
+            userId: String(user.value.id),
+          },
+        },
+      });
+
+      if (response?.data?.updateProfileSkill) {
+        userSkills.value = response.data.updateProfileSkill.skills;
+        visibleUpdate.value = false;
+        handleCancel();
       }
-      error.value = errorMessage;
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : "Error updating skill";
     } finally {
       mutationLoading.value = false;
     }
@@ -287,13 +216,27 @@
       }
 
       cancelDeleteMode();
-      error.value = null;
     } catch (err) {
       error.value = err instanceof Error ? err.message : "Error deleting skills";
     } finally {
       mutationLoading.value = false;
     }
   };
+
+  watch(
+    () => skills.value,
+    (newSkills) => {
+      if (newSkills && newSkills.length > 0) {
+        formData.skill.values = newSkills.map((skill) => ({
+          name: skill.name,
+          value: skill.id,
+          category: skill.category,
+          category_name: skill.category_name,
+        }));
+      }
+    },
+    { immediate: true },
+  );
 
   onMounted(async () => {
     try {
@@ -312,52 +255,17 @@
       loading.value = false;
     }
   });
+
   const userSkillsList = computed(() => {
-    const userSk = userSkills.value;
-    const categories = skillCategories.value;
+    if (!userSkills.value || userSkills.value.length === 0) return [];
 
-    const allSkills = skills.value;
-
-    if (!userSk || userSk.length === 0) return [];
-
-    return userSk.map((userSkill, index) => {
-      const fullSkillInfo = allSkills?.find((s) => s.name === userSkill.name);
-
-      let category = null;
-      if (fullSkillInfo?.category) {
-        category = fullSkillInfo.category;
-      } else if (categories?.length && userSkill.categoryId) {
-        interface Category {
-          id: string;
-          name: string;
-          children?: Category[];
-        }
-
-        const findCategoryById = (
-          categoriesList: Category[],
-          categoryId: string | null,
-        ): Category | null => {
-          if (!categoryId) return null;
-          for (const cat of categoriesList) {
-            if (cat.id === categoryId) return cat;
-            if (cat.children?.length) {
-              const found = findCategoryById(cat.children, categoryId);
-              if (found) return found;
-            }
-          }
-          return null;
-        };
-        category = findCategoryById(categories, userSkill.categoryId);
-      }
+    return userSkills.value.map((userSkill) => {
+      const skillInfo = skills.value?.find((s) => s.name === userSkill.name);
+      const categoryName = skillInfo?.category_name || "Без категории";
 
       return {
-        id: userSkill.id || `skill-${index}`,
-        created_at: userSkill.created_at || new Date().toISOString(),
-        name: userSkill.name,
-        mastery: userSkill.mastery,
-        category: category,
-        category_name: fullSkillInfo?.category_name || category?.name || "Без категории",
-        category_parent_name: fullSkillInfo?.category_parent_name || category?.parent?.name || null,
+        ...userSkill,
+        category_name: categoryName,
       };
     });
   });

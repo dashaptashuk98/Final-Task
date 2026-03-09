@@ -40,19 +40,10 @@ export const useAuth = () => {
         useCookie("authId").value = data.value.login.user.id;
         onLogin(token);
       }
-      return data.value;
+      return data.value?.login || null;
     } finally {
       isLoading.value = false;
     }
-    const { data } = await useAsyncQuery<Record<"auth", AuthInput>, AuthResponse>(loginQuery, {
-      auth: { email, password },
-    });
-    if (data.value) {
-      return saveAuthData(data.value.login);
-    }
-    console.log(data.value);
-    isLoading.value = false;
-    return null;
   };
 
   const signup = async (email: string, password: string): Promise<Nullable<AuthResult>> => {

@@ -20,12 +20,21 @@
       </div>
 
       <div class="sidebar__bottom">
-        <NuxtLink to="/" class="sidebar__profile-link">
+        <NuxtLink
+          :to="authUser?.id ? `/users/${authUser.id}/profile` : '/'"
+          class="sidebar__profile-link">
           <Avatar
-            :image="authUser?.profile ? (authUser?.profile?.avatar as string) : undefined"
-            :label="authUser && authUser.profile?.avatar ? undefined : authUser?.email"
-            shape="circle" />
-          <span class="sidebar__profile-email">{{ authUser?.position || "Профиль" }}</span>
+            :image="authUser?.profile?.avatar || undefined"
+            :label="
+              authUser?.email && !authUser?.profile?.full_name
+                ? authUser.email.toUpperCase()
+                : undefined
+            "
+            shape="circle"
+            class="sidebar__avatar" />
+          <span class="sidebar__profile-name">{{
+            authUser?.profile?.full_name || authUser?.email
+          }}</span>
         </NuxtLink>
       </div>
     </div>
@@ -70,10 +79,22 @@
   ];
 
   const menuItems = computed<MenuItem[]>(() =>
-    baseMenuItems.map((item) => ({
-      ...item,
-      isActive: route.path === item.to,
-    })),
+    baseMenuItems.map((item) => {
+      let isActive = false;
+
+      if (item.name === "skills") {
+        isActive = route.path.endsWith("/skills") || route.path.includes("/skills");
+      } else if (item.name === "users") {
+        isActive = route.path === "/users";
+      } else {
+        isActive = route.path === item.to;
+      }
+
+      return {
+        ...item,
+        isActive,
+      };
+    }),
   );
 </script>
 
@@ -119,11 +140,14 @@
     margin-top: auto;
     padding: 16px;
     border-top: 1px solid #e0e0e0;
-    width: 200px;
+    width: 100%;
+    max-width: 200px;
   }
 
   .sidebar__profile-link {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     text-decoration: none;
     color: #2e2e2e;
     font-family: "Roboto", sans-serif;
@@ -131,15 +155,28 @@
     font-weight: 500;
     transition: color 0.2s ease;
     width: 100%;
+    max-width: 168px;
   }
 
-  .sidebar__profile-email {
-    display: block;
-    width: 100%;
+  .sidebar__avatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+  }
+
+  .sidebar__avatar :deep(.p-avatar) {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sidebar__profile-name {
+    flex: 1;
+    min-width: 0;
     word-break: break-word;
-    white-space: normal;
+    white-space: nowrap;
     line-height: 1.4;
-    padding: 4px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .sidebar__profile-link:hover {
@@ -264,7 +301,7 @@
       padding: 12px 8px;
     }
 
-    .sidebar__profile-email {
+    .sidebar__profile-name {
       display: none;
     }
   }

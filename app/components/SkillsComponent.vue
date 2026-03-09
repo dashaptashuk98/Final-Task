@@ -7,19 +7,27 @@
       <h3 class="category-title">{{ categoryName }}</h3>
 
       <div class="skills-list">
-        <div
-          v-for="skill in categorySkills"
-          :key="skill.id"
-          class="skill-item"
-          @click="$emit('skill-click', skill)">
-          <ProgressBar
-            :value="getMasteryPercentage(skill.mastery)"
-            class="skill-progress"
-            :class="`mastery-${skill.mastery?.toLowerCase()}`"
-            :show-value="false" />
+        <div v-for="skill in categorySkills" :key="skill.id" class="skill-item">
+          <div v-if="props.deleteMode" class="checkbox-wrapper">
+            <input
+              :id="`skill-${skill.name}`"
+              type="checkbox"
+              :checked="props.selectedSkills?.has(skill.name)"
+              class="custom-checkbox"
+              @change="$emit('toggle-skill', skill.name)" >
+            <label :for="`skill-${skill.name}`" class="checkbox-label"/>
+          </div>
 
-          <div class="skill-info">
-            <span class="skill-name">{{ skill.name }}</span>
+          <div class="skill-content" @click="!props.deleteMode && $emit('skill-click', skill)">
+            <ProgressBar
+              :value="getMasteryPercentage(skill.mastery)"
+              class="skill-progress"
+              :class="`mastery-${skill.mastery?.toLowerCase()}`"
+              :show-value="false" />
+
+            <div class="skill-info">
+              <span class="skill-name">{{ skill.name }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -30,28 +38,23 @@
 <script setup lang="ts">
   import { computed } from "vue";
   import ProgressBar from "primevue/progressbar";
-
-  type Mastery = "Novice" | "Advanced" | "Competent" | "Proficient" | "Expert";
-
-  interface Skill {
-    id: string;
-    name: string;
-    mastery: Mastery;
-    category_name: string | null;
-    category_parent_name: string | null;
-  }
-
+  import type { Mastery, UserSkill  } from "~/types/skills";
+  
   defineEmits<{
-    "skill-click": [skill: Skill];
+    "skill-click": [skill: UserSkill];
+    "toggle-skill": [skillName: string];
   }>();
 
   interface Props {
-    skills: Skill[];
+    skills: UserSkill[];
+    deleteMode?: boolean;
+    selectedSkills?: Set<string>;
   }
 
   const props = defineProps<Props>();
 
-  const getMasteryPercentage = (mastery: Mastery): number => {
+  const getMasteryPercentage = (mastery?: Mastery): number => {
+    if (!mastery) return 0;
     const percentages: Record<Mastery, number> = {
       Novice: 20,
       Advanced: 40,
@@ -63,10 +66,11 @@
   };
 
   const groupedSkills = computed(() => {
-    const groups: Record<string, Skill[]> = {};
+    const groups: Record<string, UserSkill[]> = {};
 
     props.skills.forEach((skill) => {
-      const category = skill.category_name || "Без категории";
+      const category =
+        (skill as UserSkill & { category_name?: string }).category_name || "Без категории";
 
       if (!groups[category]) {
         groups[category] = [];
@@ -83,7 +87,6 @@
   .skills-container {
     width: 100%;
     max-width: 800px;
-    margin: 0 auto;
     padding: 1rem;
   }
 
@@ -106,14 +109,67 @@
   .skills-list {
     display: flex;
     gap: 116px;
+    flex-wrap: wrap;
   }
 
   .skill-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
     width: 100%;
-    max-width: 150px;
+    max-width: 200px;
+  }
+
+  .checkbox-wrapper {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    position: relative;
+  }
+
+  .custom-checkbox {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+  }
+
+  .checkbox-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    background-color: white;
+    border: 2px solid #000000;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .custom-checkbox:checked + .checkbox-label {
+    background-color: #000000;
+    border-color: #000000;
+  }
+
+  .custom-checkbox:checked + .checkbox-label::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .skill-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    flex: 1;
   }
 
   .skill-info {

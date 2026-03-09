@@ -11,23 +11,23 @@ export default defineNuxtConfig({
   modules: [
     "@nuxt/test-utils/module",
     "@nuxt/eslint",
-    [
-      "@primevue/nuxt-module",
-      {
-        unstyled: true,
-        autoImport: true,
-      },
-    ],
-    [
-      "@primevue/nuxt-module",
-      {
-        unstyled: true,
-        autoImport: true,
-      },
-    ],
-    "@nuxt/test-utils/module",
     "@nuxtjs/apollo",
+    [
+      "@primevue/nuxt-module",
+      {
+        unstyled: true,
+        autoImport: true,
+      },
+    ],
+    [
+      "@primevue/nuxt-module",
+      {
+        unstyled: true,
+        autoImport: true,
+      },
+    ],
   ],
+
   apollo: {
     autoImports: true,
     authType: "Bearer",

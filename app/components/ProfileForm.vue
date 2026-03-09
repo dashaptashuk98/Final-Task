@@ -1,15 +1,94 @@
 <script setup lang="ts">
+  import { ref, computed, watch } from "vue";
   import type { ProfileForm } from "~/types/user";
   import type { InputType } from "~/types/types";
+  import { updateUserMutation } from "~/graphQL/user/userUpdate.mutation";
+  import { updateProfileMutation } from "~/graphQL/user/userProfileUpdate.mutation";
+  import { useUsers } from "~/composables/useUsers";
 
-  const { data } = defineProps<{ data: Record<ProfileForm, InputType> | null }>();
+  const props = defineProps<{ data: Record<ProfileForm, InputType> | null }>();
+  const { user, departments, positions } = useUsers();
+
+  const formData = ref<Record<ProfileForm, InputType> | null>(null);
+  const initialData = ref<Record<ProfileForm, InputType> | null>(null);
+  const loading = ref(false);
+
+  watch(
+    () => props.data,
+    (newData) => {
+      if (newData) {
+        formData.value = JSON.parse(JSON.stringify(newData));
+        initialData.value = JSON.parse(JSON.stringify(newData));
+      }
+    },
+    { immediate: true, deep: true },
+  );
+
+  const hasChanges = computed(() => {
+    if (!formData.value || !initialData.value) return false;
+    return JSON.stringify(formData.value) !== JSON.stringify(initialData.value);
+  });
+
+  const handleUpdate = async () => {
+    if (!formData.value || !user.value || !hasChanges.value) return;
+
+    try {
+      loading.value = true;
+      const { $apollo } = useNuxtApp();
+
+      const departmentId = departments.value?.find(
+        (d) => d.name === formData.value!.department.value,
+      )?.id;
+      const positionId = positions.value?.find(
+        (p) => p.name === formData.value!.position.value,
+      )?.id;
+
+      const userResponse = await $apollo.clients.default.mutate({
+        mutation: updateUserMutation,
+        variables: {
+          user: {
+            userId: user.value.id,
+            departmentId: departmentId || null,
+            positionId: positionId || null,
+          },
+        },
+      });
+
+      const profileResponse = await $apollo.clients.default.mutate({
+        mutation: updateProfileMutation,
+        variables: {
+          profile: {
+            userId: user.value.id,
+            first_name: formData.value.firstName.value as string,
+            last_name: formData.value.lastName.value as string,
+          },
+        },
+      });
+
+      if (userResponse?.data?.updateUser) {
+        Object.assign(user.value, userResponse.data.updateUser);
+      }
+
+      if (profileResponse?.data?.updateProfile) {
+        if (user.value) {
+          user.value.profile = profileResponse.data.updateProfile;
+        }
+      }
+
+      initialData.value = JSON.parse(JSON.stringify(formData.value));
+    } catch {
+      // игнорим
+    } finally {
+      loading.value = false;
+    }
+  };
 </script>
 
 <template>
   <div class="form">
     <Form>
       <div class="form-input-wrapper">
-        <template v-for="item in data" :key="item.key">
+        <template v-for="item in formData" :key="item.key">
           <div class="form-input-container">
             <label :for="item.key" class="form-input-container__label">{{ item.label }}</label>
             <InputText
@@ -29,7 +108,11 @@
           </div>
         </template>
       </div>
-      <Button :label="'Update'.toLocaleUpperCase()" disabled />
+      <Button
+        :label="'Update'.toLocaleUpperCase()"
+        :disabled="!hasChanges || loading"
+        :loading="loading"
+        @click="handleUpdate" />
     </Form>
   </div>
 </template>
@@ -85,12 +168,25 @@
   .p-button {
     width: 410px;
     height: 48px;
-    background-color: #0000001f;
+    background-color: #3c39391f;
     border-radius: 40px;
+    border: none;
     font:
       500 14px/24px "Roboto",
       sans-serif;
-    color: #00000042;
+    color: white;
     letter-spacing: 0.4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .p-button:hover:not(:disabled) {
+    background-color: #767a7f;
+  }
+
+  .p-button:disabled {
+    background-color: #0000001f;
+    color: #00000042;
+    cursor: not-allowed;
   }
 </style>

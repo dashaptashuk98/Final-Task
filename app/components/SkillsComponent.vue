@@ -15,7 +15,7 @@
               :checked="props.selectedSkills?.has(skill.name)"
               class="custom-checkbox"
               @change="$emit('toggle-skill', skill.name)" >
-            <label :for="`skill-${skill.name}`" class="checkbox-label"/>
+            <label :for="`skill-${skill.name}`" class="checkbox-label" />
           </div>
 
           <div class="skill-content" @click="!props.deleteMode && $emit('skill-click', skill)">
@@ -38,8 +38,8 @@
 <script setup lang="ts">
   import { computed } from "vue";
   import ProgressBar from "primevue/progressbar";
-  import type { Mastery, UserSkill  } from "~/types/skills";
-  
+  import type { Mastery, UserSkill } from "~/types/skills";
+
   defineEmits<{
     "skill-click": [skill: UserSkill];
     "toggle-skill": [skillName: string];

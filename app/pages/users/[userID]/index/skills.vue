@@ -1,20 +1,42 @@
 <template>
   <div class="skills-page">
-    <HeaderComponent />
+    <div v-if="loading" class="loading">Загрузка навыков...</div>
+    <div v-else-if="error" class="error">Ошибка: {{ error }}</div>
 
-    <div v-if="pending" class="loading">Загрузка навыков...</div>
-    <div v-else-if="error" class="error">Ошибка при загрузке: {{ error }}</div>
-
-    <SkillsComponent v-else :skills="skills" @skill-click="handleSkillClick" />
+    <SkillsComponent
+      v-else
+      :skills="userSkillsList"
+      :delete-mode="deleteMode"
+      :selected-skills="selectedSkillsToDelete"
+      @skill-click="handleSkillClick"
+      @toggle-skill="toggleSkillForDeletion" />
 
     <div class="actions__wrapper">
       <Button
+        v-if="!deleteMode"
         type="button"
         label="Add skill"
         icon="pi pi-plus"
         class="btn-add"
         @click="visible = true" />
 
+      <div v-if="!deleteMode" class="button__wrapper">
+        <IconRemove />
+        <Button type="button" label="Remove skills" class="btn-remove" @click="deleteMode = true" />
+      </div>
+
+      <button v-if="deleteMode" type="button" class="btn-cancel" @click="cancelDeleteMode">
+        CANCEL
+      </button>
+
+      <button
+        v-if="deleteMode && selectedSkillsToDelete.size > 0"
+        type="button"
+        class="btn-delete"
+        @click="handleDeleteSkills">
+        DELETE
+        <span class="badge">{{ selectedSkillsToDelete.size }}</span>
+      </button>
       <Dialog
         v-model:visible="visible"
         header="Add Skill"
@@ -22,12 +44,12 @@
         modal
         :closable="true"
         :dismissable-mask="true">
-        <SkillsForm
-          :data="formData as Record<SkillForm, InputType>"
+        <SkillForm
+          :data="formData"
+          :loading="mutationLoading"
           @cancel="handleCancel"
           @save="handleSaveSkill" />
       </Dialog>
-
       <Dialog
         v-model:visible="visibleUpdate"
         header="Update skill"
@@ -35,182 +57,310 @@
         modal
         :closable="true"
         :dismissable-mask="true">
-        <SkillsForm
-          :data="formData as Record<SkillForm, InputType>"
+        <SkillForm
+          :data="formData"
+          :loading="mutationLoading"
           @cancel="handleCancel"
-          @save="handleSkillSave" />
+          @save="handleSkillUpdate" />
       </Dialog>
-
-      <div class="button__wrapper">
-        <IconRemove />
-        <Button type="button" label="Remove skills" class="btn-remove" />
-      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref } from "vue";
-  import IconRemove from "~/components/IconRemove.vue";
-  import SkillsForm from "~/components/SkillForm.vue";
+  import { ref, computed, onMounted, reactive, watch } from "vue";
+
+  import { useUsers } from "~/composables/useUsers";
+
   import SkillsComponent from "~/components/SkillsComponent.vue";
-  import HeaderComponent from "~/components/HeaderComponent.vue";
+  import SkillForm from "~/components/SkillForm.vue";
+
   import type { InputType } from "~/types/types";
+  import type { UserSkill, SkillFormKey } from "~/types/skills.d";
+  import { MASTERY_OPTIONS } from "~/types/skills.d";
 
-  type Mastery = "Novice" | "Advanced" | "Competent" | "Proficient" | "Expert";
-  type SkillForm = "skill" | "mastery";
+  import { updateSkillMutation } from "~/graphQL/skills/skillsUpdate.mutation";
+  import { createSkillMutation } from "~/graphQL/skills/skillsCreate.mutations";
+  import { deleteProfileSkillMutation } from "~/graphQL/skills/skillDelete.mutation";
 
+  const {
+    user,
+    userSkills,
+    skillCategories,
+    fetchUserSkills,
+    fetchSkillCategories,
+    fetchSkills,
+    skills,
+  } = useUsers();
+
+  const loading = ref(true);
+  const error = ref<string | null>(null);
   const visible = ref(false);
   const visibleUpdate = ref(false);
+  const selectedSkill = ref<UserSkill | null>(null);
+  const mutationLoading = ref(false);
+  const deleteMode = ref(false);
+  const selectedSkillsToDelete = ref<Set<string>>(new Set());
 
-  const selectedSkill = ref<Skill | null>(null);
-  const isEditMode = ref(false);
-  interface Skill {
-    id: string;
-    name: string;
-    mastery: Mastery;
-    category_name: string | null;
-    category_parent_name: string | null;
-  }
-
-  const mockUserSkills: Skill[] = [
-    {
-      id: "1",
-      name: "JavaScript",
-      mastery: "Expert",
-      category_name: "Programming languages",
-      category_parent_name: null,
-    },
-    {
-      id: "2",
-      name: "TypeScript",
-      mastery: "Proficient",
-      category_name: "Programming languages",
-      category_parent_name: null,
-    },
-    {
-      id: "3",
-      name: "React",
-      mastery: "Advanced",
-      category_name: "Frontend technologies",
-      category_parent_name: "Frontend",
-    },
-    {
-      id: "4",
-      name: "Vue",
-      mastery: "Competent",
-      category_name: "Frontend technologies",
-      category_parent_name: "Frontend",
-    },
-    {
-      id: "5",
-      name: "Node.js",
-      mastery: "Novice",
-      category_name: "Backend technologies",
-      category_parent_name: "Backend",
-    },
-  ];
-
-  const masteryOptions = [
-    { name: "Novice" },
-    { name: "Advanced" },
-    { name: "Competent" },
-    { name: "Proficient" },
-    { name: "Expert" },
-  ];
-
-  const skillOptions = [
-    { name: "JavaScript", category: "Programming languages", parent: null },
-    { name: "TypeScript", category: "Programming languages", parent: null },
-    { name: "React", category: "Frontend technologies", parent: "Frontend" },
-    { name: "Vue", category: "Frontend technologies", parent: "Frontend" },
-    { name: "Node.js", category: "Backend technologies", parent: "Backend" },
-  ];
-
-  const formData = reactive({
+  const formData = reactive<Record<SkillFormKey, InputType>>({
     skill: {
       key: "skill",
       label: "Skill",
       value: "",
       type: "Select",
-      values: skillOptions,
+      values: [],
     },
     mastery: {
       key: "mastery",
       label: "Mastery Level",
       value: "Novice",
       type: "Select",
-      values: masteryOptions,
+      values: MASTERY_OPTIONS,
     },
   });
 
-  const skills = ref<Skill[]>(mockUserSkills);
-  const pending = ref(false);
-  const error = ref<string | null>(null);
+  watch(
+    () => skills.value,
+    (newSkills) => {
+      if (newSkills && newSkills.length > 0) {
+        formData.skill.values = newSkills.map((skill) => ({
+          name: skill.name,
+          value: skill.id,
+          category: skill.category,
+          category_name: skill.category_name,
+        }));
+      }
+    },
+    { immediate: true },
+  );
 
-  const handleSkillClick = (skill: Skill) => {
+  const handleSkillClick = (skill: UserSkill) => {
     selectedSkill.value = skill;
-    formData.skill.value = skill.name;
-    formData.mastery.value = skill.mastery;
+    const matchingSkill = skills.value?.find((s) => s.name === skill.name);
+    formData.skill.value = matchingSkill?.name || skill.name;
+    formData.mastery.value = skill.mastery || "Novice";
+
     visibleUpdate.value = true;
-    isEditMode.value = true;
   };
 
-  const handleSkillSave = (data: Record<SkillForm, InputType>) => {
-    if (isEditMode.value && selectedSkill.value) {
-      skills.value = skills.value.map((e) =>
-        e.id === selectedSkill.value?.id
-          ? {
-              ...e,
-              name: data.skill.value as string,
-              mastery: data.mastery.value as Mastery,
-            }
-          : e,
-      );
-    }
-  };
+  const handleSkillUpdate = async (data: Record<SkillFormKey, InputType>) => {
+    try {
+      if (!selectedSkill.value || !user.value?.id) {
+        error.value = "No skill selected or user not authenticated";
+        return;
+      }
 
-  const handleSaveSkill = (data: Record<SkillForm, InputType>) => {
-    if (data.skill.value && data.mastery.value) {
-      const selectedSkillOption = skillOptions.find((option) => option.name === data.skill.value);
+      mutationLoading.value = true;
+      const { $apollo } = useNuxtApp();
 
-      const newSkill: Skill = {
-        id: Date.now().toString(),
-        name: data.skill.value as string,
-        mastery: data.mastery.value as Mastery,
-        category_name: selectedSkillOption?.category || "Other",
-        category_parent_name: selectedSkillOption?.parent || null,
+      const variables = {
+        skill: {
+          name: selectedSkill.value.name,
+          mastery: data.mastery.value,
+          userId: String(user.value.id),
+        },
       };
+      const response = await $apollo.clients.default.mutate({
+        mutation: updateSkillMutation,
+        variables,
+      });
 
-      skills.value = [...skills.value, newSkill];
+      if (response?.data?.updateProfileSkill) {
+        userSkills.value = response.data.updateProfileSkill.skills;
+        visibleUpdate.value = false;
+        handleCancel();
+        error.value = null;
+      } else {
+        error.value = "Failed to update skill";
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : "Error updating skill";
+    } finally {
+      mutationLoading.value = false;
     }
+  };
 
-    visible.value = false;
-    data.skill.value = "";
-    data.mastery.value = "Novice";
+  const handleSaveSkill = async (data: Record<SkillFormKey, InputType>) => {
+    try {
+      if (!user.value?.id) {
+        error.value = "User not authenticated";
+        return;
+      }
+
+      if (!data.skill.value) {
+        error.value = "Please select a skill";
+        return;
+      }
+
+      const selectedSkillData = skills.value?.find(
+        (s) => s.id === data.skill.value || s.name === data.skill.value,
+      );
+
+      if (!selectedSkillData) {
+        error.value = "Selected skill not found";
+        return;
+      }
+      if (userSkills.value?.some((s) => s.name === selectedSkillData.name)) {
+        return;
+      }
+      mutationLoading.value = true;
+      const { $apollo } = useNuxtApp();
+
+      const variables = {
+        skill: {
+          userId: String(user.value.id),
+          name: selectedSkillData.name,
+          categoryId: String(selectedSkillData.category?.id),
+          mastery: data.mastery.value,
+        },
+      };
+      const response = await $apollo.clients.default.mutate({
+        mutation: createSkillMutation,
+        variables,
+      });
+
+      if (response?.data?.addProfileSkill) {
+        userSkills.value = response.data.addProfileSkill.skills;
+        visible.value = false;
+        handleCancel();
+        error.value = null;
+      } else {
+        error.value = "Failed to add skill";
+      }
+    } catch (err) {
+      let errorMessage: string;
+      if (err instanceof Error && "graphQLErrors" in err) {
+        const graphQLError = (err as { graphQLErrors?: Array<{ message: string }> })
+          .graphQLErrors?.[0];
+        errorMessage = graphQLError?.message || err.message;
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      } else {
+        errorMessage = "Error saving skill";
+      }
+      error.value = errorMessage;
+    } finally {
+      mutationLoading.value = false;
+    }
   };
 
   const handleCancel = () => {
     formData.skill.value = "";
     formData.mastery.value = "Novice";
+    selectedSkill.value = null;
   };
 
-  const fetchSkills = async () => {
-    pending.value = true;
-    error.value = null;
-
-    try {
-      // const response = await $fetch('/api/user/skills');
-      // skills.value = response;
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      skills.value = mockUserSkills;
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : "Unknown error";
-    } finally {
-      pending.value = false;
+  const toggleSkillForDeletion = (skillName: string) => {
+    if (selectedSkillsToDelete.value.has(skillName)) {
+      selectedSkillsToDelete.value.delete(skillName);
+    } else {
+      selectedSkillsToDelete.value.add(skillName);
     }
   };
-  fetchSkills();
+
+  const cancelDeleteMode = () => {
+    deleteMode.value = false;
+    selectedSkillsToDelete.value.clear();
+  };
+
+  const handleDeleteSkills = async () => {
+    try {
+      if (!user.value?.id || selectedSkillsToDelete.value.size === 0) return;
+
+      mutationLoading.value = true;
+      const { $apollo } = useNuxtApp();
+
+      for (const skillName of selectedSkillsToDelete.value) {
+        const response = await $apollo.clients.default.mutate({
+          mutation: deleteProfileSkillMutation,
+          variables: {
+            skill: {
+              userId: String(user.value.id),
+              name: skillName,
+            },
+          },
+        });
+
+        if (response?.data?.deleteProfileSkill) {
+          userSkills.value = response.data.deleteProfileSkill.skills;
+        }
+      }
+
+      cancelDeleteMode();
+      error.value = null;
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : "Error deleting skills";
+    } finally {
+      mutationLoading.value = false;
+    }
+  };
+
+  onMounted(async () => {
+    try {
+      loading.value = true;
+      error.value = null;
+
+      if (!user.value?.id) {
+        error.value = "User not authenticated";
+        return;
+      }
+
+      await Promise.all([fetchSkillCategories(), fetchSkills(), fetchUserSkills(user.value.id)]);
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : "Error loading skills";
+    } finally {
+      loading.value = false;
+    }
+  });
+  const userSkillsList = computed(() => {
+    const userSk = userSkills.value;
+    const categories = skillCategories.value;
+
+    const allSkills = skills.value;
+
+    if (!userSk || userSk.length === 0) return [];
+
+    return userSk.map((userSkill, index) => {
+      const fullSkillInfo = allSkills?.find((s) => s.name === userSkill.name);
+
+      let category = null;
+      if (fullSkillInfo?.category) {
+        category = fullSkillInfo.category;
+      } else if (categories?.length && userSkill.categoryId) {
+        interface Category {
+          id: string;
+          name: string;
+          children?: Category[];
+        }
+
+        const findCategoryById = (
+          categoriesList: Category[],
+          categoryId: string | null,
+        ): Category | null => {
+          if (!categoryId) return null;
+          for (const cat of categoriesList) {
+            if (cat.id === categoryId) return cat;
+            if (cat.children?.length) {
+              const found = findCategoryById(cat.children, categoryId);
+              if (found) return found;
+            }
+          }
+          return null;
+        };
+        category = findCategoryById(categories, userSkill.categoryId);
+      }
+
+      return {
+        id: userSkill.id || `skill-${index}`,
+        created_at: userSkill.created_at || new Date().toISOString(),
+        name: userSkill.name,
+        mastery: userSkill.mastery,
+        category: category,
+        category_name: fullSkillInfo?.category_name || category?.name || "Без категории",
+        category_parent_name: fullSkillInfo?.category_parent_name || category?.parent?.name || null,
+      };
+    });
+  });
 </script>
 
 <style scoped>
@@ -280,7 +430,66 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 12px;
+  }
+
+  .btn-cancel {
+    min-width: 120px;
+    height: 44px;
+    border-radius: 22px;
+    background-color: transparent;
+    border: 1px solid #9b9b9b;
+    color: #9b9b9b;
+    font:
+      600 13px/1 "Roboto",
+      sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0 24px;
+  }
+
+  .btn-cancel:hover {
+    background-color: rgba(155, 155, 155, 0.1);
+  }
+
+  .btn-delete {
+    min-width: 140px;
+    height: 44px;
+    border-radius: 22px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    font:
+      600 13px/1 "Roboto",
+      sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 8px;
+  }
+
+  .btn-delete:hover {
+    background-color: #c82333;
+  }
+
+  .btn-delete .badge {
+    background-color: white;
+    color: #dc3545;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
   }
 
   :global(.p-dialog-mask) {
@@ -337,7 +546,6 @@
     border-radius: 0 0 12px 12px !important;
   }
 
-  /* Стили для формы внутри диалога */
   :global(.p-dialog .form) {
     margin-top: 0 !important;
   }
@@ -356,7 +564,6 @@
     width: 100% !important;
   }
 
-  /* Стили для выпадающих списков селектов */
   :global(.p-select-overlay) {
     z-index: 10001 !important;
   }
@@ -368,7 +575,6 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
   }
 
-  /* Адаптивность */
   @media (max-width: 768px) {
     .skills-page {
       padding: 0.5rem;

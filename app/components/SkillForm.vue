@@ -16,13 +16,17 @@
               :options="item.values"
               option-label="name"
               option-value="name"
-              class="custom-select" />
+              class="custom-select"
+              :pt="{
+                optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
+                list: { style: { backgroundColor: '#FFFFFF' } },
+              }" />
           </div>
         </template>
       </div>
       <div class="form-actions">
         <Button type="button" label="Cancel" severity="secondary" @click="$emit('cancel')" />
-        <Button type="button" label="Save" @click="data && $emit('save', data)" />
+        <Button type="button" label="Confirm" @click="data && $emit('save', data)" />
       </div>
     </Form>
   </div>
@@ -95,7 +99,7 @@
       sans-serif;
     border: 1px solid #0000003b;
     border-radius: 4px;
-    padding: 0 12px;
+    padding: 12px 12px 0 12px;
     transition: border-color 0.2s;
   }
 
@@ -107,7 +111,7 @@
   .custom-select:focus,
   .custom-input:focus {
     outline: none;
-    border-color: #2196f3;
+    border-color: #c63031;
     box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
   }
 
@@ -119,7 +123,7 @@
   }
 
   .p-button {
-    width: 150px;
+    width: 450px;
     height: 48px;
     border-radius: 40px;
     font:
@@ -131,13 +135,13 @@
   }
 
   .p-button:not(.p-button-secondary) {
-    background-color: #2196f3;
+    background-color: #c63031;
     color: white;
     border: none;
   }
 
   .p-button:not(.p-button-secondary):hover:not(:disabled) {
-    background-color: #1976d2;
+    background-color: #c63031;
   }
 
   .p-button:not(.p-button-secondary):disabled {

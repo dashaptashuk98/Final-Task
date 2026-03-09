@@ -7,16 +7,16 @@
       <h3 class="category-title">{{ categoryName }}</h3>
 
       <div class="skills-list">
-        <div
-          v-for="skill in categorySkills"
-          :key="skill.id"
-          class="skill-item"
-          @click="$emit('skill-click', skill)">
-          <ProgressBar
-            :value="getMasteryPercentage(skill.mastery)"
-            class="skill-progress"
-            :class="`mastery-${skill.mastery?.toLowerCase()}`"
-            :show-value="false" />
+        <div v-for="skill in categorySkills" :key="skill.id" class="skill-item">
+          <div v-if="props.deleteMode" class="checkbox-wrapper">
+            <input
+              :id="`skill-${skill.name}`"
+              type="checkbox"
+              :checked="props.selectedSkills?.has(skill.name)"
+              class="custom-checkbox"
+              @change="$emit('toggle-skill', skill.name)" />
+            <label :for="`skill-${skill.name}`" class="checkbox-label" />
+          </div>
 
           <div class="skill-info">
             <span class="skill-name">{{ skill.name }}</span>
@@ -30,16 +30,7 @@
 <script setup lang="ts">
   import { computed } from "vue";
   import ProgressBar from "primevue/progressbar";
-
-  type Mastery = "Novice" | "Advanced" | "Competent" | "Proficient" | "Expert";
-
-  interface Skill {
-    id: string;
-    name: string;
-    mastery: Mastery;
-    category_name: string | null;
-    category_parent_name: string | null;
-  }
+  import type { Mastery, UserSkill } from "~/types/skills";
 
   defineEmits<{
     "skill-click": [skill: Skill];

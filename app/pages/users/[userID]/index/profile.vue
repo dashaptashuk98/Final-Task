@@ -51,6 +51,13 @@
     return formData;
   });
 
+  const formattedMemberSince = computed(() => {
+    if (!user.value?.created_at) return "";
+    const timestamp = parseInt(user.value.created_at);
+    const date = new Date(timestamp);
+    return `A member since ${date.toDateString()}`;
+  });
+
   await fetchDepartments();
   await fetchPositions();
   await fetchUser(userId.value);
@@ -74,7 +81,7 @@
     <div class="profile-data">
       <h2 class="profile-data__title">{{ user.profile?.full_name }}</h2>
       <a :href="`mailto:${user.email}`" class="profile-data__email">{{ user.email }}</a>
-      <p class="profile-data__member">{{ user.created_at }}</p>
+      <p class="profile-data__member">{{ formattedMemberSince }}</p>
     </div>
     <ProfileForm :data="profileFormData" />
   </section>

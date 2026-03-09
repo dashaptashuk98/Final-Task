@@ -5,17 +5,19 @@
     tabs: Tabs[];
     centered?: boolean;
   }>();
-  const currentTab = ref<string | number>(tabs[0]?.label ? tabs[0].label : "page");
+
+  const route = useRoute();
+
+  const currentTab = computed(() => {
+    const activeTab = tabs.find((tab) => route.path === tab.to);
+    return activeTab?.label || tabs[0]?.label || "page";
+  });
 </script>
 
 <template>
   <Tabs :value="currentTab" :class="{ centered }">
     <TabList>
-      <Tab
-        v-for="tab in tabs"
-        :key="tab.label"
-        :value="tab.label"
-        @click="() => (currentTab = tab.label)">
+      <Tab v-for="tab in tabs" :key="tab.label" :value="tab.label">
         <NuxtLink :to="tab.to" class="tab__link">
           {{ tab.label.toLocaleUpperCase() }}
         </NuxtLink>

@@ -1,21 +1,32 @@
 import type { Department } from "~/types/departments";
 import type { Position } from "~/types/positions";
+import type { UserSkill, Skill } from "~/types/skills";
+import type { SkillCategory } from "~/types/skillCategory";
 import type { User, UserResponse } from "~/types/user";
 import type { Nullable } from "~/types/types";
-import { userQuery, usersQuery } from "~/graphQL/users/users.query";
+import { userQuery } from "~/graphQL/user/user.query";
+import { usersQuery } from "~/graphQL/users/users.query";
 import { departmentsQuery } from "~/graphQL/departments/departments.query";
 import { positionsQuery } from "~/graphQL/positions/positions.query";
+import { userSkillsQuery } from "~/graphQL/skills/skillsUsers.query";
+import { skillCategoryQuery } from "~/graphQL/skills/skillsCategory.query";
+import { skillsQuery } from "~/graphQL/skills/skill.query";
 
 export const useUsers = () => {
   const user = useState<Nullable<User>>("user", () => null);
   const departments = useState<Nullable<Department[]>>("departments", () => []);
+  const skillCategories = useState<Nullable<SkillCategory[]>>("skillCategories", () => []);
   const positions = useState<Position[]>("positions", () => []);
   const users = useState<User[]>("users", () => []);
+  const skills = useState<Nullable<Skill[]>>("skills", () => []);
+  const userSkills = useState<Nullable<UserSkill[]>>("userSkills", () => []);
 
   const isLoading = ref<boolean>(false);
+  const mutationLoading = ref<boolean>(false);
 
   const getUser = computed<Nullable<User>>(() => user.value);
   const getUsers = computed<User[]>(() => users.value);
+  const getUserSkills = computed<Nullable<UserSkill[]>>(() => userSkills.value);
 
   const getUserById = (id: string): ComputedRef<Nullable<User>> =>
     computed(() => users.value.find((u) => u.id === id) ?? null);
@@ -39,6 +50,51 @@ export const useUsers = () => {
       if (data.value) {
         departments.value = data.value.departments;
         return data.value.departments;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const fetchSkills = async (): Promise<Nullable<Skill[]>> => {
+    try {
+      const { data } = await useAsyncQuery<Record<"skills", Skill[]>>(skillsQuery);
+      if (data.value) {
+        skills.value = data.value.skills;
+        return data.value.skills;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const fetchUserSkills = async (userId: string): Promise<Nullable<UserSkill[]>> => {
+    try {
+      const { data } = await useAsyncQuery<Record<"user", { profile: { skills: UserSkill[] } }>>(
+        userSkillsQuery,
+        { userId },
+      );
+
+      if (data.value?.user?.profile?.skills) {
+        userSkills.value = data.value.user.profile.skills;
+        return data.value.user.profile.skills;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const fetchSkillCategories = async (): Promise<Nullable<SkillCategory[]>> => {
+    try {
+      const { data } =
+        await useAsyncQuery<Record<"skillCategories", SkillCategory[]>>(skillCategoryQuery);
+
+      if (data.value?.skillCategories) {
+        skillCategories.value = data.value.skillCategories;
+        return data.value.skillCategories;
       }
       return null;
     } catch {
@@ -85,16 +141,25 @@ export const useUsers = () => {
     departments,
     positions,
     users,
+    skills,
+    skillCategories,
+    userSkills,
     loading: isLoading,
+    mutationLoading,
 
     getUser,
     getUsers,
     getUserById,
+    getUserSkills,
 
     fetchUser,
     fetchDepartments,
     fetchPositions,
+    fetchUserSkills,
+    fetchSkillCategories,
+    fetchSkills,
     fetchUsers,
+
     clearUsers,
   };
 };

@@ -1,0 +1,17 @@
+export const updateProfileMutation = gql`
+  mutation UpdateProfile($profile: UpdateProfileInput!) {
+    updateProfile(profile: $profile) {
+      id
+      created_at
+      first_name
+      last_name
+      full_name
+      avatar
+      skills {
+        name
+        categoryId
+        mastery
+      }
+    }
+  }
+`;

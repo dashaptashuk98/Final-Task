@@ -1,52 +1,25 @@
 <template>
   <div class="skills-page">
-    <HeaderComponent />
+    <div v-if="loading" class="loading">Загрузка навыков...</div>
+    <div v-else-if="error" class="error">Ошибка: {{ error }}</div>
 
-    <div v-if="pending" class="loading">Загрузка навыков...</div>
-    <div v-else-if="error" class="error">Ошибка при загрузке: {{ error }}</div>
-
-    <SkillsComponent v-else :skills="skills" @skill-click="handleSkillClick" />
+    <SkillsComponent
+      v-else
+      :skills="userSkillsList"
+      :delete-mode="deleteMode"
+      :selected-skills="selectedSkillsToDelete"
+      @skill-click="handleSkillClick"
+      @toggle-skill="toggleSkillForDeletion" />
 
     <div class="actions__wrapper">
       <Button
+        v-if="!deleteMode"
         type="button"
         label="Add skill"
         icon="pi pi-plus"
         class="btn-add"
         @click="visible = true" />
 
-<<<<<<< HEAD
-      <Dialog
-        v-model:visible="visible"
-        header="Add Skill"
-        :style="{ width: '450px' }"
-        modal
-        :closable="true"
-        :dismissable-mask="true">
-        <SkillsForm
-          :data="formData as Record<SkillForm, InputType>"
-          @cancel="handleCancel"
-          @save="handleSaveSkill" />
-      </Dialog>
-
-      <Dialog
-        v-model:visible="visibleUpdate"
-        header="Update skill"
-        :style="{ width: '450px' }"
-        modal
-        :closable="true"
-        :dismissable-mask="true">
-        <SkillsForm
-          :data="formData as Record<SkillForm, InputType>"
-          @cancel="handleCancel"
-          @save="handleSkillSave" />
-      </Dialog>
-
-      <div class="button__wrapper">
-        <IconRemove />
-        <Button type="button" label="Remove skills" class="btn-remove" />
-      </div>
-=======
       <div v-if="!deleteMode" class="button__wrapper">
         <IconRemove />
         <Button type="button" label="Remove skills" class="btn-remove" @click="deleteMode = true" />
@@ -78,27 +51,11 @@
           @cancel="handleCancel"
           @save="handleSkillUpdate" />
       </ModalDialog>
->>>>>>> 13e0d03 (fix: add modal component)
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-<<<<<<< HEAD
-  import { ref } from "vue";
-  import IconRemove from "~/components/IconRemove.vue";
-  import SkillsForm from "~/components/SkillForm.vue";
-  import SkillsComponent from "~/components/SkillsComponent.vue";
-  import HeaderComponent from "~/components/HeaderComponent.vue";
-  import type { InputType } from "~/types/types";
-
-  definePageMeta({
-    middleware: "auth",
-  });
-
-  type Mastery = "Novice" | "Advanced" | "Competent" | "Proficient" | "Expert";
-  type SkillForm = "skill" | "mastery";
-=======
   import { ref, computed, onMounted, reactive, watch } from "vue";
   import { useUsers } from "~/composables/useUsers";
   import SkillsComponent from "~/components/SkillsComponent.vue";
@@ -113,125 +70,41 @@
 
   const { user, userSkills, fetchUserSkills, fetchSkillCategories, fetchSkills, skills } =
     useUsers();
->>>>>>> 13e0d03 (fix: add modal component)
 
+  const loading = ref(true);
+  const error = ref<string | null>(null);
   const visible = ref(false);
   const visibleUpdate = ref(false);
+  const selectedSkill = ref<UserSkill | null>(null);
+  const mutationLoading = ref(false);
+  const deleteMode = ref(false);
+  const selectedSkillsToDelete = ref<Set<string>>(new Set());
 
-  const selectedSkill = ref<Skill | null>(null);
-  const isEditMode = ref(false);
-  interface Skill {
-    id: string;
-    name: string;
-    mastery: Mastery;
-    category_name: string | null;
-    category_parent_name: string | null;
-  }
-
-  const mockUserSkills: Skill[] = [
-    {
-      id: "1",
-      name: "JavaScript",
-      mastery: "Expert",
-      category_name: "Programming languages",
-      category_parent_name: null,
-    },
-    {
-      id: "2",
-      name: "TypeScript",
-      mastery: "Proficient",
-      category_name: "Programming languages",
-      category_parent_name: null,
-    },
-    {
-      id: "3",
-      name: "React",
-      mastery: "Advanced",
-      category_name: "Frontend technologies",
-      category_parent_name: "Frontend",
-    },
-    {
-      id: "4",
-      name: "Vue",
-      mastery: "Competent",
-      category_name: "Frontend technologies",
-      category_parent_name: "Frontend",
-    },
-    {
-      id: "5",
-      name: "Node.js",
-      mastery: "Novice",
-      category_name: "Backend technologies",
-      category_parent_name: "Backend",
-    },
-  ];
-
-  const masteryOptions = [
-    { name: "Novice" },
-    { name: "Advanced" },
-    { name: "Competent" },
-    { name: "Proficient" },
-    { name: "Expert" },
-  ];
-
-  const skillOptions = [
-    { name: "JavaScript", category: "Programming languages", parent: null },
-    { name: "TypeScript", category: "Programming languages", parent: null },
-    { name: "React", category: "Frontend technologies", parent: "Frontend" },
-    { name: "Vue", category: "Frontend technologies", parent: "Frontend" },
-    { name: "Node.js", category: "Backend technologies", parent: "Backend" },
-  ];
-
-  const formData = reactive({
+  const formData = reactive<Record<SkillFormKey, InputType>>({
     skill: {
       key: "skill",
       label: "Skill",
       value: "",
       type: "Select",
-      values: skillOptions,
+      values: [],
     },
     mastery: {
       key: "mastery",
       label: "Mastery Level",
       value: "Novice",
       type: "Select",
-      values: masteryOptions,
+      values: MASTERY_OPTIONS,
     },
   });
 
-<<<<<<< HEAD
-  const skills = ref<Skill[]>(mockUserSkills);
-  const pending = ref(false);
-  const error = ref<string | null>(null);
-
-  const handleSkillClick = (skill: Skill) => {
-    selectedSkill.value = skill;
-    formData.skill.value = skill.name;
-    formData.mastery.value = skill.mastery;
-=======
   const handleSkillClick = (skill: UserSkill) => {
     selectedSkill.value = skill;
     const matchingSkill = skills.value?.find((s) => s.name === skill.name);
     formData.skill.value = matchingSkill?.name || skill.name;
     formData.mastery.value = skill.mastery || "Novice";
->>>>>>> 13e0d03 (fix: add modal component)
     visibleUpdate.value = true;
-    isEditMode.value = true;
   };
 
-<<<<<<< HEAD
-  const handleSkillSave = (data: Record<SkillForm, InputType>) => {
-    if (isEditMode.value && selectedSkill.value) {
-      skills.value = skills.value.map((e) =>
-        e.id === selectedSkill.value?.id
-          ? {
-              ...e,
-              name: data.skill.value as string,
-              mastery: data.mastery.value as Mastery,
-            }
-          : e,
-      );
-=======
   const handleSaveSkill = async (data: Record<SkillFormKey, InputType>) => {
     try {
       if (!user.value?.id || !data.skill.value) return;
@@ -297,46 +170,30 @@
       error.value = err instanceof Error ? err.message : "Error updating skill";
     } finally {
       mutationLoading.value = false;
->>>>>>> 13e0d03 (fix: add modal component)
     }
-  };
-
-  const handleSaveSkill = (data: Record<SkillForm, InputType>) => {
-    if (data.skill.value && data.mastery.value) {
-      const selectedSkillOption = skillOptions.find((option) => option.name === data.skill.value);
-
-      const newSkill: Skill = {
-        id: Date.now().toString(),
-        name: data.skill.value as string,
-        mastery: data.mastery.value as Mastery,
-        category_name: selectedSkillOption?.category || "Other",
-        category_parent_name: selectedSkillOption?.parent || null,
-      };
-
-      skills.value = [...skills.value, newSkill];
-    }
-
-    visible.value = false;
-    data.skill.value = "";
-    data.mastery.value = "Novice";
   };
 
   const handleCancel = () => {
     formData.skill.value = "";
     formData.mastery.value = "Novice";
+    selectedSkill.value = null;
   };
 
-  const fetchSkills = async () => {
-    pending.value = true;
-    error.value = null;
+  const toggleSkillForDeletion = (skillName: string) => {
+    if (selectedSkillsToDelete.value.has(skillName)) {
+      selectedSkillsToDelete.value.delete(skillName);
+    } else {
+      selectedSkillsToDelete.value.add(skillName);
+    }
+  };
 
+  const cancelDeleteMode = () => {
+    deleteMode.value = false;
+    selectedSkillsToDelete.value.clear();
+  };
+
+  const handleDeleteSkills = async () => {
     try {
-<<<<<<< HEAD
-      // const response = await $fetch('/api/user/skills');
-      // skills.value = response;
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      skills.value = mockUserSkills;
-=======
       if (!user.value?.id || selectedSkillsToDelete.value.size === 0) return;
 
       mutationLoading.value = true;
@@ -359,16 +216,12 @@
       }
 
       cancelDeleteMode();
->>>>>>> 13e0d03 (fix: add modal component)
     } catch (err) {
-      error.value = err instanceof Error ? err.message : "Unknown error";
+      error.value = err instanceof Error ? err.message : "Error deleting skills";
     } finally {
-      pending.value = false;
+      mutationLoading.value = false;
     }
   };
-<<<<<<< HEAD
-  fetchSkills();
-=======
 
   watch(
     () => skills.value,
@@ -416,7 +269,6 @@
       };
     });
   });
->>>>>>> 13e0d03 (fix: add modal component)
 </script>
 
 <style scoped>
@@ -486,7 +338,66 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 12px;
+  }
+
+  .btn-cancel {
+    min-width: 120px;
+    height: 44px;
+    border-radius: 22px;
+    background-color: transparent;
+    border: 1px solid #9b9b9b;
+    color: #9b9b9b;
+    font:
+      600 13px/1 "Roboto",
+      sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0 24px;
+  }
+
+  .btn-cancel:hover {
+    background-color: rgba(155, 155, 155, 0.1);
+  }
+
+  .btn-delete {
+    min-width: 140px;
+    height: 44px;
+    border-radius: 22px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    font:
+      600 13px/1 "Roboto",
+      sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 8px;
+  }
+
+  .btn-delete:hover {
+    background-color: #c82333;
+  }
+
+  .btn-delete .badge {
+    background-color: white;
+    color: #dc3545;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
   }
 
   :global(.p-dialog-mask) {
@@ -543,7 +454,6 @@
     border-radius: 0 0 12px 12px !important;
   }
 
-  /* Стили для формы внутри диалога */
   :global(.p-dialog .form) {
     margin-top: 0 !important;
   }
@@ -562,7 +472,6 @@
     width: 100% !important;
   }
 
-  /* Стили для выпадающих списков селектов */
   :global(.p-select-overlay) {
     z-index: 10001 !important;
   }
@@ -574,7 +483,6 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
   }
 
-  /* Адаптивность */
   @media (max-width: 768px) {
     .skills-page {
       padding: 0.5rem;

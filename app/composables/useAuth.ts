@@ -29,21 +29,14 @@ export const useAuth = () => {
 
   const login = async (email: string, password: string): Promise<Nullable<AuthResult>> => {
     isLoading.value = true;
-    try {
-      const { data } = await useAsyncQuery<Record<"auth", AuthInput>, AuthResponse>(loginQuery, {
-        auth: { email, password },
-      });
-      if (data.value) {
-        const token = data.value.login.access_token;
-        authUser.value = data.value.login.user as User;
-        useCookie("refreshToken").value = data.value.login.refresh_token;
-        useCookie("authId").value = data.value.login.user.id;
-        onLogin(token);
-      }
-      return data.value?.login || null;
-    } finally {
-      isLoading.value = false;
+    const { data } = await useAsyncQuery<Record<"auth", AuthInput>, AuthResponse>(loginQuery, {
+      auth: { email, password },
+    });
+    if (data.value) {
+      return saveAuthData(data.value.login);
     }
+    isLoading.value = false;
+    return null;
   };
 
   const signup = async (email: string, password: string): Promise<Nullable<AuthResult>> => {

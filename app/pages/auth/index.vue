@@ -3,7 +3,7 @@
 
   const tabs: Tabs[] = [
     { label: "login", to: "/auth/login" },
-    { label: "register", to: "/auth/register" },
+    { label: "sign up", to: "/auth/signup" },
   ];
 </script>
 

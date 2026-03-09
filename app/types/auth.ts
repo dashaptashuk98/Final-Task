@@ -48,7 +48,7 @@ export interface LoginResponse {
   message?: string;
 }
 
-export interface RegisterCredentials {
+export interface SignupCredentials {
   email: string;
   password: string;
   profile?: {
@@ -58,7 +58,7 @@ export interface RegisterCredentials {
   };
 }
 
-export interface RegisterResponse {
+export interface SignupResponse {
   success: boolean;
   user?: User;
   access_token?: string;

@@ -1,11 +1,16 @@
 <script setup lang="ts">
   import type { AuthField } from "~/types/auth";
 
-  defineProps<{
+  const { fields, loading, path, mainButtonLabel, secondaryButtonLabel } = defineProps<{
     fields: AuthField[];
-    buttonText: string;
     loading?: boolean;
+    path: string;
+    mainButtonLabel: string;
+    secondaryButtonLabel: string;
   }>();
+
+  const emit = defineEmits(["handleButton"]);
+  const { isLoading } = useAuth();
 </script>
 
 <template>
@@ -44,6 +49,20 @@
           {{ field.errorMessage }}
         </small>
       </span>
+    </div>
+    <div class="auth-buttons">
+      <Button
+        type="submit"
+        :label="mainButtonLabel"
+        :loading="isLoading"
+        :disabled="isLoading"
+        class="auth-button"
+        @click="emit('handleButton')" />
+      <Button
+        link
+        :label="secondaryButtonLabel"
+        class="link-button"
+        @click="navigateTo(`/auth/${path}`)" />
     </div>
   </div>
 </template>
@@ -150,5 +169,64 @@
 
   .custom-password :deep(.p-password-mask) {
     display: none;
+  }
+  .auth-buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .auth-button {
+    width: 220px;
+    padding: 1rem;
+    background-color: #c63031;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(198, 48, 49, 0.2);
+  }
+
+  .auth-button:hover:not(:disabled) {
+    background-color: #b52b2b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(198, 48, 49, 0.3);
+  }
+
+  .auth-button:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .auth-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .auth-links {
+    text-align: center;
+    margin-top: 1rem;
+    width: 100%;
+  }
+
+  .link-button {
+    color: #999 !important;
+    padding: 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  .link-button:hover {
+    color: #666 !important;
+  }
+
+  .link-button :deep(.p-button-label) {
+    font-weight: 500;
+    font-size: 0.85rem;
   }
 </style>

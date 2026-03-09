@@ -1,156 +1,26 @@
 <template>
   <div class="auth-page">
     <div class="auth-content">
-      <h1 class="welcome-title">С возвращением</h1>
-      <p class="welcome-subtitle">Рады вас видеть! Войдите, чтобы продолжить</p>
-
-      <AuthForm :fields="loginFields" button-text="ВОЙТИ" :loading="isLoading" />
-
-      <div class="button-wrapper">
-        <Button
-          type="submit"
-          label="ВОЙТИ"
-          :loading="isLoading"
-          :disabled="isLoading"
-          class="auth-button"
-          @click="handleLogin" />
-      </div>
-
-      <div class="auth-links">
-        <Button
-          link
-          label="СОЗДАТЬ АККАУНТ"
-          class="link-button"
-          @click="navigateTo('/auth/register')" />
-      </div>
+      <AuthDescription title="Welcome back" description="Glad to see you! Log in to continue" />
+      <AuthForm
+        :fields="loginFields"
+        main-button-label="LOG IN"
+        secondary-button-label="CREATE ACCOUNT"
+        :loading="isLoading"
+        path="signup"
+        @handle-button="handleAuth" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { useToast } from "primevue/usetoast";
-  import { useVuelidate } from "@vuelidate/core";
-  import { required, email, minLength } from "@vuelidate/validators";
-  import Button from "primevue/button";
-  import AuthForm from "~/components/AuthForm.vue";
-  import type { AuthField } from "~/types/auth";
-  import { useAuth } from "~/composables/useAuth";
-
-  definePageMeta({
-    layout: false,
-  });
-
-  const { login, isLoading } = useAuth();
-  const toast = useToast();
-  const router = useRouter();
-
-  const loginFields = ref<AuthField[]>([
-    {
-      key: "email",
-      label: "Почта",
-      type: "email",
-      value: "",
-      placeholder: "Почта",
-      errorMessage: "",
-    },
-    {
-      key: "password",
-      label: "Пароль",
-      type: "password",
-      value: "",
-      placeholder: "Пароль",
-      errorMessage: "",
-    },
-  ]);
-
-  const formData = computed(() => ({
-    email: loginFields.value.find((f) => f.key === "email")?.value || "",
-    password: loginFields.value.find((f) => f.key === "password")?.value || "",
-  }));
-
-  const rules = {
-    email: {
-      required,
-      email,
-    },
-    password: {
-      required,
-      minLength: minLength(6),
-    },
-  };
-
-  const v$ = useVuelidate(rules, formData);
-
-  const isFieldInvalid = (fieldName: string) => {
-    return v$.value[fieldName]?.$invalid && v$.value[fieldName]?.$dirty;
-  };
-
-  watchEffect(() => {
-    const emailField = loginFields.value.find((f) => f.key === "email");
-    const passwordField = loginFields.value.find((f) => f.key === "password");
-
-    if (emailField) {
-      emailField.error = isFieldInvalid("email");
-      emailField.errorMessage = (v$.value.email.$errors[0]?.$message as string) || "";
-    }
-    if (passwordField) {
-      passwordField.error = isFieldInvalid("password");
-      passwordField.errorMessage = (v$.value.password.$errors[0]?.$message as string) || "";
-    }
-  });
-
-  async function handleLogin() {
-    try {
-      v$.value.$touch();
-
-      const isValid = await v$.value.$validate();
-
-      if (!isValid) {
-        return;
-      }
-
-      const email = loginFields.value.find((f) => f.key === "email")?.value || "";
-      const password = loginFields.value.find((f) => f.key === "password")?.value || "";
-
-      const result = await login(email, password);
-
-      if (result?.login) {
-        toast.add({
-          severity: "success",
-          summary: "Успешно",
-          detail: "Вы успешно вошли в систему",
-          life: 3000,
-        });
-        await router.push("/users");
-      } else {
-        toast.add({
-          severity: "error",
-          summary: "Ошибка входа",
-          detail: "Неверный email или пароль",
-          life: 5000,
-        });
-      }
-    } catch (err) {
-      let errorDetail = "Произошла непредвиденная ошибка";
-      if (err instanceof Error) {
-        errorDetail = err.message;
-      } else if (typeof err === "string") {
-        errorDetail = err;
-      }
-
-      toast.add({
-        severity: "error",
-        summary: "Ошибка",
-        detail: errorDetail,
-        life: 5000,
-      });
-    }
-  }
+  const { isLoading } = useAuth();
+  const { loginFields, handleAuth } = useValidateAuth();
 </script>
 
 <style scoped>
   .auth-page {
-    min-height: 100vh;
+    min-height: calc(100vh - 82px);
     display: flex;
     width: 100%;
     flex-direction: column;
@@ -216,58 +86,6 @@
     display: flex;
     justify-content: center;
     margin-top: 1rem;
-  }
-
-  .auth-button {
-    width: 220px;
-    padding: 1rem;
-    background-color: #c63031;
-    color: white;
-    border: none;
-    border-radius: 50px;
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(198, 48, 49, 0.2);
-  }
-
-  .auth-button:hover:not(:disabled) {
-    background-color: #b52b2b;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(198, 48, 49, 0.3);
-  }
-
-  .auth-button:active:not(:disabled) {
-    transform: translateY(0);
-  }
-
-  .auth-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
-
-  .auth-links {
-    text-align: center;
-    margin-top: 1rem;
-    width: 100%;
-  }
-
-  .link-button {
-    color: #999 !important;
-    font-size: 0.85rem;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-  }
-
-  .link-button:hover {
-    color: #666 !important;
-  }
-
-  .link-button :deep(.p-button-label) {
-    font-weight: 500;
-    font-size: 0.85rem;
   }
 
   @media (max-width: 480px) {

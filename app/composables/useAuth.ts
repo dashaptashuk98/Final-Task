@@ -1,7 +1,8 @@
 import type { User } from "~/types/user";
-import type { AuthInput, AuthResponse, UpdateTokenResult } from "~/types/auth";
+import type { AuthInput, AuthResponse, AuthResult, UpdateTokenResult } from "~/types/auth";
 import type { Nullable } from "~/types/types";
 import { loginQuery } from "~/graphQL/auth/auth.query";
+import { signupMutation } from "~/graphQL/auth/auth.mutation";
 
 export const useAuth = () => {
   const { fetchUser } = useUsers();
@@ -18,7 +19,7 @@ export const useAuth = () => {
   );
   const isAuth = computed<boolean>(() => !!authUser.value && !!accessTokenCookie.value);
 
-  const { onLogin, onLogout } = useApollo();
+  const { onLogin, onLogout, clients } = useApollo();
 
   const loadAuthUser = async () => {
     if (authId.value) {
@@ -26,7 +27,7 @@ export const useAuth = () => {
     }
   };
 
-  const login = async (email: string, password: string): Promise<Nullable<AuthResponse>> => {
+  const login = async (email: string, password: string): Promise<Nullable<AuthResult>> => {
     isLoading.value = true;
     try {
       const { data } = await useAsyncQuery<Record<"auth", AuthInput>, AuthResponse>(loginQuery, {
@@ -43,9 +44,46 @@ export const useAuth = () => {
     } finally {
       isLoading.value = false;
     }
+    const { data } = await useAsyncQuery<Record<"auth", AuthInput>, AuthResponse>(loginQuery, {
+      auth: { email, password },
+    });
+    if (data.value) {
+      return saveAuthData(data.value.login);
+    }
+    console.log(data.value);
+    isLoading.value = false;
+    return null;
+  };
+
+  const signup = async (email: string, password: string): Promise<Nullable<AuthResult>> => {
+    isLoading.value = true;
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: signupMutation,
+        variables: { auth: { email, password } },
+      });
+      if (data) {
+        return saveAuthData(data.signup);
+      }
+    }
+    isLoading.value = false;
+    throw new Error("Apollo clients is empty");
+  };
+
+  const saveAuthData = (data: Nullable<AuthResult>): Nullable<AuthResult> => {
+    if (data) {
+      const token = data.access_token;
+      authUser.value = data.user as User;
+      useCookie("refreshToken").value = data.refresh_token;
+      useCookie("authId").value = data.user.id;
+      onLogin(token);
+      isLoading.value = false;
+    }
+    return data;
   };
 
   const logout = (): void => {
+    isLoading.value = true;
     onLogout();
     useCookie("authId").value = null;
     useCookie("refreshToken").value = null;
@@ -99,6 +137,7 @@ export const useAuth = () => {
     isAuth,
 
     login,
+    signup,
     logout,
     loadAuthUser,
   };

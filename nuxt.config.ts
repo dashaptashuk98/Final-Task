@@ -19,6 +19,13 @@ export default defineNuxtConfig({
         autoImport: true,
       },
     ],
+    [
+      "@primevue/nuxt-module",
+      {
+        unstyled: true,
+        autoImport: true,
+      },
+    ],
   ],
 
   apollo: {

@@ -16,6 +16,7 @@
 <script setup lang="ts">
   definePageMeta({
     layout: false,
+    middleware: "auth",
   });
   const { isLoading } = useAuth();
   const { loginFields, handleAuth } = useValidateAuth();

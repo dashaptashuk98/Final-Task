@@ -8,7 +8,7 @@ export interface Cv {
   id: string;
   created_at: string;
   name: string;
-  education?: Nullable<string>;
+  education: Nullable<string>;
   description: string;
   user?: Nullable<User>;
   projects?: Nullable<CvProject[]>;
@@ -28,3 +28,12 @@ export interface CvProject {
   roles: string[];
   responsibilities: string[];
 }
+
+export interface UpdateCvInput {
+  cvId: string;
+  name: string;
+  education: Nullable<string>;
+  description: string;
+}
+
+export type UpdateCvResponse = Pick<CvProject, "id" | "name" | "education" | "description">;

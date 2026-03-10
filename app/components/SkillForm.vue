@@ -1,7 +1,7 @@
 <template>
   <div class="form">
     <Form>
-      <div class="form-input-wrapper">
+      <div class="form-input-wrapper" :class="{ 'two-columns': twoColumns }">
         <template v-for="item in data" :key="item.key">
           <div class="form-input-container">
             <label :for="item.key" class="form-input-container__label">{{ item.label }}</label>
@@ -39,8 +39,9 @@
 
   type SkillForm = "skill" | "mastery";
 
-  const { data } = defineProps<{
+  const { data, twoColumns = false } = defineProps<{
     data: Record<SkillForm, InputType> | null;
+    twoColumns?: boolean;
   }>();
 
   defineEmits<{
@@ -67,6 +68,13 @@
     justify-content: center;
     flex-wrap: wrap;
     gap: 32px;
+  }
+
+  .form-input-wrapper.two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
   }
 
   .form-input-container {

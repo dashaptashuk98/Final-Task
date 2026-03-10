@@ -35,7 +35,6 @@ export const useAuth = () => {
     if (data.value) {
       return saveAuthData(data.value.login);
     }
-    console.log(data.value);
     isLoading.value = false;
     return null;
   };
@@ -120,6 +119,7 @@ export const useAuth = () => {
     accessTokenCookie,
     refreshToken,
     isAuth,
+    authId,
 
     login,
     signup,

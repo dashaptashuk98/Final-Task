@@ -119,6 +119,7 @@ export const useAuth = () => {
     accessTokenCookie,
     refreshToken,
     isAuth,
+    authId,
 
     login,
     signup,

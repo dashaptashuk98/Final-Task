@@ -4,6 +4,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
     return navigateTo("/auth/login");
   }
   if (isAuth.value && to.path.includes("auth")) {
-    return navigateTo(from);
+    console.log("authorized");
+    return from.path.includes("auth") ? navigateTo("/users") : navigateTo(from);
   }
 });

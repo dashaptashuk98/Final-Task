@@ -4,6 +4,7 @@
 
   definePageMeta({
     middleware: "auth",
+    layout: "default",
   });
   const { fetchCv, cv } = useCvs();
   const route = useRoute();

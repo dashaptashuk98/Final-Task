@@ -8,10 +8,11 @@
       :skills="userSkillsList"
       :delete-mode="deleteMode"
       :selected-skills="selectedSkillsToDelete"
+      :read-only="!isOwner"
       @skill-click="handleSkillClick"
       @toggle-skill="toggleSkillForDeletion" />
 
-    <div class="actions__wrapper">
+    <div v-if="isOwner" class="actions__wrapper">
       <Button
         v-if="!deleteMode"
         type="button"
@@ -48,6 +49,7 @@
         <SkillForm
           :data="formData"
           :loading="mutationLoading"
+          :disable-skill-field="true"
           @cancel="handleCancel"
           @save="handleSkillUpdate" />
       </ModalDialog>
@@ -70,6 +72,10 @@
 
   const { user, userSkills, fetchUserSkills, fetchSkillCategories, fetchSkills, skills } =
     useUsers();
+  const { authUser } = useAuth();
+  const route = useRoute();
+  const userId = route.params.userID as string;
+  const isOwner = computed(() => String(authUser.value?.id) === userId);
 
   const loading = ref(true);
   const error = ref<string | null>(null);
@@ -98,6 +104,7 @@
   });
 
   const handleSkillClick = (skill: UserSkill) => {
+    if (!isOwner.value) return;
     selectedSkill.value = skill;
     const matchingSkill = skills.value?.find((s) => s.name === skill.name);
     formData.skill.value = matchingSkill?.name || skill.name;
@@ -248,7 +255,7 @@
         return;
       }
 
-      await Promise.all([fetchSkillCategories(), fetchSkills(), fetchUserSkills(user.value.id)]);
+      await Promise.all([fetchSkillCategories(), fetchSkills(), fetchUserSkills(userId)]);
     } catch (err) {
       error.value = err instanceof Error ? err.message : "Error loading skills";
     } finally {

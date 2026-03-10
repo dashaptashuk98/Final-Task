@@ -8,7 +8,7 @@
   });
 
   const { user, departments, positions, fetchUser, fetchDepartments, fetchPositions } = useUsers();
-
+  const { authUser } = useAuth();
   const route = useRoute();
   const userId = ref<string>(route.params.userID as string);
 
@@ -78,6 +78,7 @@
           email: user.email,
           profile: { avatar: user.profile?.avatar ?? undefined },
         }"
+        :disabled="String(authUser?.id) !== userId"
         @avatar-updated="handleAvatarUpdate" />
 
       <div class="profile-avatar__container">
@@ -93,7 +94,7 @@
       <a :href="`mailto:${user.email}`" class="profile-data__email">{{ user.email }}</a>
       <p class="profile-data__member">{{ formattedMemberSince }}</p>
     </div>
-    <ProfileForm :data="profileFormData" />
+    <ProfileForm :data="profileFormData" :user-id="userId" />
   </section>
 </template>
 

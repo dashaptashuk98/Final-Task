@@ -37,6 +37,7 @@
         avatar?: string;
       };
     };
+    disabled?: boolean;
   }
 
   const props = defineProps<Props>();
@@ -50,6 +51,7 @@
   const error = ref<string | null>(null);
 
   const openFileDialog = () => {
+    if (props.disabled) return;
     fileInput.value?.click();
   };
 
@@ -71,7 +73,7 @@
   };
 
   const uploadAvatar = async (file: File) => {
-    if (!validateFile(file)) return;
+    if (props.disabled || !validateFile(file)) return;
 
     uploading.value = true;
     error.value = null;

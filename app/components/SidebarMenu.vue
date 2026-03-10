@@ -26,8 +26,8 @@
           <Avatar
             :image="authUser?.profile?.avatar || undefined"
             :label="
-              authUser?.email && !authUser?.profile?.full_name
-                ? authUser.email.toUpperCase()
+              authUser?.email && !authUser?.profile?.avatar
+                ? authUser.email[0].toUpperCase()
                 : undefined
             "
             shape="circle"

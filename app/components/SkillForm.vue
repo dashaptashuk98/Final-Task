@@ -17,6 +17,7 @@
               option-label="name"
               option-value="name"
               class="custom-select"
+              :disabled="item.key === 'skill' && disableSkillField"
               :pt="{
                 optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
                 list: { style: { backgroundColor: '#FFFFFF' } },
@@ -39,9 +40,14 @@
 
   type SkillForm = "skill" | "mastery";
 
-  const { data, twoColumns = false } = defineProps<{
+  const {
+    data,
+    twoColumns = false,
+    disableSkillField = false,
+  } = defineProps<{
     data: Record<SkillForm, InputType> | null;
     twoColumns?: boolean;
+    disableSkillField?: boolean;
   }>();
 
   defineEmits<{

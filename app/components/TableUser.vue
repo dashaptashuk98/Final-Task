@@ -77,8 +77,7 @@
               class="action-button"
               text
               rounded
-              severity="secondary"
-              @click="() => navigateTo(`/users/${data.id}/profile`)" />
+              severity="secondary" />
           </template>
         </Column>
 

@@ -26,26 +26,28 @@
       </div>
       <div class="form-actions">
         <Button type="button" label="Cancel" severity="secondary" @click="$emit('cancel')" />
-        <Button type="button" label="Confirm" @click="data && $emit('save', data)" />
+        <Button
+          type="button"
+          label="Confirm"
+          @click="data && $emit('save', data, action as string)" />
       </div>
     </Form>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends Record<string, InputType>">
   import type { InputType } from "~/types/types";
   import Select from "primevue/select";
   import InputText from "primevue/inputtext";
 
-  type SkillForm = "skill" | "mastery";
-
-  const { data } = defineProps<{
-    data: Record<SkillForm, InputType> | null;
+  const { data, action = "Add" } = defineProps<{
+    data: T | null;
+    action?: string;
   }>();
 
   defineEmits<{
     cancel: [];
-    save: [data: Record<SkillForm, InputType>];
+    save: [data: T, type: string];
   }>();
 </script>
 

@@ -48,7 +48,7 @@
   import { useRoute } from "vue-router";
   import { computed } from "vue";
 
-  const { authUser } = useAuth();
+  const { authUser, authId } = useAuth();
 
   const route = useRoute();
 
@@ -62,13 +62,13 @@
     {
       name: "skills",
       title: "Skills",
-      to: "/skills",
+      to: `/users/${authId.value}/skills`,
     },
     {
       icon: "pi pi-language",
       name: "languages",
       title: "Languages",
-      to: "/languages",
+      to: `/users/${authId.value}/languages`,
     },
     {
       icon: "pi pi-file",

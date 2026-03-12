@@ -1,12 +1,14 @@
 import { updateCvMutation } from "~/graphQL/cvs/cvs.mutations";
 import { cvQuery } from "~/graphQL/cvs/cvs.query";
 import { ExportPdf } from "~/graphQL/cvs/exportProfile.mutation";
-import type { Cv, UpdateCvInput, UpdateCvResponse } from "~/types/cvs";
+import { getProjects } from "~/graphQL/cvs/project.query";
+import type { Cv, UpdateCvInput, UpdateCvResponse, Project } from "~/types/cvs";
 import type { Nullable } from "~/types/types";
 
 export const useCvs = () => {
   const { clients } = useApollo();
   const cv = useState<Nullable<Cv>>("cv", () => null);
+  const projects = useState<Project[]>("projects", () => []);
   const fetchCv = async (cvId: string): Promise<Nullable<Cv>> => {
     const { data } = await useAsyncQuery<Nullable<Record<"cv", Cv>>>(cvQuery, { cvId });
     if (data.value) {
@@ -15,6 +17,15 @@ export const useCvs = () => {
     }
     return null;
   };
+  const fetchProject = async (): Promise<Project[]> => {
+    const { data } = await useAsyncQuery<Nullable<Record<"projects", Project[]>>>(getProjects);
+    if (data.value?.projects) {
+      projects.value = data.value.projects;
+      return data.value.projects;
+    }
+    return [];
+  };
+
   const updateCv = async (cvInput: UpdateCvInput): Promise<Nullable<UpdateCvResponse>> => {
     if (clients) {
       const { data } = await clients.default.mutate({
@@ -40,5 +51,5 @@ export const useCvs = () => {
     }
     return null;
   };
-  return { cv, fetchCv, updateCv, exportPdf };
+  return { cv, fetchCv, updateCv, exportPdf, fetchProject, projects };
 };

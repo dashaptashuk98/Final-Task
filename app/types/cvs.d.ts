@@ -35,5 +35,16 @@ export interface UpdateCvInput {
   education: Nullable<string>;
   description: string;
 }
+export interface Project {
+  id: string;
+  created_at: string;
+  name: string;
+  internal_name: string;
+  domain: string;
+  start_date: string;
+  end_date?: string | null;
+  description: string;
+  environment: string[];
+}
 
 export type UpdateCvResponse = Pick<CvProject, "id" | "name" | "education" | "description">;

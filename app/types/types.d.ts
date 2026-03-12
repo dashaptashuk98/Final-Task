@@ -3,9 +3,10 @@ export type Nullable<T> = T | null;
 export interface InputType {
   key: string;
   label: string;
-  value: string | number;
-  type: "InputText" | "Select";
-  values?: SelectValues[];
+  value: string | number | Date | string[];
+  type: "InputText" | "Select" | "DatePicker" | "MultiSelect" | "Textarea";
+  values?: (SelectValues | string)[];
+  disabled?: boolean;
 }
 export interface SelectValues {
   name: string;

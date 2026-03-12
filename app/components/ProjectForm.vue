@@ -3,21 +3,56 @@
     <Form>
       <div class="form-input-wrapper" :class="{ 'two-columns': twoColumns }">
         <template v-for="item in data" :key="item.key">
-          <div class="form-input-container">
+          <div
+            class="form-input-container"
+            :class="{
+              'full-width': ['description', 'environment', 'responsibilities'].includes(item.key),
+            }">
             <label :for="item.key" class="form-input-container__label">{{ item.label }}</label>
             <InputText
               v-if="item.type === 'InputText'"
               :id="item.key"
               v-model="item.value as string"
-              class="custom-input" />
+              :disabled="item.disabled"
+              class="custom-input"
+              :pt="{
+                root: { style: { overflowX: 'auto', whiteSpace: 'nowrap' } },
+              }" />
+
             <Select
               v-else-if="item.type === 'Select'"
               v-model="item.value"
               :options="item.values"
-              option-label="name"
-              option-value="name"
               class="custom-select"
-              :disabled="item.key === 'skill' && disableSkillField"
+              :disabled="item.disabled"
+              :pt="{
+                optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
+                list: { style: { backgroundColor: '#FFFFFF' } },
+              }" />
+            <DatePicker
+              v-else-if="item.type === 'DatePicker'"
+              :id="item.key"
+              v-model="item.value as Date"
+              show-icon
+              :disabled="item.disabled"
+              fluid
+              :show-on-focus="false"
+              class="custom-datepicker" />
+            <Textarea
+              v-else-if="item.type === 'Textarea'"
+              :id="item.key"
+              v-model="item.value as string"
+              rows="3"
+              :disabled="item.disabled"
+              auto-resize
+              class="custom-textarea" />
+            <MultiSelect
+              v-else-if="item.type === 'MultiSelect'"
+              v-model="item.value"
+              :options="item.values"
+              display="chip"
+              :disabled="item.disabled"
+              class="custom-multiselect"
               :pt="{
                 optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
                 list: { style: { backgroundColor: '#FFFFFF' } },
@@ -36,18 +71,15 @@
 <script setup lang="ts">
   import type { InputType } from "~/types/types";
   import Select from "primevue/select";
+  import MultiSelect from "primevue/multiselect";
   import InputText from "primevue/inputtext";
+  import Textarea from "primevue/textarea";
 
   type SkillForm = "skill" | "mastery";
-
-  const {
-    data,
-    twoColumns = false,
-    disableSkillField = false,
-  } = defineProps<{
+  const { data, twoColumns = false } = defineProps<{
     data: Record<SkillForm, InputType> | null;
     twoColumns?: boolean;
-    disableSkillField?: boolean;
+    disableField?: boolean;
   }>();
 
   defineEmits<{
@@ -70,10 +102,18 @@
   }
 
   .form-input-wrapper {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .form-input-container.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .form-input-container.f {
+    grid-column: 1 / -1;
   }
 
   .form-input-wrapper.two-columns {
@@ -103,11 +143,60 @@
     color: #00000099;
     z-index: 1;
   }
+  :deep(.p-inputtext) {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .custom-multiselect {
+    width: 100%;
+    min-height: 48px;
+    font:
+      400 16px/24px "Roboto",
+      sans-serif;
+    border: 1px solid #0000003b;
+    border-radius: 4px;
+    padding: 12px 12px 0 12px;
+    transition: border-color 0.2s;
+  }
+
+  .custom-multiselect:hover {
+    border-color: #00000099;
+  }
+
+  .custom-multiselect:focus {
+    outline: none;
+    border-color: #c63031;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+  }
+
+  .custom-textarea {
+    width: 100%;
+    min-height: 80px;
+    font:
+      400 16px/24px "Roboto",
+      sans-serif;
+    border: 1px solid #0000003b;
+    border-radius: 4px;
+    padding: 12px;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+
+  .custom-textarea:hover {
+    border-color: #00000099;
+  }
+
+  .custom-textarea:focus {
+    outline: none;
+    border-color: #c63031;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+  }
 
   .custom-select,
   .custom-input,
   .custom-datepicker {
-    width: 410px;
+    width: 100%;
     height: 48px;
     font:
       400 16px/24px "Roboto",
@@ -132,6 +221,18 @@
     box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
   }
 
+  .custom-multiselect :deep(.p-chip) {
+    background-color: #b7b2b2;
+    color: white;
+    padding: 8px;
+    border-radius: 40px;
+    margin: 2px;
+    gap: 8px;
+  }
+
+  .custom-multiselect :deep(.p-chip-label) {
+    color: white;
+  }
   .form-actions {
     display: flex;
     gap: 16px;

@@ -61,9 +61,9 @@
   };
 
   const skillsByCategory = computed((): Record<string, CvSkill[]> => {
-    const skills = (cv.value?.user?.profile?.skills || cv.value?.skills || []) as CvSkill[];
+    const skills = cv.value?.skills || ([] as CvSkill[]);
 
-    if (!skills.length || !skillCategories.value) return {} as Record<string, CvSkill[]>;
+    if (!skills.length) return {} as Record<string, CvSkill[]>;
 
     return skills.reduce(
       (acc, skill) => {

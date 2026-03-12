@@ -28,10 +28,18 @@
   const fetchedOptions = useState<Nullable<Language[]>>(() => null);
   const modalType = ref<string>("");
   const languages = ref<SelectableItem[]>([]);
+  const errorMessage = ref<string>("");
 
   profileData.value = await fetchProfile(route.params.userID as string);
   fetchedOptions.value = await fetchLanguages();
   const options = ref<SelectValues[]>([]);
+
+  if (fetchedOptions.value) {
+    options.value = fetchedOptions.value?.map((item) => {
+      return { name: item.name };
+    });
+  }
+
   const formData = reactive<Record<LanguageFormKeys, InputType>>({
     language: {
       key: "language",
@@ -57,13 +65,8 @@
     },
   });
 
-  if (fetchedOptions.value) {
-    options.value = fetchedOptions.value?.map((item) => {
-      return { name: item.name };
-    });
-  }
-
   const activateModal = (title: string, itemData?: KeyValue): string => {
+    errorMessage.value = "";
     if (itemData) {
       formData.language.value = itemData.key;
       formData.proficiency.value = itemData.value;
@@ -85,6 +88,10 @@
       name: data.language.value as string,
       proficiency: data.proficiency.value as string,
     };
+    if (profileData.value?.languages.some((item) => item.name === vars.name)) {
+      errorMessage.value = `${vars.name} is already exists`;
+      return;
+    }
     if (action === "Add") {
       profileData.value = await addProfileLanguage(vars);
     } else if (action === "Update") {
@@ -134,6 +141,7 @@
       <SkillForm
         :data="formData"
         :action="modalType"
+        :error-message="errorMessage"
         @cancel="() => (isModalVisible = false)"
         @save="handleFormSubmit" />
     </ModalDialog>

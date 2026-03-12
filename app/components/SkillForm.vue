@@ -23,6 +23,7 @@
               }" />
           </div>
         </template>
+        <Message v-if="errorMessage" severity="error">{{ errorMessage }}</Message>
       </div>
       <div class="form-actions">
         <Button type="button" label="Cancel" severity="secondary" @click="$emit('cancel')" />
@@ -40,9 +41,14 @@
   import Select from "primevue/select";
   import InputText from "primevue/inputtext";
 
-  const { data, action = "Add" } = defineProps<{
+  const {
+    data,
+    action = "Add",
+    errorMessage = "",
+  } = defineProps<{
     data: T | null;
     action?: string;
+    errorMessage?: string;
   }>();
 
   defineEmits<{
@@ -160,5 +166,12 @@
 
   .p-button.p-button-secondary:hover {
     background-color: rgba(0, 0, 0, 0.04);
+  }
+
+  :deep(.p-message) {
+    font: 400 16px/24px "Roboto";
+    letter-spacing: 0.15px;
+    color: #c63031;
+    outline: 0;
   }
 </style>

@@ -8,7 +8,7 @@
   });
 
   const { user, departments, positions, fetchUser, fetchDepartments, fetchPositions } = useUsers();
-
+  const { authUser } = useAuth();
   const route = useRoute();
   const userId = ref<string>(route.params.userID as string);
 
@@ -58,6 +58,12 @@
     return `A member since ${date.toDateString()}`;
   });
 
+  const handleAvatarUpdate = (avatar: string) => {
+    if (user.value?.profile) {
+      user.value.profile.avatar = avatar;
+    }
+  };
+
   await fetchDepartments();
   await fetchPositions();
   await fetchUser(userId.value);
@@ -66,10 +72,15 @@
 <template>
   <section v-if="user" class="profile">
     <div class="profile-avatar">
-      <Avatar
-        :image="user.profile?.avatar ?? undefined"
-        :label="!user.profile?.avatar ? user.email[0] : undefined"
-        shape="circle" />
+      <AvatarUpload
+        :user="{
+          id: user.id,
+          email: user.email,
+          profile: { avatar: user.profile?.avatar ?? undefined },
+        }"
+        :disabled="String(authUser?.id) !== userId"
+        @avatar-updated="handleAvatarUpdate" />
+
       <div class="profile-avatar__container">
         <div class="profile-avatar__container-info">
           <span class="pi pi-upload" style="font-size: 32px; color: #2e2e2e; height: 32px" />
@@ -83,7 +94,7 @@
       <a :href="`mailto:${user.email}`" class="profile-data__email">{{ user.email }}</a>
       <p class="profile-data__member">{{ formattedMemberSince }}</p>
     </div>
-    <ProfileForm :data="profileFormData" />
+    <ProfileForm :data="profileFormData" :user-id="userId" />
   </section>
 </template>
 

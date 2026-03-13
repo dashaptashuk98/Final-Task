@@ -11,7 +11,8 @@
         striped-rows
         sort-mode="single"
         class="custom-table"
-        paginator-template="PageLinks RowsPerPageDropdown">
+        paginator-template="PageLinks RowsPerPageDropdown"
+        @row-click="handleRowClick">
         <Column header-style="width: 4rem">
           <template #body="{ data }">
             <div class="avatar-container">
@@ -69,6 +70,7 @@
               text
               rounded
               severity="secondary" />
+
             <Button
               v-else
               icon="pi pi-angle-right"
@@ -103,6 +105,11 @@
   const getInitial = (email: string): string => {
     if (!email) return "?";
     return email.charAt(0).toUpperCase();
+  };
+
+  const handleRowClick = (event: { data: User }) => {
+    const userId = event.data.id;
+    navigateTo(`/users/${userId}/profile`);
   };
 
   const sortUsers = () => {
@@ -305,5 +312,21 @@
   .action-button {
     width: 32px;
     height: 32px;
+  }
+
+  :deep(.p-dialog .form-input-wrapper) {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+    max-width: none !important;
+  }
+
+  :deep(.p-dialog .form-input-container) {
+    width: 100% !important;
+  }
+
+  :deep(.p-dialog .p-inputtext),
+  :deep(.p-dialog .p-select) {
+    width: 100% !important;
   }
 </style>

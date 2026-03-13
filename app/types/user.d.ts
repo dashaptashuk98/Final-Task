@@ -22,6 +22,17 @@ export interface User {
   role: UserRole;
 }
 
+export interface uploadPhotoProps {
+  user: {
+    id: string;
+    email: string;
+    profile?: {
+      avatar?: string;
+    };
+  };
+  disabled?: boolean;
+}
+
 export interface Profile {
   id: string;
   created_at: string;

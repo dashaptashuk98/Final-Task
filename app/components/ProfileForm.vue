@@ -6,8 +6,12 @@
   import { updateProfileMutation } from "~/graphQL/user/userProfileUpdate.mutation";
   import { useUsers } from "~/composables/useUsers";
 
-  const props = defineProps<{ data: Record<ProfileForm, InputType> | null }>();
+  const props = defineProps<{
+    data: Record<ProfileForm, InputType> | null;
+    userId?: string;
+  }>();
   const { user, departments, positions } = useUsers();
+  const { authUser } = useAuth();
 
   const formData = ref<Record<ProfileForm, InputType> | null>(null);
   const initialData = ref<Record<ProfileForm, InputType> | null>(null);
@@ -110,7 +114,7 @@
       </div>
       <Button
         :label="'Update'.toLocaleUpperCase()"
-        :disabled="!hasChanges || loading"
+        :disabled="!hasChanges || loading || authUser?.id !== props.userId"
         :loading="loading"
         @click="handleUpdate" />
     </Form>

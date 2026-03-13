@@ -30,6 +30,20 @@ export interface Skill {
   category_parent_name: string | null;
 }
 
+export interface CvSkill {
+  name: string;
+  created_at: string;
+  categoryId: string;
+  mastery?: number;
+}
+
+export interface SkillsTableRow {
+  category: string;
+  skill: string;
+  experience: number;
+  lastUsed: number;
+}
+
 export interface UserSkill {
   id: string;
   name: string;

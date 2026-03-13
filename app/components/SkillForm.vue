@@ -1,7 +1,7 @@
 <template>
   <div class="form">
     <Form>
-      <div class="form-input-wrapper">
+      <div class="form-input-wrapper" :class="{ 'two-columns': twoColumns }">
         <template v-for="item in data" :key="item.key">
           <div class="form-input-container">
             <label :for="item.key" class="form-input-container__label">{{ item.label }}</label>
@@ -18,6 +18,7 @@
               option-label="name"
               option-value="name"
               class="custom-select"
+              :disabled="item.key === 'skill' && disableSkillField"
               :pt="{
                 optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
                 list: { style: { backgroundColor: '#FFFFFF' } },
@@ -46,10 +47,14 @@
     data,
     action = "Add",
     errorMessage = "",
+    twoColumns = false,
+    disableSkillField = false,
   } = defineProps<{
     data: T | null;
     action?: string;
     errorMessage?: string;
+    twoColumns?: boolean;
+    disableSkillField?: boolean;
   }>();
 
   defineEmits<{
@@ -76,6 +81,13 @@
     justify-content: center;
     flex-wrap: wrap;
     gap: 32px;
+  }
+
+  .form-input-wrapper.two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
   }
 
   .form-input-container {

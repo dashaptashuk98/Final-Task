@@ -18,7 +18,6 @@
               option-label="name"
               option-value="name"
               class="custom-select"
-              :disabled="item.key === 'skill' && disableSkillField"
               :pt="{
                 optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
                 list: { style: { backgroundColor: '#FFFFFF' } },
@@ -48,13 +47,11 @@
     action = "Add",
     errorMessage = "",
     twoColumns = false,
-    disableSkillField = false,
   } = defineProps<{
     data: T | null;
     action?: string;
     errorMessage?: string;
     twoColumns?: boolean;
-    disableSkillField?: boolean;
   }>();
 
   defineEmits<{

@@ -11,11 +11,6 @@ export const updateCvMutation = gql`
 
 export const updateCvProjects = gql`
   mutation UpdateCvProjects(
-    $cvId: ID!
-    $currentName: String!
-    $currentDescription: String!
-    $currentEducation: String
-    $projects: [CvProjectInput!]!
   ) {
     updateCv(
       cv: {

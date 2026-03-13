@@ -5,6 +5,7 @@
     :style="{ width: '450px' }"
     modal
     :closable="true"
+    :draggable="false"
     :dismissable-mask="true">
     <slot />
   </Dialog>

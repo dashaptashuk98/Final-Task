@@ -15,3 +15,13 @@ export interface Tabs {
   label: string;
   to: string;
 }
+
+export interface KeyValue {
+  key: string;
+  value: string;
+}
+
+export interface SelectableItem {
+  name: string;
+  isChecked: boolean;
+}

@@ -37,3 +37,25 @@ export const userQuery = gql`
     }
   }
 `;
+
+export const profileQuery = gql`
+  query profile($userId: ID!) {
+    profile(userId: $userId) {
+      id
+      created_at
+      first_name
+      last_name
+      full_name
+      avatar
+      skills {
+        name
+        categoryId
+        mastery
+      }
+      languages {
+        name
+        proficiency
+      }
+    }
+  }
+`;

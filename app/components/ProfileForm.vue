@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T">
   import { ref, computed, watch } from "vue";
   import type { ProfileForm } from "~/types/user";
   import type { InputType } from "~/types/types";

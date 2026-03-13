@@ -88,11 +88,11 @@
       name: data.language.value as string,
       proficiency: data.proficiency.value as string,
     };
-    if (profileData.value?.languages.some((item) => item.name === vars.name)) {
-      errorMessage.value = `${vars.name} is already exists`;
-      return;
-    }
     if (action === "Add") {
+      if (profileData.value?.languages.some((item) => item.name === vars.name)) {
+        errorMessage.value = `${vars.name} is already exists`;
+        return;
+      }
       profileData.value = await addProfileLanguage(vars);
     } else if (action === "Update") {
       profileData.value = await updateProfileLanguage(vars);

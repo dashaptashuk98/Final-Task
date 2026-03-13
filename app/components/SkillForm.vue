@@ -14,6 +14,7 @@
               v-else-if="item.type === 'Select'"
               v-model="item.value"
               :options="item.values"
+              :disabled="action === 'Update' && (item.key === 'language' || item.key === 'skill')"
               option-label="name"
               option-value="name"
               class="custom-select"

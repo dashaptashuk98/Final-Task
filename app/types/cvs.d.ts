@@ -35,6 +35,24 @@ export interface UpdateCvInput {
   education: Nullable<string>;
   description: string;
 }
+
+export interface AddCvProjectInput {
+  cvId: string;
+  projectId: string;
+  start_date: string;
+  end_date?: string | null;
+  roles: string[];
+  responsibilities: string[];
+}
+
+export interface UpdateCvProjectInput {
+  cvId: string;
+  projectId: string;
+  start_date: string;
+  end_date?: string | null;
+  roles: string[];
+  responsibilities: string[];
+}
 export interface Project {
   id: string;
   created_at: string;

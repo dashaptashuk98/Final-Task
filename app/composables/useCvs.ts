@@ -1,8 +1,15 @@
-import { updateCvMutation } from "~/graphQL/cvs/cvs.mutations";
 import { cvQuery } from "~/graphQL/cvs/cvs.query";
 import { ExportPdf } from "~/graphQL/cvs/exportProfile.mutation";
-import { getProjects } from "~/graphQL/cvs/project.query";
-import type { Cv, UpdateCvInput, UpdateCvResponse, Project } from "~/types/cvs";
+import { getProjects, addProject, deleteProject } from "~/graphQL/cvs/project.query";
+import { updateCvMutation, updateCvProject } from "~/graphQL/cvs/cvs.mutations";
+import type {
+  Cv,
+  UpdateCvInput,
+  UpdateCvResponse,
+  Project,
+  AddCvProjectInput,
+  UpdateCvProjectInput,
+} from "~/types/cvs";
 import type { Nullable } from "~/types/types";
 
 export const useCvs = () => {
@@ -51,5 +58,57 @@ export const useCvs = () => {
     }
     return null;
   };
-  return { cv, fetchCv, updateCv, exportPdf, fetchProject, projects };
+  const addCvProject = async (projectInput: AddCvProjectInput): Promise<Nullable<Cv>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: addProject,
+        variables: { project: projectInput },
+      });
+      if (data?.addCvProject) {
+        cv.value = data.addCvProject;
+        return data.addCvProject;
+      }
+    }
+    return null;
+  };
+
+  const updateCvProjectData = async (projectInput: UpdateCvProjectInput): Promise<Nullable<Cv>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: updateCvProject,
+        variables: { project: projectInput },
+      });
+      if (data?.updateCvProject) {
+        cv.value = data.updateCvProject;
+        return data.updateCvProject;
+      }
+    }
+    return null;
+  };
+
+  const deleteCvProject = async (cvId: string, projectId: string): Promise<Nullable<Cv>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: deleteProject,
+        variables: { cvId, projectId },
+      });
+      if (data?.removeCvProject) {
+        cv.value = data.removeCvProject;
+        return data.removeCvProject;
+      }
+    }
+    return null;
+  };
+
+  return {
+    cv,
+    fetchCv,
+    updateCv,
+    exportPdf,
+    fetchProject,
+    projects,
+    addCvProject,
+    updateCvProjectData,
+    deleteCvProject,
+  };
 };

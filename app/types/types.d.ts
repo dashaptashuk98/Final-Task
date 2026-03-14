@@ -16,3 +16,12 @@ export interface Tabs {
   label: string;
   to: string;
 }
+
+export type ProjectFormKey =
+  | "skill"
+  | "mastery"
+  | "start"
+  | "end"
+  | "description"
+  | "environment"
+  | "responsibilities";

@@ -62,7 +62,7 @@
       </div>
       <div class="form-actions">
         <Button type="button" label="Cancel" severity="secondary" @click="$emit('cancel')" />
-        <Button type="button" label="Confirm" @click="data && $emit('save', data)" />
+        <Button type="button" label="Add" @click="data && $emit('save', data)" />
       </div>
     </Form>
   </div>
@@ -237,11 +237,10 @@
     display: flex;
     gap: 16px;
     justify-content: flex-end;
-    width: 100%;
   }
 
   .p-button {
-    width: 450px;
+    width: 200px;
     height: 48px;
     border-radius: 40px;
     font:

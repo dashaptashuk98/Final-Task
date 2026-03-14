@@ -9,19 +9,11 @@ export const updateCvMutation = gql`
   }
 `;
 
-export const updateCvProjects = gql`
-  mutation UpdateCvProjects(
-  ) {
-    updateCv(
-      cv: {
-        cvId: $cvId
-        name: $currentName
-        description: $currentDescription
-        education: $currentEducation
-        projects: $projects
-      }
-    ) {
+export const updateCvProject = gql`
+  mutation UpdateCvProject($project: UpdateCvProjectInput!) {
+    updateCvProject(project: $project) {
       id
+      created_at
       name
       education
       description
@@ -40,6 +32,11 @@ export const updateCvProjects = gql`
           id
           name
           internal_name
+          domain
+          start_date
+          end_date
+          description
+          environment
         }
       }
     }

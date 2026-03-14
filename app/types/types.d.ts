@@ -25,3 +25,13 @@ export type ProjectFormKey =
   | "description"
   | "environment"
   | "responsibilities";
+
+export interface KeyValue {
+  key: string;
+  value: string;
+}
+
+export interface SelectableItem {
+  name: string;
+  isChecked: boolean;
+}

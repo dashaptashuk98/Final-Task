@@ -14,45 +14,49 @@
               v-else-if="item.type === 'Select'"
               v-model="item.value"
               :options="item.values"
+              :disabled="action === 'Update' && (item.key === 'language' || item.key === 'skill')"
               option-label="name"
               option-value="name"
               class="custom-select"
-              :disabled="item.key === 'skill' && disableSkillField"
               :pt="{
                 optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
                 list: { style: { backgroundColor: '#FFFFFF' } },
               }" />
           </div>
         </template>
+        <Message v-if="errorMessage" severity="error">{{ errorMessage }}</Message>
       </div>
       <div class="form-actions">
         <Button type="button" label="Cancel" severity="secondary" @click="$emit('cancel')" />
-        <Button type="button" label="Confirm" @click="data && $emit('save', data)" />
+        <Button
+          type="button"
+          label="Confirm"
+          @click="data && $emit('save', data, action as string)" />
       </div>
     </Form>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends Record<string, InputType>">
   import type { InputType } from "~/types/types";
   import Select from "primevue/select";
   import InputText from "primevue/inputtext";
 
-  type SkillForm = "skill" | "mastery";
-
   const {
     data,
+    action = "Add",
+    errorMessage = "",
     twoColumns = false,
-    disableSkillField = false,
   } = defineProps<{
-    data: Record<SkillForm, InputType> | null;
+    data: T | null;
+    action?: string;
+    errorMessage?: string;
     twoColumns?: boolean;
-    disableSkillField?: boolean;
   }>();
 
   defineEmits<{
     cancel: [];
-    save: [data: Record<SkillForm, InputType>];
+    save: [data: T, type: string];
   }>();
 </script>
 
@@ -175,5 +179,12 @@
 
   .p-button.p-button-secondary:hover {
     background-color: rgba(0, 0, 0, 0.04);
+  }
+
+  :deep(.p-message) {
+    font: 400 16px/24px "Roboto";
+    letter-spacing: 0.15px;
+    color: #c63031;
+    outline: 0;
   }
 </style>

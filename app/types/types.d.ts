@@ -15,3 +15,13 @@ export interface Tabs {
   label: string;
   to: string;
 }
+
+export interface sheetColumn {
+  field: string;
+  header: string;
+}
+
+export interface MenuData {
+  label: string;
+  command: () => void;
+}

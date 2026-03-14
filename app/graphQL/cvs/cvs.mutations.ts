@@ -8,3 +8,10 @@ export const updateCvMutation = gql`
     }
   }
 `;
+export const deleteCvMutation = gql`
+  mutation deleteCv($cv: DeleteCvInput!) {
+    deleteCv(cv: $cv) {
+      affected
+    }
+  }
+`;

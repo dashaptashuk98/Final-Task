@@ -2,13 +2,15 @@
   import type { Cv } from "~/types/cvs";
   import type { Nullable } from "~/types/types";
 
-  const { data, userId } = defineProps<{
+  const { data, userId, cvId } = defineProps<{
     data: Nullable<Pick<Cv, "name" | "education" | "description">>;
     userId: Nullable<string>;
+    cvId: Nullable<string>;
+  }>();
+  const emit = defineEmits<{
+    (event: "updateCv", data: Pick<Cv, "name" | "education" | "description">, id: string): void;
   }>();
   const { authId } = useAuth();
-  const { updateCv } = useCvs();
-  const route = useRoute();
   const formData = ref<Pick<Cv, "name" | "education" | "description">>({
     name: "",
     education: "",
@@ -41,7 +43,7 @@
     <Button
       label="UPDATE"
       :disabled="String(authId) !== userId"
-      @click="() => updateCv(Object.assign({ cvId: route.params.cvId as string }, formData))" />
+      @click="emit('updateCv', formData, cvId as string)" />
   </Form>
 </template>
 

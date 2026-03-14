@@ -36,4 +36,8 @@ export interface UpdateCvInput {
   description: string;
 }
 
+export interface DeleteCvInput {
+  cvId: number;
+}
+
 export type UpdateCvResponse = Pick<CvProject, "id" | "name" | "education" | "description">;

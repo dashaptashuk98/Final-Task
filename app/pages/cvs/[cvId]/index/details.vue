@@ -6,9 +6,10 @@
     middleware: "auth",
     layout: "default",
   });
-  const { fetchCv, cv } = useCvs();
+  const { fetchCv, updateCv } = useCvs();
   const route = useRoute();
-  await fetchCv(route.params.cvId as string);
+  const cv = useState<Nullable<Cv>>(() => null);
+  cv.value = await fetchCv(route.params.cvId as string);
   const userId = ref<Nullable<string>>(cv.value?.user?.id ?? null);
   const formData = ref<Nullable<Pick<Cv, "name" | "education" | "description">>>(
     cv.value
@@ -21,5 +22,9 @@
 </script>
 
 <template>
-  <CvForm :data="formData" :user-id="userId" />
+  <CvForm
+    :data="formData"
+    :user-id="userId"
+    :cv-id="cv ? cv.id : null"
+    @update-cv="(data, id) => updateCv(Object.assign({ cvId: id }, data))" />
 </template>

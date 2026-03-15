@@ -11,32 +11,32 @@
       @skill-click="handleSkillClick"
       @toggle-skill="handleToggleSkill" />
 
-    <div v-if="String(authId) === String(cv?.user?.id)" class="actions__wrapper">
+    <div v-if="String(authId) === String(cvOwnerId)" class="actions__wrapper">
       <AddRemoveButtons
         :is-select-mode="deleteMode"
         :select-counter="selectedSkillsToDelete.size"
         page-title="skill"
-        @activate-modal="visible = true"
+        @activate-modal="
+          (type) => {
+            modalType = type;
+            visible = true;
+          }
+        "
         @toggle-mode="deleteMode = !deleteMode"
         @handle-remove="handleDeleteSkills" />
 
-      <ModalDialog v-model:visible="visible" header="Add Skill">
+      <ModalDialog
+        v-model:visible="visible"
+        :header="`${modalType} skill`"
+        @update:visible="(value) => (visible = value)">
         <SkillForm
           :data="formData"
           :loading="mutationLoading"
           :error-message="errorMessage"
-          action="Add"
+          :action="modalType"
+          :disabled="String(authId) !== String(cvOwnerId)"
           @save="handleFormSubmit"
-          @cancel="handleCancel" />
-      </ModalDialog>
-      <ModalDialog v-model:visible="visibleUpdate" header="Update skill">
-        <SkillForm
-          :data="formData"
-          :loading="mutationLoading"
-          :error-message="errorMessage"
-          action="Update"
-          @save="handleFormSubmit"
-          @cancel="handleCancel" />
+          @cancel="() => (visible = false)" />
       </ModalDialog>
     </div>
   </div>
@@ -58,12 +58,13 @@
   const { authId } = useAuth();
   const route = useRoute();
   const cvId = route.params.cvId as string;
+  const cvOwnerId = ref<string | null>(null);
 
   const loading = ref(true);
   const error = ref<string | null>(null);
   const errorMessage = ref<string>("");
   const visible = ref(false);
-  const visibleUpdate = ref(false);
+  const modalType = ref<string>("");
   const selectedSkill = ref<UserSkill | null>(null);
   const mutationLoading = ref(false);
   const deleteMode = ref(false);
@@ -119,7 +120,6 @@
 
       if (cv.value) {
         visible.value = false;
-        visibleUpdate.value = false;
         handleCancel();
       }
     } catch (err) {
@@ -134,7 +134,8 @@
     formData.skill.value = skill.name;
     formData.mastery.value = skill.mastery;
     selectedSkill.value = skill;
-    visibleUpdate.value = true;
+    modalType.value = "Update";
+    visible.value = true;
   };
 
   const handleToggleSkill = (skillName: string) => {
@@ -166,7 +167,6 @@
     selectedSkill.value = null;
     errorMessage.value = "";
     visible.value = false;
-    visibleUpdate.value = false;
   };
 
   watch(
@@ -190,8 +190,8 @@
       error.value = null;
 
       await fetchCv(cvId);
-
       if (cv.value?.user?.id) {
+        cvOwnerId.value = cv.value.user.id;
         route.params.userID = cv.value.user.id;
       }
 

@@ -31,7 +31,6 @@
   await fetchProject();
   await fetchCv(cvId);
 
-  // Set userID in route params for checkRights
   if (cv.value?.user?.id) {
     route.params.userID = cv.value.user.id;
   }
@@ -56,7 +55,6 @@
       value: "",
       type: "InputText",
       values: [],
-      disabled: true,
     },
     start: {
       key: "start date",
@@ -85,7 +83,6 @@
       value: [],
       type: "MultiSelect",
       values: [],
-      disabled: true,
     },
     responsibilities: {
       key: "responsibilities",
@@ -347,16 +344,6 @@
     <div v-else>
       <p>No projects found</p>
     </div>
-    <!-- <ActionModal
-      width="400px"
-      header="Delete Project"
-      :visible="showDeleteModal"
-      :item-name="projectToDelete?.project?.name || projectToDelete?.name || ''"
-      item-type="project"
-      @update:visible="showDeleteModal = $event"
-      @cancel="showDeleteModal = false"
-      @confirm="handleConfirmDelete"
-    /> -->
 
     <AddRemoveButtons
       :is-select-mode="isSelectMode"

@@ -60,4 +60,11 @@ export interface UserSkill {
   created_at?: string;
 }
 
+export interface SkillMastery {
+  name: string;
+  categoryId: string | null;
+  mastery: Mastery;
+  __typename?: string;
+}
+
 export type SkillFormKey = "skill" | "mastery";

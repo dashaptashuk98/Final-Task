@@ -1,14 +1,23 @@
 import { cvQuery } from "~/graphQL/cvs/cvs.query";
 import { ExportPdf } from "~/graphQL/cvs/exportProfile.mutation";
 import { getProjects, addProject, deleteProject } from "~/graphQL/cvs/project.query";
-import { updateCvMutation, updateCvProject } from "~/graphQL/cvs/cvs.mutations";
+import {
+  updateCvMutation,
+  updateCvProject,
+  AddSkillMutation,
+  updateCvSkillMutation,
+  deleteCvSkillMutation,
+} from "~/graphQL/cvs/cvs.mutations";
 import type {
   Cv,
   UpdateCvInput,
   UpdateCvResponse,
   Project,
-  AddCvProjectInput,
+  AddCvSkillInput,
+  UpdateCvSkillInput,
+  DeleteCvSkillInput,
   UpdateCvProjectInput,
+  AddCvProjectInput,
 } from "~/types/cvs";
 import type { Nullable } from "~/types/types";
 
@@ -31,6 +40,34 @@ export const useCvs = () => {
       return data.value.projects;
     }
     return [];
+  };
+
+  const addCvSkill = async (skill: AddCvSkillInput): Promise<Nullable<Cv>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate<Record<"addCvSkill", Cv>>({
+        mutation: AddSkillMutation,
+        variables: { skill: skill },
+      });
+      if (data) {
+        cv.value = data.addCvSkill;
+        return data.addCvSkill;
+      }
+    }
+    return null;
+  };
+
+  const updateCvSkill = async (skill: UpdateCvSkillInput): Promise<Nullable<Cv>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate<Record<"updateCvSkill", Cv>>({
+        mutation: updateCvSkillMutation,
+        variables: { skill: skill },
+      });
+      if (data) {
+        cv.value = data.updateCvSkill;
+        return data.updateCvSkill;
+      }
+    }
+    return null;
   };
 
   const updateCv = async (cvInput: UpdateCvInput): Promise<Nullable<UpdateCvResponse>> => {
@@ -86,6 +123,20 @@ export const useCvs = () => {
     return null;
   };
 
+  const deleteCvSkill = async (skill: DeleteCvSkillInput): Promise<Nullable<Cv>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate<Record<"deleteCvSkill", Cv>>({
+        mutation: deleteCvSkillMutation,
+        variables: { skill: skill },
+      });
+      if (data) {
+        cv.value = data.deleteCvSkill;
+        return data.deleteCvSkill;
+      }
+    }
+    return null;
+  };
+
   const deleteCvProject = async (cvId: string, projectId: string): Promise<Nullable<Cv>> => {
     if (clients) {
       const { data } = await clients.default.mutate({
@@ -110,5 +161,8 @@ export const useCvs = () => {
     addCvProject,
     updateCvProjectData,
     deleteCvProject,
+    addCvSkill,
+    updateCvSkill,
+    deleteCvSkill,
   };
 };

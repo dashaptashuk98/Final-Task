@@ -62,7 +62,7 @@
       </div>
       <div class="form-actions">
         <Button type="button" label="Cancel" severity="secondary" @click="$emit('cancel')" />
-        <Button type="button" label="Add" @click="data && $emit('save', data)" />
+        <Button type="button" :label="action" @click="data && $emit('save', data)" />
       </div>
     </Form>
   </div>
@@ -76,10 +76,15 @@
   import Textarea from "primevue/textarea";
 
   type SkillForm = "skill" | "mastery";
-  const { data, twoColumns = false } = defineProps<{
+  const {
+    data,
+    twoColumns = false,
+    action = "Add",
+  } = defineProps<{
     data: Record<SkillForm, InputType> | null;
     twoColumns?: boolean;
     disableField?: boolean;
+    action?: string;
   }>();
 
   defineEmits<{

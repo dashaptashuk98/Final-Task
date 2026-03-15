@@ -1,16 +1,18 @@
 <script setup lang="ts">
-  import type { InputType, ProjectFormKey  } from "~/types/types";
+  import type { InputType, ProjectFormKey } from "~/types/types";
   import type { CvProject, AddCvProjectInput, UpdateCvProjectInput } from "~/types/cvs";
-    definePageMeta({
+  definePageMeta({
     middleware: "auth",
     layout: "default",
   });
 
   const route = useRoute();
   const cvId = route.params.cvId as string;
-  const visibleUpdate = ref(false);
+
   const addedProjects = ref<CvProject[]>([]);
-  const deleteMode = ref(false);
+  const isSelectMode = ref(false);
+  const isModalVisible = ref(false);
+  const modalType = ref("");
   const selectedCvProject = ref<CvProject | null>(null);
   const isEditMode = ref(false);
   // const showDeleteModal = ref(false);
@@ -28,6 +30,11 @@
 
   await fetchProject();
   await fetchCv(cvId);
+
+  // Set userID in route params for checkRights
+  if (cv.value?.user?.id) {
+    route.params.userID = cv.value.user.id;
+  }
 
   if (cv.value?.projects) {
     addedProjects.value = cv.value.projects;
@@ -161,7 +168,7 @@
     const result = await addCvProject(projectInput);
     if (result) {
       addedProjects.value = result.projects || [];
-      visibleUpdate.value = false;
+      isModalVisible.value = false;
       resetForm();
     }
   };
@@ -175,20 +182,16 @@
   };
 
   const cancelDeleteMode = () => {
-    deleteMode.value = false;
+    isSelectMode.value = false;
     selectedProjectsToDelete.value.clear();
   };
 
   const handleProjectClick = (cvProject: CvProject) => {
-    if (deleteMode.value) {
+    if (isSelectMode.value) {
       toggleProjectForDeletion(cvProject.id);
       return;
     }
-
-    selectedCvProject.value = cvProject;
-    isEditMode.value = true;
-    fillProjectDataForEdit(cvProject);
-    visibleUpdate.value = true;
+    activateModal("Edit", cvProject);
   };
 
   const handleProjectUpdate = async () => {
@@ -218,7 +221,7 @@
     const result = await updateCvProjectData(projectInput);
     if (result) {
       addedProjects.value = result.projects || [];
-      visibleUpdate.value = false;
+      isModalVisible.value = false;
       resetForm();
     }
   };
@@ -246,6 +249,33 @@
   //   showDeleteModal.value = false;
   //   projectToDelete.value = null;
   // };
+
+  const handleActivateModal = (title: string) => {
+    activateModal(title);
+  };
+
+  const activateModal = (title: string, cvProject?: CvProject) => {
+    if (cvProject) {
+      selectedCvProject.value = cvProject;
+      isEditMode.value = true;
+      fillProjectDataForEdit(cvProject);
+    } else {
+      resetForm();
+      isEditMode.value = false;
+    }
+    isModalVisible.value = true;
+    modalType.value = title;
+
+    return title;
+  };
+
+  const handleToggleMode = () => {
+    if (isSelectMode.value) {
+      cancelDeleteMode();
+    } else {
+      isSelectMode.value = true;
+    }
+  };
 
   const handleDeleteProjects = async () => {
     if (selectedProjectsToDelete.value.size === 0) return;
@@ -328,58 +358,67 @@
       @confirm="handleConfirmDelete"
     /> -->
 
-    <div class="actions__wrapper">
-      <Button
-        v-if="!deleteMode"
-        label="Add Project"
-        class="btn-add"
-        @click="
-          resetForm();
-          visibleUpdate = true;
-        " />
-      <Button
-        v-if="!deleteMode && addedProjects.length > 0"
-        label="Remove Projects"
-        severity="danger"
-        class="btn-remove"
-        @click="deleteMode = true" />
-
-      <Button v-if="deleteMode" label="Cancel" severity="secondary" @click="cancelDeleteMode" />
-
-      <Button
-        v-if="deleteMode && selectedProjectsToDelete.size > 0"
-        :label="`Delete (${selectedProjectsToDelete.size})`"
-        severity="danger"
-        @click="handleDeleteProjects" />
-    </div>
+    <AddRemoveButtons
+      :is-select-mode="isSelectMode"
+      :select-counter="selectedProjectsToDelete.size"
+      page-title="project"
+      @activate-modal="handleActivateModal"
+      @toggle-mode="handleToggleMode"
+      @handle-remove="handleDeleteProjects" />
 
     <ModalDialog
-      :visible="visibleUpdate"
-      :header="isEditMode ? 'Edit Project' : 'Add Project'"
+      :visible="isModalVisible"
+      :header="`${modalType} Project`"
       width="900px"
-      @update:visible="visibleUpdate = $event"
+      @update:visible="isModalVisible = $event"
       @hide="resetForm">
-      <ProjectForm :data="formData" @save="handleSave" @cancel="visibleUpdate = false" />
+      <ProjectForm
+        :data="formData"
+        :action="modalType"
+        @save="handleSave"
+        @cancel="isModalVisible = false" />
     </ModalDialog>
   </div>
 </template>
 
 <style scoped>
+  .selected-for-delete {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    cursor: pointer;
+  }
+
+  .actions__wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 20px;
+    margin-top: 2rem;
+  }
+
   .btn-add :deep(.p-button) {
     background: transparent;
     border: 1px solid #767676;
-    color: #c63031;
+    color: #767676;
     padding: 0.5rem 1rem;
   }
 
   .btn-add :deep(.p-button-label) {
-    color: #c63031;
+    color: #767676;
     text-transform: uppercase;
     font-weight: 500;
   }
 
-  .btn-add :deep(.p-button-icon) {
+  .btn-remove :deep(.p-button) {
+    background: transparent;
+    border: 1px solid #c63031;
     color: #c63031;
-    margin-right: 8px;
+    padding: 0.5rem 1rem;
+  }
+
+  .btn-remove :deep(.p-button-label) {
+    color: #c63031 !important;
+    text-transform: uppercase;
+    font-weight: 500;
   }
 </style>

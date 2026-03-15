@@ -45,6 +45,25 @@ export interface AddCvProjectInput {
   responsibilities: string[];
 }
 
+export interface AddCvSkillInput {
+  cvId: string;
+  name: string;
+  categoryId: string;
+  mastery: string;
+}
+
+export interface UpdateCvSkillInput {
+  cvId: string;
+  name: string;
+  categoryId: string;
+  mastery: string;
+}
+
+export interface DeleteCvSkillInput {
+  cvId: string;
+  name: string[];
+}
+
 export interface UpdateCvProjectInput {
   cvId: string;
   projectId: string;

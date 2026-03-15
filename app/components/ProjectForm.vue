@@ -13,7 +13,7 @@
               v-if="item.type === 'InputText'"
               :id="item.key"
               v-model="item.value as string"
-              :disabled="item.disabled"
+              :disabled="isFieldDisabled(item.key)"
               class="custom-input"
               :pt="{
                 root: { style: { overflowX: 'auto', whiteSpace: 'nowrap' } },
@@ -24,7 +24,7 @@
               v-model="item.value"
               :options="item.values"
               class="custom-select"
-              :disabled="item.disabled"
+              :disabled="isFieldDisabled(item.key)"
               :pt="{
                 optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
                 list: { style: { backgroundColor: '#FFFFFF' } },
@@ -34,7 +34,7 @@
               :id="item.key"
               v-model="item.value as Date"
               show-icon
-              :disabled="item.disabled"
+              :disabled="isFieldDisabled(item.key)"
               fluid
               :show-on-focus="false"
               class="custom-datepicker" />
@@ -43,7 +43,7 @@
               :id="item.key"
               v-model="item.value as string"
               rows="3"
-              :disabled="item.disabled"
+              :disabled="isFieldDisabled(item.key)"
               auto-resize
               class="custom-textarea" />
             <MultiSelect
@@ -51,7 +51,7 @@
               v-model="item.value"
               :options="item.values"
               display="chip"
-              :disabled="item.disabled"
+              :disabled="isFieldDisabled(item.key)"
               class="custom-multiselect"
               :pt="{
                 optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
@@ -86,6 +86,20 @@
     disableField?: boolean;
     action?: string;
   }>();
+
+  const isFieldDisabled = (fieldKey: string) => {
+    if (!data) return false;
+
+    if (action === "Add") {
+      return fieldKey !== "project";
+    }
+
+    if (action === "Update" || action === "Edit") {
+      return fieldKey !== "responsibilities";
+    }
+
+    return data[fieldKey as SkillForm]?.disabled || false;
+  };
 
   defineEmits<{
     cancel: [];

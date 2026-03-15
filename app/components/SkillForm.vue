@@ -31,6 +31,7 @@
         <Button
           type="button"
           label="Confirm"
+          :disabled="disabled"
           @click="data && $emit('save', data, action as string)" />
       </div>
     </Form>
@@ -47,11 +48,13 @@
     action = "Add",
     errorMessage = "",
     twoColumns = false,
+    disabled = false,
   } = defineProps<{
     data: T | null;
     action?: string;
     errorMessage?: string;
     twoColumns?: boolean;
+    disabled?: boolean;
   }>();
 
   defineEmits<{

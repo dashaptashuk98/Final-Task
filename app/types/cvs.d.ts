@@ -29,8 +29,9 @@ export interface CvProject {
   responsibilities: string[];
 }
 
-export interface UpdateCvInput {
-  cvId: string;
+export interface CvInput {
+  cvId?: string;
+  userId?: string;
   name: string;
   education: Nullable<string>;
   description: string;
@@ -82,6 +83,10 @@ export interface Project {
   end_date?: string | null;
   description: string;
   environment: string[];
+}
+
+export interface DeleteCvInput {
+  cvId: number;
 }
 
 export type UpdateCvResponse = Pick<CvProject, "id" | "name" | "education" | "description">;

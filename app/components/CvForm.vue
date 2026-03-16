@@ -2,13 +2,19 @@
   import type { Cv } from "~/types/cvs";
   import type { Nullable } from "~/types/types";
 
-  const { data, userId } = defineProps<{
+  const {
+    data,
+    userId,
+    cvId = "",
+  } = defineProps<{
     data: Nullable<Pick<Cv, "name" | "education" | "description">>;
     userId: Nullable<string>;
+    cvId?: Nullable<string>;
+  }>();
+  const emit = defineEmits<{
+    (event: "submitCv", id: string, data: Pick<Cv, "name" | "education" | "description">): void;
   }>();
   const { authId } = useAuth();
-  const { updateCv } = useCvs();
-  const route = useRoute();
   const formData = ref<Pick<Cv, "name" | "education" | "description">>({
     name: "",
     education: "",
@@ -26,22 +32,31 @@
   <Form>
     <div class="form-input-container">
       <label class="form-input-container__label">Name</label>
-      <InputText :id="formData ? formData.name : ''" v-model="formData.name" />
+      <InputText :id="formData ? formData.name : ''" v-model="formData.name" placeholder="Name" />
     </div>
     <div class="form-input-container">
       <label class="form-input-container__label">Education</label>
       <InputText
         :id="formData ? (formData.education as string) : ''"
-        v-model="formData.education" />
+        v-model="formData.education"
+        placeholder="Education" />
     </div>
     <div class="form-input-container">
       <label class="form-input-container__label">Description</label>
-      <Textarea :id="formData ? formData.description : ''" v-model="formData.description" />
+      <Textarea
+        :id="formData ? formData.description : ''"
+        v-model="formData.description"
+        placeholder="Description" />
     </div>
     <Button
       label="UPDATE"
       :disabled="String(authId) !== userId"
-      @click="() => updateCv(Object.assign({ cvId: route.params.cvId as string }, formData))" />
+      @click="
+        () =>
+          cvId
+            ? emit('submitCv', cvId as string, formData)
+            : emit('submitCv', userId as string, formData)
+      " />
   </Form>
 </template>
 
@@ -52,7 +67,6 @@
 
   .p-form {
     margin: 0 auto;
-    margin-top: 32px;
     display: flex;
     flex-direction: column;
     align-items: end;
@@ -79,6 +93,7 @@
     width: 100%;
     border: 1px solid #0000003b;
     padding: 0 10px;
+    color: #00000099;
   }
   :deep(.p-inputtext) {
     font:
@@ -91,6 +106,10 @@
       sans-serif;
     letter-spacing: 0.15px;
     padding: 10px;
+  }
+
+  :deep(.p-filled) {
+    color: #000000;
   }
 
   .p-button {

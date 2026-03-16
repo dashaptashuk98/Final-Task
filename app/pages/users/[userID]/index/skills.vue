@@ -312,76 +312,101 @@
     margin-top: 2rem;
   }
 
-  :global(.p-dialog-mask) {
-    background-color: rgba(0, 0, 0, 0.5) !important;
-    z-index: 9999 !important;
+  .btn-add :deep(.p-button) {
+    background: transparent;
+    border: 1px solid #767676;
+    color: #767676;
+    padding: 0.5rem 1rem;
   }
 
-  :global(.p-dialog) {
-    border-radius: 12px !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
-    background: white !important;
-    z-index: 10000 !important;
+  .btn-add :deep(.p-button-label) {
+    color: #767676;
+    text-transform: uppercase;
+    font-weight: 500;
   }
 
-  :global(.p-dialog-header) {
-    padding: 1.5rem !important;
-    background: white !important;
-    border-bottom: 1px solid #e0e0e0 !important;
-    border-radius: 12px 12px 0 0 !important;
+  .btn-add :deep(.p-button-icon) {
+    color: #767676;
+    margin-right: 8px;
   }
 
-  :global(.p-dialog-title) {
-    font-weight: 600 !important;
-    font-size: 1.25rem !important;
-    color: #333 !important;
+  .btn-remove :deep(.p-button) {
+    background: transparent;
+    border: 1px solid #c63031;
+    color: #c63031;
+    padding: 0.5rem 1rem;
   }
 
-  :global(.p-dialog-header-icons) {
-    display: flex !important;
-    align-items: center !important;
+  .btn-remove :deep(.p-button-label) {
+    color: #c63031 !important;
+    text-transform: uppercase;
+    font-weight: 500;
   }
 
-  :global(.p-dialog-header-close) {
-    background: transparent !important;
-    border: none !important;
-    color: #666 !important;
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    transition: background-color 0.2s !important;
+  .button__wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
   }
 
-  :global(.p-dialog-header-close:hover) {
-    background: #f5f5f5 !important;
+  .btn-cancel {
+    min-width: 120px;
+    height: 44px;
+    border-radius: 22px;
+    background-color: transparent;
+    border: 1px solid #9b9b9b;
+    color: #9b9b9b;
+    font:
+      600 13px/1 "Roboto",
+      sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0 24px;
   }
 
-  :global(.p-dialog-content) {
-    padding: 1.5rem !important;
-    background: white !important;
-    border-radius: 0 0 12px 12px !important;
+  .btn-cancel:hover {
+    background-color: rgba(155, 155, 155, 0.1);
   }
 
-  :global(.p-dialog .form) {
-    margin-top: 0 !important;
+  .btn-delete {
+    min-width: 140px;
+    height: 44px;
+    border-radius: 22px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    font:
+      600 13px/1 "Roboto",
+      sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
 
-  :global(.p-dialog .form-input-wrapper) {
-    flex-direction: column !important;
-    gap: 20px !important;
+  .btn-delete:hover {
+    background-color: #c82333;
   }
 
-  :global(.p-dialog .form-input-container) {
-    width: 100% !important;
-  }
-
-  :global(.p-dialog .custom-select),
-  :global(.p-dialog .custom-input) {
-    width: 100% !important;
+  .btn-delete .badge {
+    background-color: white;
+    color: #dc3545;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
   }
 
   :global(.p-select-overlay) {

@@ -67,3 +67,41 @@ export const cvQuery = gql`
     }
   }
 `;
+export const cvsQuery = gql`
+  query cvs {
+    cvs {
+      id
+      created_at
+      name
+      education
+      description
+      user {
+        id
+        created_at
+        email
+        department {
+          id
+          created_at
+          name
+        }
+        department_name
+        position {
+          id
+          created_at
+          name
+        }
+        position_name
+        role
+      }
+      skills {
+        name
+        categoryId
+        mastery
+      }
+      languages {
+        name
+        proficiency
+      }
+    }
+  }
+`;

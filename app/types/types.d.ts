@@ -26,6 +26,16 @@ export type ProjectFormKey =
   | "environment"
   | "responsibilities";
 
+export interface sheetColumn {
+  field: string;
+  header: string;
+}
+
+export interface MenuData {
+  label: string;
+  command: () => void;
+}
+
 export interface KeyValue {
   key: string;
   value: string;

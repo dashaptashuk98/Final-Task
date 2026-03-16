@@ -7,14 +7,13 @@
   });
 
   const { fetchCvs, createCv, updateCv, deleteCv } = useCvs();
-  const { authId, authUser } = useAuth();
+  const { authId } = useAuth();
   const cvsList = useState<Nullable<Cv[]>>(() => null);
   const isModalVisible = ref<boolean>(false);
   const modalHeader = ref<string>("");
   const isDeleteModalVisible = ref(false);
   cvsList.value = await fetchCvs();
   const selectedCv = ref<Nullable<Cv>>(null);
-  const canCreate = computed(() => authUser.value?.role === "Admin");
   const columns = ref<sheetColumn[]>([
     { field: "name", header: "Name" },
     { field: "education", header: "Education" },
@@ -111,7 +110,7 @@
       :columns
       :sheet-data="cvsList"
       :context-menu="contextMenuOptions"
-      :button-label="canCreate ? 'Create CV' : ''"
+      button-label="Create CV"
       page="cvs"
       @handle-selected-item="(cv) => (selectedCv = cv)"
       @activate-form="activateModal" />

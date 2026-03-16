@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type { InputType, ProjectFormKey } from "~/types/types";
+  import type { InputType, ProjectFormKey, MenuData, sheetColumn } from "~/types/types";
   import type { CvProject, AddCvProjectInput, UpdateCvProjectInput } from "~/types/cvs";
   definePageMeta({
     middleware: "auth",
@@ -9,15 +9,11 @@
   const route = useRoute();
   const cvId = route.params.cvId as string;
 
-  const addedProjects = ref<CvProject[]>([]);
-  const isSelectMode = ref(false);
+  const addedProjects = useState<CvProject[]>("addedProjects", () => []);
   const isModalVisible = ref(false);
   const modalType = ref("");
   const selectedCvProject = ref<CvProject | null>(null);
   const isEditMode = ref(false);
-  // const showDeleteModal = ref(false);
-  // const projectToDelete = ref<CvProject | null>(null);
-  const selectedProjectsToDelete = ref<Set<string>>(new Set());
   const {
     projects,
     fetchProject,
@@ -164,31 +160,10 @@
 
     const result = await addCvProject(projectInput);
     if (result) {
-      addedProjects.value = result.projects || [];
+      addedProjects.value = [...(result.projects || [])];
       isModalVisible.value = false;
       resetForm();
     }
-  };
-
-  const toggleProjectForDeletion = (projectId: string) => {
-    if (selectedProjectsToDelete.value.has(projectId)) {
-      selectedProjectsToDelete.value.delete(projectId);
-    } else {
-      selectedProjectsToDelete.value.add(projectId);
-    }
-  };
-
-  const cancelDeleteMode = () => {
-    isSelectMode.value = false;
-    selectedProjectsToDelete.value.clear();
-  };
-
-  const handleProjectClick = (cvProject: CvProject) => {
-    if (isSelectMode.value) {
-      toggleProjectForDeletion(cvProject.id);
-      return;
-    }
-    activateModal("Edit", cvProject);
   };
 
   const handleProjectUpdate = async () => {
@@ -217,38 +192,10 @@
 
     const result = await updateCvProjectData(projectInput);
     if (result) {
-      addedProjects.value = result.projects || [];
+      addedProjects.value = [...(result.projects || [])];
       isModalVisible.value = false;
       resetForm();
     }
-  };
-
-  // const openDeleteModal = (cvProject: CvProject) => {
-  //   projectToDelete.value = cvProject;
-  //   showDeleteModal.value = true;
-  // };
-
-  // const handleConfirmDelete = async () => {
-  //   if (!projectToDelete.value) return;
-
-  //   const projectId = projectToDelete.value.project?.id || projectToDelete.value.id;
-  //   if (!projectId) {
-  //     console.error("Project ID is missing");
-  //     return;
-  //   }
-
-  //   const result = await deleteCvProject(cvId, projectId);
-
-  //   if (result) {
-  //     addedProjects.value = result.projects || [];
-  //   }
-
-  //   showDeleteModal.value = false;
-  //   projectToDelete.value = null;
-  // };
-
-  const handleActivateModal = (title: string) => {
-    activateModal(title);
   };
 
   const activateModal = (title: string, cvProject?: CvProject) => {
@@ -266,36 +213,6 @@
     return title;
   };
 
-  const handleToggleMode = () => {
-    if (isSelectMode.value) {
-      cancelDeleteMode();
-    } else {
-      isSelectMode.value = true;
-    }
-  };
-
-  const handleDeleteProjects = async () => {
-    if (selectedProjectsToDelete.value.size === 0) return;
-
-    for (const cvProjectId of selectedProjectsToDelete.value) {
-      const cvProject = addedProjects.value.find((p) => p.id === cvProjectId);
-      if (!cvProject) continue;
-
-      const projectId = cvProject.project?.id || cvProject.id;
-      if (!projectId) {
-        continue;
-      }
-
-      const result = await deleteCvProject(cvId, projectId);
-
-      if (result) {
-        addedProjects.value = result.projects || [];
-      }
-    }
-
-    cancelDeleteMode();
-  };
-
   watch(
     () => formData.skill.value,
     (newProjectName) => {
@@ -308,50 +225,69 @@
   watch(projects, () => {
     formData.skill.values = projectOptions.value;
   });
+
+  const columns: sheetColumn[] = [
+    { field: "project.name", header: "Name" },
+    { field: "project.domain", header: "Domain" },
+    { field: "project.start_date", header: "Start Date" },
+    { field: "project.end_date", header: "End Date" },
+  ];
+
+  const isDeleteModalVisible = ref(false);
+
+  const handleConfirmDelete = async () => {
+    if (!selectedCvProject.value) return;
+    const projectId = selectedCvProject.value.project?.id || selectedCvProject.value.id;
+    const result = await deleteCvProject(cvId, projectId);
+    if (result) {
+      addedProjects.value = [...(result.projects || [])];
+      isDeleteModalVisible.value = false;
+      selectedCvProject.value = null;
+    }
+  };
+
+  const { authUser } = useAuth();
+
+  const contextMenuOptions = computed<MenuData[]>(() => [
+    ...(authUser.value?.role === "Admin"
+      ? [
+          {
+            label: "Edit Project",
+            command: () =>
+              selectedCvProject.value && activateModal("Edit", selectedCvProject.value),
+          },
+        ]
+      : []),
+    {
+      label: "Delete Project",
+      command: () => {
+        isDeleteModalVisible.value = true;
+      },
+    },
+  ]);
 </script>
 
 <template>
   <div>
-    <div v-if="addedProjects.length">
-      <div
-        v-for="cvProject in addedProjects"
-        :key="cvProject.id"
-        :class="{ 'selected-for-delete': selectedProjectsToDelete.has(cvProject.id) }"
-        @click="handleProjectClick(cvProject)">
-        <h4>{{ cvProject.project?.name || cvProject.name }}</h4>
-        <p><strong>Domain:</strong> {{ cvProject.project?.domain || cvProject.domain }}</p>
-        <p>
-          <strong>Start Date:</strong> {{ cvProject.project?.start_date || cvProject.start_date }}
-        </p>
-        <p>
-          <strong>End Date:</strong>
-          {{ cvProject.project?.end_date || cvProject.end_date || "N/A" }}
-        </p>
-        <p>
-          <strong>Description:</strong>
-          {{ cvProject.project?.description || cvProject.description }}
-        </p>
-        <p>
-          <strong>Environment:</strong>
-          {{ cvProject.project?.environment?.join(", ") || cvProject.environment?.join(", ") }}
-        </p>
-        <p>
-          <strong>Responsibilities:</strong> {{ cvProject.responsibilities?.join(", ") || "N/A" }}
-        </p>
-        <p><strong>Roles:</strong> {{ cvProject.roles?.join(", ") || "N/A" }}</p>
-      </div>
-    </div>
-    <div v-else>
-      <p>No projects found</p>
-    </div>
+    <CvsSheet
+      :columns="columns"
+      :sheet-data="addedProjects"
+      :context-menu="contextMenuOptions"
+      :button-label="checkRights(cv?.user?.id || '') ? 'Add Project' : ''"
+      page="projects"
+      @handle-selected-item="(p: CvProject) => (selectedCvProject = p)"
+      @activate-form="() => checkRights(cv?.user?.id || '') && activateModal('Add')" />
 
-    <AddRemoveButtons
-      :is-select-mode="isSelectMode"
-      :select-counter="selectedProjectsToDelete.size"
-      page-title="project"
-      @activate-modal="handleActivateModal"
-      @toggle-mode="handleToggleMode"
-      @handle-remove="handleDeleteProjects" />
+    <ModalDialog
+      v-if="checkRights(cv?.user?.id || '') || authUser?.role === 'Admin'"
+      v-model:visible="isDeleteModalVisible"
+      header="Delete Project">
+      <ActionModal
+        :item-name="selectedCvProject?.project?.name || selectedCvProject?.name"
+        item-type="project"
+        @cancel="isDeleteModalVisible = false"
+        @confirm="handleConfirmDelete" />
+    </ModalDialog>
 
     <ModalDialog
       :visible="isModalVisible"

@@ -1,17 +1,16 @@
-<script setup lang="ts">
-  import type { Cv } from "~/types/cvs";
+<script setup lang="ts" generic="T extends Record<string, any>">
   import type { MenuData, Nullable, sheetColumn } from "~/types/types";
   import { FilterMatchMode } from "@primevue/core/api";
 
   const { columns, sheetData, contextMenu, page, buttonLabel } = defineProps<{
     columns: sheetColumn[];
-    sheetData: Nullable<Cv[]>;
+    sheetData: Nullable<T[]>;
     contextMenu: MenuData[];
     page: string;
     buttonLabel: string;
   }>();
   const emit = defineEmits<{
-    (event: "handleSelectedItem", value: Cv): void;
+    (event: "handleSelectedItem", value: T): void;
     (event: "submitSearch" | "activateForm", value: string): void;
   }>();
   const cm = ref();
@@ -19,16 +18,16 @@
     name: { value: "", matchMode: FilterMatchMode.STARTS_WITH },
   });
 
-  const handleRowClick = (e: Record<"data", Cv>) => {
+  const handleRowClick = (e: Record<"data", T>) => {
     if (e.data) {
       if (page === "cvs") {
         return navigateTo(`/${page}/${e.data.id}/details`);
       }
     }
   };
-  const handleOptionPick = (e: MouseEvent, cv: Cv): void => {
+  const handleOptionPick = (e: MouseEvent, item: T): void => {
     cm.value.show(e);
-    emit("handleSelectedItem", cv);
+    emit("handleSelectedItem", item);
   };
 </script>
 

@@ -1,3 +1,5 @@
+import { gql } from "graphql-tag";
+
 export const updateCvMutation = gql`
   mutation updateCv($cv: UpdateCvInput!) {
     updateCv(cv: $cv) {
@@ -12,6 +14,34 @@ export const updateCvMutation = gql`
 export const updateCvProject = gql`
   mutation UpdateCvProject($project: UpdateCvProjectInput!) {
     updateCvProject(project: $project) {
+      id
+      name
+      education
+      description
+      projects {
+        id
+        name
+        internal_name
+        description
+        domain
+        start_date
+        end_date
+        environment
+        roles
+        responsibilities
+        project {
+          id
+          name
+          internal_name
+          domain
+          start_date
+          end_date
+          description
+          environment
+        }
+      }
+    }
+  }
 `;
 export const deleteCvMutation = gql`
   mutation deleteCv($cv: DeleteCvInput!) {

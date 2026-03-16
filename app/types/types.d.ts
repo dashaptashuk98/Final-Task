@@ -16,6 +16,16 @@ export interface Tabs {
   to: string;
 }
 
+export interface sheetColumn {
+  field: string;
+  header: string;
+}
+
+export interface MenuData {
+  label: string;
+  command: () => void;
+}
+
 export interface KeyValue {
   key: string;
   value: string;

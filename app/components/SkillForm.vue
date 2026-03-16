@@ -31,6 +31,7 @@
         <Button
           type="button"
           label="Confirm"
+          :disabled="disabled"
           @click="data && $emit('save', data, action as string)" />
       </div>
     </Form>
@@ -47,11 +48,13 @@
     action = "Add",
     errorMessage = "",
     twoColumns = false,
+    disabled = false,
   } = defineProps<{
     data: T | null;
     action?: string;
     errorMessage?: string;
     twoColumns?: boolean;
+    disabled?: boolean;
   }>();
 
   defineEmits<{
@@ -109,7 +112,8 @@
   }
 
   .custom-select,
-  .custom-input {
+  .custom-input,
+  .custom-datepicker {
     width: 410px;
     height: 48px;
     font:
@@ -122,12 +126,14 @@
   }
 
   .custom-select:hover,
-  .custom-input:hover {
+  .custom-input:hover,
+  .custom-datepicker:hover {
     border-color: #00000099;
   }
 
   .custom-select:focus,
-  .custom-input:focus {
+  .custom-input:focus,
+  .custom-datepicker:focus {
     outline: none;
     border-color: #c63031;
     box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);

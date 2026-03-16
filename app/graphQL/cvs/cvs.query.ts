@@ -1,3 +1,5 @@
+import { gql } from "graphql-tag";
+
 export const cvQuery = gql`
   query cv($cvId: ID!) {
     cv(cvId: $cvId) {
@@ -17,15 +19,6 @@ export const cvQuery = gql`
           last_name
           full_name
           avatar
-          skills {
-            name
-            categoryId
-            mastery
-          }
-          languages {
-            name
-            proficiency
-          }
         }
         department {
           id

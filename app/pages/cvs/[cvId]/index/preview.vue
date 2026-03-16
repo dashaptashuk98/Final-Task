@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { useCvs } from "~/composables/useCvs";
   import { useUsers } from "~/composables/useUsers";
-  import type { CvSkill, SkillsTableRow } from "~/types/skills";
+  import type { SkillsTableRow, SkillMastery } from "~/types/skills";
   import type { SkillCategory } from "~/types/skillCategory";
 
   definePageMeta({
@@ -60,10 +60,10 @@
     }
   };
 
-  const skillsByCategory = computed((): Record<string, CvSkill[]> => {
-    const skills = cv.value?.skills || ([] as CvSkill[]);
+  const skillsByCategory = computed((): Record<string, SkillMastery[]> => {
+    const skills = cv.value?.skills || ([] as SkillMastery[]);
 
-    if (!skills.length) return {} as Record<string, CvSkill[]>;
+    if (!skills.length) return {} as Record<string, SkillMastery[]>;
 
     return skills.reduce(
       (acc, skill) => {
@@ -78,16 +78,16 @@
         acc[categoryName].push(skill);
         return acc;
       },
-      {} as Record<string, CvSkill[]>,
+      {} as Record<string, SkillMastery[]>,
     );
   });
 
   const skillsTableData = computed((): SkillsTableRow[] => {
     const data: SkillsTableRow[] = [];
     Object.entries(skillsByCategory.value).forEach(
-      ([categoryName, skills]: [string, CvSkill[]]) => {
-        const skillNames = skills.map((s: CvSkill) => s.name).join(", ");
-        const createdAt = new Date(skills[0]?.created_at || new Date());
+      ([categoryName, skills]: [string, SkillMastery[]]) => {
+        const skillNames = skills.map((s: SkillMastery) => s.name).join(", ");
+        const createdAt = new Date(cv.value?.created_at || new Date());
         const now = new Date();
         const years = Math.floor(
           (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24 * 365),

@@ -10,7 +10,7 @@
       type="button"
       icon="pi pi-plus"
       :label="buttonLabel.toLocaleUpperCase()"
-      @click="emit('activateForm', buttonLabel)"/>
+      @click="emit('activateForm', buttonLabel)" />
   </div>
 </template>
 

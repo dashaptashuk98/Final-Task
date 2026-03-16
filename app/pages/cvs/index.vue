@@ -6,7 +6,8 @@
     middleware: "auth",
   });
 
-  const { fetchCvs, updateCv, deleteCv } = useCvs();
+  const { fetchCvs, createCv, updateCv, deleteCv } = useCvs();
+  const { authId } = useAuth();
   const cvsList = useState<Nullable<Cv[]>>(() => null);
   const isModalVisible = ref<boolean>(false);
   const modalHeader = ref<string>("");
@@ -31,6 +32,40 @@
       formData.value.name = cvData.name;
       formData.value.education = cvData.education;
       formData.value.description = cvData.description;
+    } else {
+      formData.value.name = "";
+      formData.value.education = "";
+      formData.value.description = "";
+    }
+  };
+
+  const handleFormConfirmation = async (): Promise<void> => {
+    if (cvsList.value) {
+      cvsList.value = await fetchCvs();
+    }
+    isModalVisible.value = false;
+    selectedCv.value = null;
+  };
+
+  const submitForm = (
+    id: string = String(authId.value),
+    data: Pick<Cv, "name" | "education" | "description">,
+  ): void => {
+    if (modalHeader.value === "Update CV") {
+      updateUserCv(data, id);
+    }
+    if (modalHeader.value === "Create CV") {
+      createUserCv(data, id);
+    }
+    handleFormConfirmation();
+  };
+
+  const createUserCv = async (
+    changedData: Pick<Cv, "name" | "education" | "description">,
+    id: string,
+  ): Promise<void> => {
+    if (changedData) {
+      await createCv(Object.assign({ userId: id }, changedData));
     }
   };
 
@@ -41,27 +76,14 @@
     if (changedData) {
       await updateCv(Object.assign({ cvId: id }, changedData));
     }
-    if (cvsList.value) {
-      const index = cvsList.value.findIndex((item) => item.id === id);
-      if (index !== -1 && cvsList.value[index]) {
-        cvsList.value = cvsList.value.map((cv, i) =>
-          i === index ? { ...cv, ...changedData } : cv,
-        );
-      }
-    }
-    isModalVisible.value = false;
-    return;
   };
 
   const deleteUserCv = async (): Promise<void> => {
     if (selectedCv.value) {
       const cvId = selectedCv.value.id;
       await deleteCv({ cvId: Number(cvId) });
-      if (cvsList.value) {
-        cvsList.value = cvsList.value.filter((item) => item.id !== cvId);
-      }
-      isModalVisible.value = false;
     }
+    handleFormConfirmation();
   };
 
   const contextMenuOptions = ref<MenuData[]>([
@@ -83,14 +105,16 @@
       :columns
       :sheet-data="cvsList"
       :context-menu="contextMenuOptions"
+      button-label="Create CV"
       page="cvs"
-      @handle-selected-item="(cv) => (selectedCv = cv)" />
+      @handle-selected-item="(cv) => (selectedCv = cv)"
+      @activate-form="activateModal" />
     <ModalDialog v-model:visible="isModalVisible" :header="modalHeader">
       <CvForm
         :data="formData"
-        :user-id="selectedCv && selectedCv.user ? selectedCv.user.id : null"
+        :user-id="selectedCv && selectedCv.user ? selectedCv.user.id : String(authId)"
         :cv-id="selectedCv?.id as string"
-        @update-cv="updateUserCv" />
+        @submit-cv="submitForm" />
     </ModalDialog>
   </section>
 </template>

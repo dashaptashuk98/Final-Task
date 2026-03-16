@@ -1,15 +1,24 @@
 <script setup lang="ts">
   import type { Cv } from "~/types/cvs";
   import type { MenuData, Nullable, sheetColumn } from "~/types/types";
+  import { FilterMatchMode } from "@primevue/core/api";
 
-  const { columns, sheetData, contextMenu, page } = defineProps<{
+  const { columns, sheetData, contextMenu, page, buttonLabel } = defineProps<{
     columns: sheetColumn[];
     sheetData: Nullable<Cv[]>;
     contextMenu: MenuData[];
     page: string;
+    buttonLabel: string;
   }>();
-  const emit = defineEmits<{ (event: "handleSelectedItem", value: Cv): void }>();
+  const emit = defineEmits<{
+    (event: "handleSelectedItem", value: Cv): void;
+    (event: "submitSearch" | "activateForm", value: string): void;
+  }>();
   const cm = ref();
+  const filters = ref({
+    name: { value: "", matchMode: FilterMatchMode.STARTS_WITH },
+  });
+
   const handleRowClick = (e: Record<"data", Cv>) => {
     if (e.data) {
       if (page === "cvs") {
@@ -39,8 +48,14 @@
       itemLabel: { style: { font: '400 14px/24px Roboto' } },
       item: { style: { padding: '3px' } },
     }" />
+  <SheetHeader
+    :button-label
+    @activate-form="emit('activateForm', buttonLabel)"
+    @submit-search="(input: string) => (filters.name.value = input)" />
   <DataTable
+    v-model:filters="filters"
     :value="sheetData"
+    removable-sort
     row-group-mode="subheader"
     selection-mode="single"
     group-rows-by="description"
@@ -51,7 +66,14 @@
       :key="col.field"
       :field="col.field"
       :header="col.header"
-      :pt="{ bodyCell: { class: 'p-body-cell' } }" />
+      sortable
+      :pt="{ bodyCell: { class: 'p-body-cell' } }">
+      <template #sorticon="{ sortOrder }">
+        <i v-if="sortOrder === 1" class="pi pi-arrow-up" />
+        <i v-else-if="sortOrder === -1" class="pi pi-arrow-down" />
+      </template>
+    </Column>
+
     <Column header-style="width: 5rem" :pt="{ bodyCell: { class: 'p-body-cell' } }">
       <template #body="{ data }">
         <Button
@@ -104,8 +126,13 @@
     font: 400 14px/24px "Roboto";
     letter-spacing: 0.15px;
     color: #2e2e2e;
-    opacity: 0.6;
+    opacity: 0.5;
     padding: 0 20px 20px 20px;
     cursor: pointer;
+  }
+
+  .pi-arrow-up,
+  .pi-arrow-down {
+    padding-left: 5px;
   }
 </style>

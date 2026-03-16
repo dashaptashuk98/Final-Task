@@ -22,9 +22,17 @@
 </script>
 
 <template>
-  <CvForm
-    :data="formData"
-    :user-id="userId"
-    :cv-id="cv ? cv.id : null"
-    @update-cv="(data, id) => updateCv(Object.assign({ cvId: id }, data))" />
+  <section class="cv-details">
+    <CvForm
+      :data="formData"
+      :user-id="userId"
+      :cv-id="cv ? cv.id : null"
+      @submit-cv="(id, data) => updateCv(Object.assign({ cvId: id }, data))" />
+  </section>
 </template>
+
+<style scoped>
+  .cv-details {
+    padding-top: 32px;
+  }
+</style>

@@ -15,3 +15,14 @@ export const deleteCvMutation = gql`
     }
   }
 `;
+export const createCvMutation = gql`
+  mutation createCv($cv: CreateCvInput!) {
+    createCv(cv: $cv) {
+      id
+      created_at
+      name
+      education
+      description
+    }
+  }
+`;

@@ -2,13 +2,17 @@
   import type { Cv } from "~/types/cvs";
   import type { Nullable } from "~/types/types";
 
-  const { data, userId, cvId } = defineProps<{
+  const {
+    data,
+    userId,
+    cvId = "",
+  } = defineProps<{
     data: Nullable<Pick<Cv, "name" | "education" | "description">>;
     userId: Nullable<string>;
-    cvId: Nullable<string>;
+    cvId?: Nullable<string>;
   }>();
   const emit = defineEmits<{
-    (event: "updateCv", data: Pick<Cv, "name" | "education" | "description">, id: string): void;
+    (event: "submitCv", id: string, data: Pick<Cv, "name" | "education" | "description">): void;
   }>();
   const { authId } = useAuth();
   const formData = ref<Pick<Cv, "name" | "education" | "description">>({
@@ -43,7 +47,7 @@
     <Button
       label="UPDATE"
       :disabled="String(authId) !== userId"
-      @click="emit('updateCv', formData, cvId as string)" />
+      @click="emit('submitCv', cvId as string, formData)" />
   </Form>
 </template>
 
@@ -54,7 +58,6 @@
 
   .p-form {
     margin: 0 auto;
-    margin-top: 32px;
     display: flex;
     flex-direction: column;
     align-items: end;

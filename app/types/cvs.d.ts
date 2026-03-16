@@ -29,8 +29,9 @@ export interface CvProject {
   responsibilities: string[];
 }
 
-export interface UpdateCvInput {
-  cvId: string;
+export interface CvInput {
+  cvId?: string;
+  userId?: string;
   name: string;
   education: Nullable<string>;
   description: string;

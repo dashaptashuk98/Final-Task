@@ -18,6 +18,9 @@ logs
 .fleet
 .idea
 
+coverage/
+.nyc_output/
+
 # Local env files
 .env
 .env.*

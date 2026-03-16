@@ -1,7 +1,7 @@
 <template>
   <div class="skills-page">
-    <div v-if="loading" class="loading">Загрузка навыков...</div>
-    <div v-else-if="error" class="error">Ошибка: {{ error }}</div>
+    <div v-if="loading" class="loading">Loading skills...</div>
+    <div v-else-if="error" class="error">Error: {{ error }}</div>
 
     <SkillsComponent
       v-else
@@ -13,46 +13,30 @@
       @toggle-skill="toggleSkillForDeletion" />
 
     <div v-if="isOwner" class="actions__wrapper">
-      <Button
-        v-if="!deleteMode"
-        type="button"
-        label="Add skill"
-        icon="pi pi-plus"
-        class="btn-add"
-        @click="visible = true" />
+      <AddRemoveButtons
+        :is-select-mode="deleteMode"
+        :select-counter="selectedSkillsToDelete.size"
+        page-title="skill"
+        @activate-modal="
+          (type) => {
+            modalType = type;
+            visible = true;
+          }
+        "
+        @toggle-mode="deleteMode = !deleteMode"
+        @handle-remove="handleDeleteSkills" />
 
-      <div v-if="!deleteMode" class="button__wrapper">
-        <IconRemove />
-        <Button type="button" label="Remove skills" class="btn-remove" @click="deleteMode = true" />
-      </div>
-
-      <button v-if="deleteMode" type="button" class="btn-cancel" @click="cancelDeleteMode">
-        CANCEL
-      </button>
-
-      <button
-        v-if="deleteMode && selectedSkillsToDelete.size > 0"
-        type="button"
-        class="btn-delete"
-        @click="handleDeleteSkills">
-        DELETE
-        <span class="badge">{{ selectedSkillsToDelete.size }}</span>
-      </button>
-      <ModalDialog v-model:visible="visible" header="Add Skill">
+      <ModalDialog
+        v-model:visible="visible"
+        :header="`${modalType} skill`"
+        @update:visible="(value) => (visible = value)">
         <SkillForm
           :data="formData"
           :loading="mutationLoading"
-          action="Add"
-          @cancel="handleCancel"
-          @save="handleSaveSkill" />
-      </ModalDialog>
-      <ModalDialog v-model:visible="visibleUpdate" header="Update skill">
-        <SkillForm
-          :data="formData"
-          :loading="mutationLoading"
-          action="Update"
-          @cancel="handleCancel"
-          @save="handleSkillUpdate" />
+          :error-message="errorMessage"
+          :action="modalType"
+          @save="handleFormSubmit"
+          @cancel="() => (visible = false)" />
       </ModalDialog>
     </div>
   </div>
@@ -64,12 +48,14 @@
   import SkillsComponent from "~/components/SkillsComponent.vue";
   import SkillForm from "~/components/SkillForm.vue";
   import ModalDialog from "~/components/ModalDialog.vue";
+  import AddRemoveButtons from "~/components/AddRemoveButtons.vue";
   import type { InputType } from "~/types/types";
   import type { UserSkill, SkillFormKey } from "~/types/skills.d";
   import { MASTERY_OPTIONS } from "~/types/skills.d";
   import { updateSkillMutation } from "~/graphQL/skills/skillsUpdate.mutation";
   import { createSkillMutation } from "~/graphQL/skills/skillsCreate.mutations";
   import { deleteProfileSkillMutation } from "~/graphQL/skills/skillDelete.mutation";
+  import { checkRights } from "~/utils/rights-checker";
 
   const { user, userSkills, fetchUserSkills, fetchSkillCategories, fetchSkills, skills } =
     useUsers();
@@ -77,16 +63,15 @@
   const route = useRoute();
   const userId = route.params.userID as string;
   const isOwner = computed(() => String(authUser.value?.id) === userId);
-
+  const modalType = ref<string>("");
   const loading = ref(true);
   const error = ref<string | null>(null);
   const visible = ref(false);
-  const visibleUpdate = ref(false);
   const selectedSkill = ref<UserSkill | null>(null);
   const mutationLoading = ref(false);
   const deleteMode = ref(false);
   const selectedSkillsToDelete = ref<Set<string>>(new Set());
-
+  const errorMessage = ref<string>("");
   const formData = reactive<Record<SkillFormKey, InputType>>({
     skill: {
       key: "skill",
@@ -105,77 +90,93 @@
   });
 
   const handleSkillClick = (skill: UserSkill) => {
-    if (!isOwner.value) return;
+    if (!isOwner.value || deleteMode.value) return;
     selectedSkill.value = skill;
     const matchingSkill = skills.value?.find((s) => s.name === skill.name);
     formData.skill.value = matchingSkill?.name || skill.name;
     formData.mastery.value = skill.mastery || "Novice";
-    visibleUpdate.value = true;
+    modalType.value = "Update";
+    visible.value = true;
   };
 
-  const handleSaveSkill = async (data: Record<SkillFormKey, InputType>) => {
-    try {
-      if (!user.value?.id || !data.skill.value) return;
-
-      const selectedSkillData = skills.value?.find(
-        (s) => s.id === data.skill.value || s.name === data.skill.value,
-      );
-
-      if (!selectedSkillData || userSkills.value?.some((s) => s.name === selectedSkillData.name))
-        return;
-
-      mutationLoading.value = true;
-      const { $apollo } = useNuxtApp();
-
-      const response = await $apollo.clients.default.mutate({
-        mutation: createSkillMutation,
-        variables: {
-          skill: {
-            userId: String(user.value.id),
-            name: selectedSkillData.name,
-            categoryId: String(selectedSkillData.category?.id),
-            mastery: data.mastery.value,
-          },
-        },
-      });
-
-      if (response?.data?.addProfileSkill) {
-        userSkills.value = response.data.addProfileSkill.skills;
-        visible.value = false;
-        handleCancel();
-      }
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : "Error saving skill";
-    } finally {
-      mutationLoading.value = false;
+  const handleFormSubmit = async (
+    data: Record<SkillFormKey, InputType>,
+    action: string,
+  ): Promise<void> => {
+    if (!checkRights(userId)) {
+      errorMessage.value = "You don't have permission to perform this action";
+      return;
     }
-  };
 
-  const handleSkillUpdate = async (data: Record<SkillFormKey, InputType>) => {
+    if (!user.value?.id || !data.skill.value) {
+      errorMessage.value = "Insufficient data to perform the operation";
+      return;
+    }
+
     try {
-      if (!selectedSkill.value || !user.value?.id) return;
-
       mutationLoading.value = true;
+      errorMessage.value = "";
       const { $apollo } = useNuxtApp();
 
-      const response = await $apollo.clients.default.mutate({
-        mutation: updateSkillMutation,
-        variables: {
-          skill: {
-            name: selectedSkill.value.name,
-            mastery: data.mastery.value,
-            userId: String(user.value.id),
-          },
-        },
-      });
+      if (action === "Add") {
+        const selectedSkillData = skills.value?.find(
+          (s) => s.id === data.skill.value || s.name === data.skill.value,
+        );
 
-      if (response?.data?.updateProfileSkill) {
-        userSkills.value = response.data.updateProfileSkill.skills;
-        visibleUpdate.value = false;
-        handleCancel();
+        if (!selectedSkillData) {
+          errorMessage.value = "Selected skill not found";
+          return;
+        }
+
+        if (userSkills.value?.some((s) => s.name === selectedSkillData.name)) {
+          errorMessage.value = `Skill "${selectedSkillData.name}" is already added`;
+          return;
+        }
+
+        const response = await $apollo.clients.default.mutate({
+          mutation: createSkillMutation,
+          variables: {
+            skill: {
+              userId: String(user.value.id),
+              name: selectedSkillData.name,
+              categoryId: String(selectedSkillData.category?.id),
+              mastery: data.mastery.value,
+            },
+          },
+        });
+
+        if (response?.data?.addProfileSkill) {
+          userSkills.value = response.data.addProfileSkill.skills;
+          visible.value = false;
+          handleCancel();
+        }
+      } else if (action === "Update") {
+        if (!selectedSkill.value) {
+          errorMessage.value = "No skill selected for update";
+          return;
+        }
+
+        const response = await $apollo.clients.default.mutate({
+          mutation: updateSkillMutation,
+          variables: {
+            skill: {
+              name: selectedSkill.value.name,
+              mastery: data.mastery.value,
+              userId: String(user.value.id),
+            },
+          },
+        });
+
+        if (response?.data?.updateProfileSkill) {
+          userSkills.value = response.data.updateProfileSkill.skills;
+          visible.value = false;
+        }
       }
     } catch (err) {
-      error.value = err instanceof Error ? err.message : "Error updating skill";
+      errorMessage.value =
+        err instanceof Error
+          ? err.message
+          : `Error ${action === "Add" ? "adding" : "updating"} skill. Please try again.`;
     } finally {
       mutationLoading.value = false;
     }
@@ -200,7 +201,7 @@
     selectedSkillsToDelete.value.clear();
   };
 
-  const handleDeleteSkills = async () => {
+  const handleDeleteSkills = async (): Promise<void> => {
     try {
       if (!user.value?.id || selectedSkillsToDelete.value.size === 0) return;
 
@@ -269,7 +270,7 @@
 
     return userSkills.value.map((userSkill) => {
       const skillInfo = skills.value?.find((s) => s.name === userSkill.name);
-      const categoryName = skillInfo?.category_name || "Без категории";
+      const categoryName = skillInfo?.category_name || "No category";
 
       return {
         ...userSkill,
@@ -428,11 +429,6 @@
       flex-direction: column;
       align-items: stretch;
       gap: 10px;
-    }
-
-    .btn-add :deep(.p-button),
-    .btn-remove :deep(.p-button) {
-      width: 100%;
     }
 
     :global(.p-dialog) {

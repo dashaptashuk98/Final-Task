@@ -21,6 +21,22 @@ export const userQuery = gql`
           proficiency
         }
       }
+      cvs {
+        id
+        created_at
+        name
+        education
+        description
+        skills {
+          name
+          categoryId
+          mastery
+        }
+        languages {
+          name
+          proficiency
+        }
+      }
       department {
         id
         created_at

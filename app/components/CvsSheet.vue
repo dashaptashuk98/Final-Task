@@ -1,17 +1,16 @@
-<script setup lang="ts">
-  import type { Cv } from "~/types/cvs";
+<script setup lang="ts" generic="T extends Record<string, any>">
   import type { MenuData, Nullable, sheetColumn } from "~/types/types";
   import { FilterMatchMode } from "@primevue/core/api";
 
   const { columns, sheetData, contextMenu, page, buttonLabel } = defineProps<{
     columns: sheetColumn[];
-    sheetData: Nullable<Cv[]>;
+    sheetData: Nullable<T[]>;
     contextMenu: MenuData[];
     page: string;
     buttonLabel: string;
   }>();
   const emit = defineEmits<{
-    (event: "handleSelectedItem", value: Cv): void;
+    (event: "handleSelectedItem", value: T): void;
     (event: "submitSearch" | "activateForm", value: string): void;
   }>();
   const cm = ref();
@@ -19,16 +18,16 @@
     name: { value: "", matchMode: FilterMatchMode.STARTS_WITH },
   });
 
-  const handleRowClick = (e: Record<"data", Cv>) => {
+  const handleRowClick = (e: Record<"data", T>) => {
     if (e.data) {
       if (page === "cvs") {
         return navigateTo(`/${page}/${e.data.id}/details`);
       }
     }
   };
-  const handleOptionPick = (e: MouseEvent, cv: Cv): void => {
+  const handleOptionPick = (e: MouseEvent, item: T): void => {
     cm.value.show(e);
-    emit("handleSelectedItem", cv);
+    emit("handleSelectedItem", item);
   };
 </script>
 
@@ -78,11 +77,7 @@
       <template #body="{ data }">
         <Button
           :icon="'pi pi-ellipsis-v'"
-          class="action-button"
-          size="large"
-          text
           rounded
-          severity="secondary"
           @click="(e: MouseEvent) => handleOptionPick(e, data)" />
       </template>
     </Column>
@@ -134,5 +129,19 @@
   .pi-arrow-up,
   .pi-arrow-down {
     padding-left: 5px;
+  }
+
+  .p-button:not(:disabled) {
+    padding: 5px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .p-button:not(:disabled):hover {
+    background-color: #00000015;
+  }
+
+  .p-button:not(:disabled):active {
+    background-color: #00000030;
   }
 </style>

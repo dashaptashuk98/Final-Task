@@ -9,6 +9,7 @@
     { label: "profile", to: `/users/${route.params.userID}/profile` },
     { label: "skills", to: `/users/${route.params.userID}/skills` },
     { label: "languages", to: `/users/${route.params.userID}/languages` },
+    { label: "cvs", to: `/users/${route.params.userID}/cvs` },
   ];
 </script>
 

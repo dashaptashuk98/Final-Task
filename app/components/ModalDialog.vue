@@ -29,28 +29,28 @@
 
 <style>
   .p-dialog-mask {
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.5) !important;
     z-index: 9999;
   }
 
   .p-dialog {
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    background: white;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+    background: white !important;
     z-index: 10000;
+    padding: 15px !important;
   }
 
   .p-dialog-header {
-    padding: 1.5rem;
+    padding-bottom: 1.5rem !important;
     background: white;
-    border-bottom: 1px solid #e0e0e0;
     border-radius: 12px 12px 0 0;
   }
 
   .p-dialog-title {
     font: 500 16px/24px "Roboto";
-    font-weight: 600;
-    font-size: 1.25rem;
+    font-weight: 600 !important;
+    font-size: 1.25rem !important;
     color: #333;
   }
 

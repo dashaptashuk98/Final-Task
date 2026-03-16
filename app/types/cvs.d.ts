@@ -29,16 +29,11 @@ export interface CvProject {
   responsibilities: string[];
 }
 
-export interface CvInput {
-  cvId?: string;
-  userId?: string;
+export interface UpdateCvInput {
+  cvId: string;
   name: string;
   education: Nullable<string>;
   description: string;
-}
-
-export interface DeleteCvInput {
-  cvId: number;
 }
 
 export type UpdateCvResponse = Pick<CvProject, "id" | "name" | "education" | "description">;

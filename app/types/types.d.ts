@@ -25,3 +25,13 @@ export interface MenuData {
   label: string;
   command: () => void;
 }
+
+export interface KeyValue {
+  key: string;
+  value: string;
+}
+
+export interface SelectableItem {
+  name: string;
+  isChecked: boolean;
+}

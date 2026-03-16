@@ -42,6 +42,7 @@
         <SkillForm
           :data="formData"
           :loading="mutationLoading"
+          action="Add"
           @cancel="handleCancel"
           @save="handleSaveSkill" />
       </ModalDialog>
@@ -49,7 +50,7 @@
         <SkillForm
           :data="formData"
           :loading="mutationLoading"
-          :disable-skill-field="true"
+          action="Update"
           @cancel="handleCancel"
           @save="handleSkillUpdate" />
       </ModalDialog>

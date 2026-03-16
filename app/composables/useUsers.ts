@@ -2,17 +2,25 @@ import type { Department } from "~/types/departments";
 import type { Position } from "~/types/positions";
 import type { UserSkill, Skill } from "~/types/skills";
 import type { SkillCategory } from "~/types/skillCategory";
-import type { User, UserResponse } from "~/types/user";
+import type { Profile, User, UserResponse } from "~/types/user";
 import type { Nullable } from "~/types/types";
-import { userQuery } from "~/graphQL/user/user.query";
+import { profileQuery, userQuery } from "~/graphQL/user/user.query";
 import { usersQuery } from "~/graphQL/users/users.query";
 import { departmentsQuery } from "~/graphQL/departments/departments.query";
 import { positionsQuery } from "~/graphQL/positions/positions.query";
 import { userSkillsQuery } from "~/graphQL/skills/skillsUsers.query";
 import { skillCategoryQuery } from "~/graphQL/skills/skillsCategory.query";
 import { skillsQuery } from "~/graphQL/skills/skill.query";
+import type { Language, LanguageQueryVars, LanguageQueryVarsExt } from "~/types/languages";
+import { languagesQuery } from "~/graphQL/languages/languages.query";
+import {
+  addProfileLanguageMutation,
+  deleteProfileLanguageMutation,
+  updateProfileLanguageMutation,
+} from "~/graphQL/languages/languages.mutation";
 
 export const useUsers = () => {
+  const { clients } = useApollo();
   const user = useState<Nullable<User>>("user", () => null);
   const departments = useState<Nullable<Department[]>>("departments", () => []);
   const skillCategories = useState<Nullable<SkillCategory[]>>("skillCategories", () => []);
@@ -132,6 +140,77 @@ export const useUsers = () => {
     }
   };
 
+  const fetchProfile = async (userId: string): Promise<Nullable<Profile>> => {
+    isLoading.value = true;
+    try {
+      const { data } = await useAsyncQuery<Record<"profile", Profile>>(profileQuery, { userId });
+      if (data.value) {
+        return data.value.profile;
+      }
+      return null;
+    } catch {
+      return null;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const fetchLanguages = async (): Promise<Nullable<Language[]>> => {
+    isLoading.value = true;
+    try {
+      const { data } = await useAsyncQuery<Record<"languages", Language[]>>(languagesQuery);
+      if (data.value) {
+        return data.value.languages;
+      }
+      return null;
+    } catch {
+      return null;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const addProfileLanguage = async (language: LanguageQueryVarsExt): Promise<Nullable<Profile>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate<Record<"addProfileLanguage", Profile>>({
+        mutation: addProfileLanguageMutation,
+        variables: { language: language },
+      });
+      if (data) {
+        return data.addProfileLanguage;
+      }
+    }
+    return null;
+  };
+
+  const updateProfileLanguage = async (
+    language: LanguageQueryVarsExt,
+  ): Promise<Nullable<Profile>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate<Record<"updateProfileLanguage", Profile>>({
+        mutation: updateProfileLanguageMutation,
+        variables: { language: language },
+      });
+      if (data) {
+        return data.updateProfileLanguage;
+      }
+    }
+    return null;
+  };
+
+  const deleteProfileLanguage = async (language: LanguageQueryVars): Promise<Nullable<Profile>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate<Record<"deleteProfileLanguage", Profile>>({
+        mutation: deleteProfileLanguageMutation,
+        variables: { language: language },
+      });
+      if (data) {
+        return data.deleteProfileLanguage;
+      }
+    }
+    return null;
+  };
+
   const clearUsers = (): void => {
     users.value = [];
   };
@@ -159,7 +238,11 @@ export const useUsers = () => {
     fetchSkillCategories,
     fetchSkills,
     fetchUsers,
-
+    fetchProfile,
+    fetchLanguages,
+    addProfileLanguage,
+    updateProfileLanguage,
+    deleteProfileLanguage,
     clearUsers,
   };
 };

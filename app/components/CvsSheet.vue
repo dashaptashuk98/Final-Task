@@ -78,11 +78,7 @@
       <template #body="{ data }">
         <Button
           :icon="'pi pi-ellipsis-v'"
-          class="action-button"
-          size="large"
-          text
           rounded
-          severity="secondary"
           @click="(e: MouseEvent) => handleOptionPick(e, data)" />
       </template>
     </Column>
@@ -134,5 +130,19 @@
   .pi-arrow-up,
   .pi-arrow-down {
     padding-left: 5px;
+  }
+
+  .p-button:not(:disabled) {
+    padding: 5px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .p-button:not(:disabled):hover {
+    background-color: #00000015;
+  }
+
+  .p-button:not(:disabled):active {
+    background-color: #00000030;
   }
 </style>

@@ -40,16 +40,18 @@ export const useUsers = () => {
     computed(() => users.value.find((u) => u.id === id) ?? null);
 
   const fetchUser = async (userId: string): Promise<Nullable<User>> => {
-    try {
-      const { data } = await useAsyncQuery<Record<"user", User>>(userQuery, { userId });
-      if (data.value) {
-        user.value = data.value.user;
-        return data.value.user;
+    if (clients) {
+      const { data } = await clients.default.query({
+        query: userQuery,
+        variables: { userId: userId },
+        fetchPolicy: "network-only",
+      });
+      if (data) {
+        user.value = data.user;
+        return data.user;
       }
-      return null;
-    } catch {
-      return null;
     }
+    return null;
   };
 
   const fetchDepartments = async (): Promise<Nullable<Department[]>> => {

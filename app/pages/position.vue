@@ -2,11 +2,10 @@
   <div>
     <CvsSheet
       :columns="columns"
-      :sheet-data="skills"
+      :sheet-data="positions"
       :context-menu="contextMenuOptions"
       button-label="Add skill"
       page="skills"
-      @handle-selected-item="(s: Skill) => (selectedSkill = s)"
       @activate-form="
         () => {
           visible = true;
@@ -18,24 +17,20 @@
 
 <script setup lang="ts">
   import type { MenuData, sheetColumn } from "~/types/types";
-  import type { Skill } from "~/types/skills";
 
   definePageMeta({
     middleware: "auth",
     layout: "default",
   });
 
-  const { fetchSkills, skills, fetchSkillCategories } = useUsers();
+  const { fetchPositions, positions } = useUsers();
 
-  await Promise.all([fetchSkills(), fetchSkillCategories()]);
+  await Promise.all([fetchPositions()]);
 
-  const selectedSkill = ref<Skill | null>(null);
   const visible = ref(false);
   const modalType = ref<string>("");
-  const columns: sheetColumn[] = [
-    { field: "name", header: "Name" },
-    { field: "category_name", header: "Category" },
-  ];
+
+  const columns: sheetColumn[] = [{ field: "name", header: "Name" }];
 
   const contextMenuOptions = computed<MenuData[]>(() => {
     return [

@@ -2,6 +2,7 @@
   <div class="app-layout">
     <SidebarMenu />
     <main class="main-content">
+      <HeaderComponent />
       <slot />
     </main>
   </div>

@@ -13,3 +13,28 @@ export const createSkillMutation = gql`
     }
   }
 `;
+
+export const createSkillMutationAdmin = gql`
+  mutation CreateSkill($skill: CreateSkillInput!) {
+    createSkill(skill: $skill) {
+      id
+      created_at
+      name
+      category {
+        id
+        name
+        order
+        parent {
+          id
+          name
+        }
+        children {
+          id
+          name
+        }
+      }
+      category_name
+      category_parent_name
+    }
+  }
+`;

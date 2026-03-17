@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  const { buttonLabel } = defineProps<{ buttonLabel: string }>();
+  const { buttonLabel, isVisible } = defineProps<{ buttonLabel: string; isVisible: boolean }>();
   const emit = defineEmits<{ (event: "submitSearch" | "activateForm", value: string): void }>();
 </script>
 
@@ -7,6 +7,7 @@
   <div class="sheet-inputs">
     <SearchInput @submit-search="(input) => emit('submitSearch', input)" />
     <Button
+      v-if="isVisible"
       type="button"
       icon="pi pi-plus"
       :label="buttonLabel.toLocaleUpperCase()"

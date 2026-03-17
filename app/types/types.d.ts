@@ -45,3 +45,8 @@ export interface SelectableItem {
   name: string;
   isChecked: boolean;
 }
+
+export interface filterProps {
+  value: string;
+  matchMode: string;
+}

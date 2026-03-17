@@ -113,6 +113,7 @@
       :columns
       :sheet-data="cvsList"
       :context-menu="contextMenuOptions"
+      :user-id="user?.id"
       button-label="Create CV"
       page="cvs"
       @handle-selected-item="(cv) => (selectedCv = cv)"

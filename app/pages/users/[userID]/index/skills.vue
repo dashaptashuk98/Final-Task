@@ -57,6 +57,11 @@
   import { deleteProfileSkillMutation } from "~/graphQL/skills/skillDelete.mutation";
   import { checkRights } from "~/utils/rights-checker";
 
+  definePageMeta({
+    middleware: "auth",
+    layout: "default",
+  });
+
   const { user, userSkills, fetchUserSkills, fetchSkillCategories, fetchSkills, skills } =
     useUsers();
   const { authUser } = useAuth();

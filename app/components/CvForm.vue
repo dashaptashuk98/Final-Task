@@ -14,7 +14,6 @@
   const emit = defineEmits<{
     (event: "submitCv", id: string, data: Pick<Cv, "name" | "education" | "description">): void;
   }>();
-  const { authId } = useAuth();
   const formData = ref<Pick<Cv, "name" | "education" | "description">>({
     name: "",
     education: "",
@@ -49,8 +48,8 @@
         placeholder="Description" />
     </div>
     <Button
+      v-if="checkRights(userId as string)"
       label="UPDATE"
-      :disabled="String(authId) !== userId"
       @click="
         () =>
           cvId

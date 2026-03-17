@@ -34,7 +34,7 @@
           :loading="mutationLoading"
           :error-message="errorMessage"
           :action="modalType"
-          :disabled="String(authId) !== String(cvOwnerId)"
+          :disabled="checkRights(cvOwnerId as string)"
           @save="handleFormSubmit"
           @cancel="() => (visible = false)" />
       </ModalDialog>
@@ -69,6 +69,11 @@
   const mutationLoading = ref(false);
   const deleteMode = ref(false);
   const selectedSkillsToDelete = ref<Set<string>>(new Set());
+
+  definePageMeta({
+    middleware: "auth",
+    layout: "default",
+  });
 
   const formData = reactive<Record<SkillFormKey, InputType>>({
     skill: {

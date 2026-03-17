@@ -2,6 +2,11 @@
   <HeaderComponent />
 </template>
 
-<script setup></script>
+<script setup>
+  definePageMeta({
+    middleware: "auth",
+    layout: "default",
+  });
+</script>
 
 <style scoped></style>

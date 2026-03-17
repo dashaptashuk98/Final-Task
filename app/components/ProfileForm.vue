@@ -11,7 +11,7 @@
     userId?: string;
   }>();
   const { user, departments, positions } = useUsers();
-  const { authUser } = useAuth();
+  const route = useRoute();
 
   const formData = ref<Record<ProfileForm, InputType> | null>(null);
   const initialData = ref<Record<ProfileForm, InputType> | null>(null);
@@ -98,10 +98,12 @@
             <InputText
               v-if="item.type === 'InputText'"
               :id="item.key"
-              v-model="item.value as string" />
+              v-model="item.value as string"
+              :disabled="!checkRights(route.params.userID as string)" />
             <Select
               v-else-if="item.type === 'Select'"
               v-model="item.value"
+              :disabled="!checkRights(route.params.userID as string)"
               :options="item.values"
               option-label="name"
               option-value="name"
@@ -113,8 +115,9 @@
         </template>
       </div>
       <Button
+        v-if="checkRights(props.userId as string)"
         :label="'Update'.toLocaleUpperCase()"
-        :disabled="!hasChanges || loading || authUser?.id !== props.userId"
+        :disabled="!hasChanges || loading"
         :loading="loading"
         @click="handleUpdate" />
     </Form>

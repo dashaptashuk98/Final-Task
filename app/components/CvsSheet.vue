@@ -2,12 +2,20 @@
   import type { MenuData, Nullable, sheetColumn } from "~/types/types";
   import { FilterMatchMode } from "@primevue/core/api";
 
-  const { columns, sheetData, contextMenu, page, buttonLabel } = defineProps<{
+  const {
+    columns,
+    sheetData,
+    contextMenu,
+    page,
+    buttonLabel,
+    userId = "",
+  } = defineProps<{
     columns: sheetColumn[];
     sheetData: Nullable<T[]>;
     contextMenu: MenuData[];
     page: string;
     buttonLabel: string;
+    userId?: string;
   }>();
   const emit = defineEmits<{
     (event: "handleSelectedItem", value: T): void;
@@ -49,6 +57,7 @@
     }" />
   <SheetHeader
     :button-label
+    :is-visible="userId ? checkRights(userId) : checkRights()"
     @activate-form="emit('activateForm', buttonLabel)"
     @submit-search="(input: string) => (filters.name.value = input)" />
   <DataTable
@@ -74,16 +83,18 @@
     </Column>
 
     <Column header-style="width: 5rem" :pt="{ bodyCell: { class: 'p-body-cell' } }">
-      <template #body="{ data }">
+      <template #body="slotProps">
         <Button
+          v-if="userId ? checkRights(userId) : checkRights(slotProps.data.user.id)"
           :icon="'pi pi-ellipsis-v'"
           rounded
-          @click="(e: MouseEvent) => handleOptionPick(e, data)" />
+          @click="(e: MouseEvent) => handleOptionPick(e, slotProps.data)" />
+        <Button v-else icon="pi pi-chevron-right" rounded @click="handleRowClick(slotProps)" />
       </template>
     </Column>
-    <template #groupfooter="slotProps">
-      <div class="p-footer-cell__content" @click="handleRowClick({ data: slotProps.data })">
-        {{ slotProps.data.description }}
+    <template #groupfooter="{ data }">
+      <div class="p-footer-cell__content" @click="handleRowClick({ data: data })">
+        {{ data.description }}
       </div>
     </template>
   </DataTable>

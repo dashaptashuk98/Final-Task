@@ -12,10 +12,9 @@
 </script>
 
 <template>
-  <div class="user-action-buttons">
+  <div v-if="checkRights(route.params.userID as string)" class="user-action-buttons">
     <Button
       type="button"
-      :disabled="!checkRights(route.params.userID as string)"
       :label="!isSelectMode ? `add ${pageTitle}`.toLocaleUpperCase() : 'cancel'.toLocaleUpperCase()"
       :icon="!isSelectMode ? 'pi pi-plus' : ''"
       :class="!isSelectMode ? 'btn-add' : 'btn-cancel'"
@@ -23,7 +22,6 @@
 
     <Button
       type="button"
-      :disabled="!checkRights(route.params.userID as string)"
       :label="
         !isSelectMode ? `remove ${pageTitle}s`.toLocaleUpperCase() : 'delete'.toLocaleUpperCase()
       "

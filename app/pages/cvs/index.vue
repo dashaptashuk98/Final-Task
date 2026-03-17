@@ -108,6 +108,7 @@
     <HeaderComponent />
     <CvsSheet
       :columns
+      :user-id="String(authId)"
       :sheet-data="cvsList"
       :context-menu="contextMenuOptions"
       button-label="Create CV"

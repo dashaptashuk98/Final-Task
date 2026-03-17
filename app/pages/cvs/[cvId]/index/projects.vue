@@ -273,6 +273,7 @@
       :columns="columns"
       :sheet-data="addedProjects"
       :context-menu="contextMenuOptions"
+      :user-id="cv?.user?.id"
       :button-label="checkRights(cv?.user?.id || '') ? 'Add Project' : ''"
       page="projects"
       @handle-selected-item="(p: CvProject) => (selectedCvProject = p)"

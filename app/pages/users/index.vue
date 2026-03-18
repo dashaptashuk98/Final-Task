@@ -1,6 +1,5 @@
 <template>
   <div>
-    <HeaderComponent />
     <IconField>
       <InputIcon class="pi pi-search search-icon" />
       <InputText v-model="searchQuery" class="custom-search" />

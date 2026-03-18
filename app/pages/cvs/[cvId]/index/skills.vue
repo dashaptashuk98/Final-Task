@@ -19,6 +19,7 @@
         @activate-modal="
           (type) => {
             modalType = type;
+            errorMessage = '';
             visible = true;
           }
         "

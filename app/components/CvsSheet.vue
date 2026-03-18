@@ -31,6 +31,9 @@
       if (page === "cvs") {
         return navigateTo(`/${page}/${e.data.id}/details`);
       }
+      if (page === "projects") {
+        return navigateTo(`/projects/${e.data.id}`);
+      }
     }
   };
   const handleOptionPick = (e: MouseEvent, item: T): void => {
@@ -64,9 +67,9 @@
     v-model:filters="filters"
     :value="sheetData"
     removable-sort
-    row-group-mode="subheader"
+    :row-group-mode="page === 'cvs' ? 'subheader' : undefined"
     selection-mode="single"
-    group-rows-by="description"
+    :group-rows-by="page === 'cvs' ? 'description' : undefined"
     :pt="{ rowGroupFooterCell: { class: 'p-footer-cell' } }"
     @row-select="handleRowClick">
     <Column
@@ -85,14 +88,14 @@
     <Column header-style="width: 5rem" :pt="{ bodyCell: { class: 'p-body-cell' } }">
       <template #body="slotProps">
         <Button
-          v-if="userId ? checkRights(userId) : checkRights(slotProps.data.user.id)"
+          v-if="userId ? checkRights(userId) : checkRights(slotProps.data?.user?.id)"
           :icon="'pi pi-ellipsis-v'"
           rounded
           @click="(e: MouseEvent) => handleOptionPick(e, slotProps.data)" />
         <Button v-else icon="pi pi-chevron-right" rounded @click="handleRowClick(slotProps)" />
       </template>
     </Column>
-    <template #groupfooter="{ data }">
+    <template v-if="page === 'cvs'" #groupfooter="{ data }">
       <div class="p-footer-cell__content" @click="handleRowClick({ data: data })">
         {{ data.description }}
       </div>

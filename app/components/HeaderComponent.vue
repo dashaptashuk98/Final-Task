@@ -32,6 +32,12 @@
         items.value = [{ label: "Languages", route: "/languages" }];
       } else if (newPath === "/cvs") {
         items.value = [{ label: "Cvs", route: "/cvs" }];
+      } else if (newPath === "/projects") {
+        items.value = [{ label: "Projects", route: "/projects" }];
+      } else if (newPath === "/position") {
+        items.value = [{ label: "Position", route: "/position" }];
+      } else if (newPath === "/departments") {
+        items.value = [{ label: "Departments", route: "/departments" }];
       } else {
         items.value = [];
       }

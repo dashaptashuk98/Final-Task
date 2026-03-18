@@ -35,6 +35,7 @@
           <span class="sidebar__profile-name">{{
             authUser?.profile?.full_name || authUser?.email
           }}</span>
+          <Button icon="pi pi-chevron-left" rounded @click="logout" />
         </NuxtLink>
       </div>
     </div>
@@ -48,7 +49,7 @@
   import { useRoute } from "vue-router";
   import { computed } from "vue";
 
-  const { authUser, authId } = useAuth();
+  const { authUser, logout } = useAuth();
 
   const route = useRoute();
 
@@ -60,21 +61,39 @@
       to: "/users",
     },
     {
-      name: "skills",
-      title: "Skills",
-      to: `/users/${authId.value}/skills`,
-    },
-    {
-      icon: "pi pi-language",
-      name: "languages",
-      title: "Languages",
-      to: `/users/${authId.value}/languages`,
+      icon: "pi pi-users",
+      name: "projects",
+      title: "Projects",
+      to: `/projects`,
     },
     {
       icon: "pi pi-file",
       name: "cvs",
       title: "CVs",
       to: "/cvs",
+    },
+    {
+      icon: "pi pi-file",
+      name: "departments",
+      title: "Departments",
+      to: "/departments",
+    },
+    {
+      icon: "pi pi-file",
+      name: "position",
+      title: "Position",
+      to: "/position",
+    },
+    {
+      name: "skills",
+      title: "Skills",
+      to: `/skills`,
+    },
+    {
+      icon: "pi pi-language",
+      name: "languages",
+      title: "Languages",
+      to: `/languages`,
     },
   ];
 

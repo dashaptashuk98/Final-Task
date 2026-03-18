@@ -3,29 +3,9 @@
     <div v-if="project" class="project-detail">
       <h2 class="project-detail__title">{{ project.name }}</h2>
       <div class="project-detail__body">
-        <div class="project-detail__row">
-          <span class="project-detail__label">Internal Name</span>
-          <span class="project-detail__value">{{ project.internal_name }}</span>
-        </div>
-        <div class="project-detail__row">
-          <span class="project-detail__label">Domain</span>
-          <span class="project-detail__value">{{ project.domain }}</span>
-        </div>
-        <div class="project-detail__row">
-          <span class="project-detail__label">Start Date</span>
-          <span class="project-detail__value">{{ project.start_date }}</span>
-        </div>
-        <div class="project-detail__row">
-          <span class="project-detail__label">End Date</span>
-          <span class="project-detail__value">{{ project.end_date || "N/A" }}</span>
-        </div>
-        <div class="project-detail__row">
-          <span class="project-detail__label">Description</span>
-          <span class="project-detail__value">{{ project.description }}</span>
-        </div>
-        <div class="project-detail__row">
-          <span class="project-detail__label">Environment</span>
-          <span class="project-detail__value">{{ project.environment?.join(", ") }}</span>
+        <div v-for="row in rows" :key="row.label" class="project-detail__row">
+          <span class="project-detail__label">{{ row.label }}</span>
+          <span class="project-detail__value">{{ row.value }}</span>
         </div>
       </div>
     </div>
@@ -45,6 +25,19 @@
   await callOnce(() => fetchProject());
 
   const project = computed(() => projects.value.find((p) => p.id === projectId));
+
+  const rows = computed(() =>
+    project.value
+      ? [
+          { label: "Internal Name", value: project.value.internal_name },
+          { label: "Domain", value: project.value.domain },
+          { label: "Start Date", value: project.value.start_date },
+          { label: "End Date", value: project.value.end_date || "N/A" },
+          { label: "Description", value: project.value.description },
+          { label: "Environment", value: project.value.environment?.join(", ") },
+        ]
+      : [],
+  );
 </script>
 
 <style scoped>

@@ -1,69 +1,199 @@
 <template>
-  <div>
-    <HeaderComponent />
-    <IconField>
-      <InputIcon class="pi pi-search search-icon" />
-      <InputText v-model="searchQuery" class="custom-search" />
-    </IconField>
-    <TableUser />
+  <div class="users">
+    <CvsSheet
+      :columns
+      :sheet-data="users"
+      :context-menu="contextMenuOptions"
+      :user-id="String(authId)"
+      button-label="Create user"
+      page="users"
+      @handle-selected-item="(user) => (selectedRow = user)"
+      @activate-form="activateModal" />
+    <ModalDialog v-model:visible="isVisible" :header="modalHeader" width="900px">
+      <SkillForm
+        :data="formData"
+        :action="modalHeader"
+        @cancel="() => (isVisible = false)"
+        @save="submitForm" />
+    </ModalDialog>
   </div>
 </template>
 
-<script setup>
-  import { ref } from "vue";
-
-  const searchQuery = ref("");
+<script setup lang="ts">
+  import type { Department } from "~/types/departments";
+  import type { Position } from "~/types/positions";
+  import type { InputType, MenuData, Nullable, sheetColumn } from "~/types/types";
+  import type {
+    CreateUserInput,
+    UpdateUserInput,
+    User,
+    UserFormKeys,
+    UserRole,
+  } from "~/types/user";
   definePageMeta({
     layout: "default",
     middleware: "auth",
   });
+  const {
+    fetchDepartments,
+    fetchPositions,
+    users,
+    fetchUsers,
+    deleteUser,
+    updateUser,
+    createUser,
+  } = useUsers();
+  const { authId } = useAuth();
+  const isVisible = ref<boolean>(false);
+  const selectedRow = ref<Nullable<User>>(null);
+  const modalHeader = ref<string>("");
+  const departments = ref<Nullable<Department[]>>([]);
+  const positions = ref<Nullable<Position[]>>([]);
+  departments.value = await fetchDepartments();
+  positions.value = await fetchPositions();
+  await fetchUsers();
+  const columns = ref<sheetColumn[]>([
+    { field: "profile.avatar" },
+    { field: "profile.first_name", header: "First name" },
+    { field: "profile.last_name", header: "Last name" },
+    { field: "email", header: "Name" },
+    { field: "department.name", header: "Department" },
+    { field: "position.name", header: "Position" },
+  ]);
+  const formData = computed<Record<UserFormKeys, InputType>>(() => ({
+    email: {
+      key: "email",
+      label: "email",
+      value: selectedRow.value?.email ?? "",
+      type: "InputText",
+      values: [],
+      disabled: !checkRights() || modalHeader.value === "Update user",
+    },
+    password: {
+      key: "password",
+      label: "Password",
+      value: modalHeader.value === "Update user" ? "********" : "",
+      type: "InputText",
+      values: [],
+      disabled: !checkRights() || modalHeader.value === "Update user",
+    },
+    first_name: {
+      key: "firstName",
+      label: "First name",
+      value: selectedRow.value?.profile.first_name ?? "",
+      type: "InputText",
+      values: [],
+    },
+    last_name: {
+      key: "lastName",
+      label: "Last name",
+      value: selectedRow.value?.profile.last_name ?? "",
+      type: "InputText",
+      values: [],
+    },
+    department: {
+      key: "department",
+      label: "Department",
+      value: selectedRow.value?.department?.name ?? "",
+      type: "Select",
+      values: departments.value?.map((item) => ({ name: item.name })) ?? [],
+    },
+    position: {
+      key: "position",
+      label: "Position",
+      value: selectedRow.value?.position?.name ?? "",
+      type: "Select",
+      values: positions.value?.map((item) => ({ name: item.name })) ?? [],
+    },
+    role: {
+      key: "role",
+      label: "Role",
+      value: selectedRow.value?.role ?? "",
+      type: "Select",
+      values: [{ name: "Employee" }, { name: "Admin" }],
+      disabled: !checkRights(),
+    },
+  }));
+
+  const activateModal = (header: string): void => {
+    if (header === "Create user") {
+      selectedRow.value = null;
+    }
+    isVisible.value = true;
+    modalHeader.value = header;
+  };
+
+  const submitForm = async (data: Record<UserFormKeys, InputType>): Promise<void> => {
+    if (modalHeader.value === "Update user") {
+      await handleUpdateUser(data);
+    }
+    if (modalHeader.value === "Create user") {
+      await handleCreateUser(data);
+    }
+    await handleFormConfirmation();
+  };
+
+  const handleFormConfirmation = async (): Promise<void> => {
+    if (users.value) {
+      await fetchUsers();
+    }
+    isVisible.value = false;
+  };
+
+  const handleUpdateUser = async (data: Record<UserFormKeys, InputType>): Promise<void> => {
+    if (selectedRow.value) {
+      const mutateUserVars: UpdateUserInput = {
+        userId: Number(selectedRow.value.id),
+        cvsIds: selectedRow.value.cvs?.map((item) => item.id) as string[],
+        departmentId: Number(
+          departments.value?.find((item) => item.name === data.department.value)?.id,
+        ),
+        positionId: Number(positions.value?.find((item) => item.name === data.position.value)?.id),
+        role: data.role.value as UserRole,
+      };
+      await updateUser(mutateUserVars);
+    }
+  };
+
+  const handleCreateUser = async (data: Record<UserFormKeys, InputType>): Promise<void> => {
+    const mutateUserVars: CreateUserInput = {
+      auth: {
+        email: data.email.value as string,
+        password: data.password.value as string,
+      },
+      profile: {
+        first_name: data.first_name.value as string,
+        last_name: data.last_name.value as string,
+      },
+      cvsIds: [],
+      departmentId: Number(
+        departments.value?.find((item) => item.name === data.department.value)?.id,
+      ),
+      positionId: Number(positions.value?.find((item) => item.name === data.position.value)?.id),
+      role: data.role.value as UserRole,
+    };
+    await createUser(mutateUserVars);
+  };
+
+  const handleDeleteUser = async (id: string): Promise<void> => {
+    await deleteUser(id);
+    handleFormConfirmation();
+  };
+
+  const contextMenuOptions = ref<MenuData[]>([
+    {
+      label: "Update user",
+      command: () => activateModal("Update user"),
+    },
+    {
+      label: "Delete user",
+      command: () => (selectedRow.value ? handleDeleteUser(selectedRow.value.id) : null),
+    },
+  ]);
 </script>
 
 <style scoped>
-  .custom-search {
-    padding: 8.5px 12px 8.5px 40px !important;
-    border-radius: 40px !important;
-    width: 100%;
-    max-width: 320px;
-    border: 1px solid #e0e0e0;
-    transition: all 0.2s ease;
-  }
-
-  .custom-search:hover {
-    border-color: #b0b0b0;
-  }
-
-  .custom-search:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-  }
-
-  .search-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #9ca3af;
-    z-index: 1;
-  }
-
-  :deep(.p-inputtext) {
-    padding: 8.5px 12px 8.5px 40px !important;
-    border-radius: 40px !important;
-  }
-
-  :deep(.p-inputtext:focus) {
-    box-shadow: none;
-    border-color: #3498db;
-  }
-
-  :deep(.p-iconfield .p-inputicon:first-child) {
-    position: absolute;
-    left: 14px;
-  }
-
-  :deep(.p-inputicon) {
-    margin-top: 0;
+  .users {
+    padding: 0 20px;
   }
 </style>

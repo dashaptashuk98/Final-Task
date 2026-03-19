@@ -28,7 +28,7 @@ export type ProjectFormKey =
 
 export interface sheetColumn {
   field: string;
-  header: string;
+  header?: string;
 }
 
 export interface MenuData {
@@ -49,4 +49,10 @@ export interface SelectableItem {
 export interface filterProps {
   value: string;
   matchMode: string;
+}
+
+export interface IdVar {
+  id?: string;
+  userId?: string;
+  cvId?: string;
 }

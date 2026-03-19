@@ -2,10 +2,9 @@ import type { Department } from "~/types/departments";
 import type { Position } from "~/types/positions";
 import type { UserSkill, Skill } from "~/types/skills";
 import type { SkillCategory } from "~/types/skillCategory";
-import type { Profile, User, UserResponse } from "~/types/user";
+import type { CreateProfileInput, Profile, UpdateUserInput, User } from "~/types/user";
 import type { Nullable } from "~/types/types";
-import { profileQuery, userQuery } from "~/graphQL/user/user.query";
-import { usersQuery } from "~/graphQL/users/users.query";
+import { profileQuery, userQuery, usersQuery } from "~/graphQL/user/user.query";
 import { departmentsQuery } from "~/graphQL/departments/departments.query";
 import { positionsQuery } from "~/graphQL/positions/positions.query";
 import { userSkillsQuery } from "~/graphQL/skills/skillsUsers.query";
@@ -18,6 +17,11 @@ import {
   deleteProfileLanguageMutation,
   updateProfileLanguageMutation,
 } from "~/graphQL/languages/languages.mutation";
+import {
+  createUserMutation,
+  deleteUserMutation,
+  updateUserMutation,
+} from "~/graphQL/user/user.mutation";
 
 export const useUsers = () => {
   const { clients } = useApollo();
@@ -127,19 +131,17 @@ export const useUsers = () => {
 
   const fetchUsers = async (): Promise<Nullable<User[]>> => {
     isLoading.value = true;
-
-    try {
-      const { data } = await useAsyncQuery<UserResponse>(usersQuery);
-      if (data.value) {
-        users.value = data.value.users;
-        return data.value.users;
+    if (clients) {
+      const { data } = await clients.default.query({
+        query: usersQuery,
+        fetchPolicy: "no-cache",
+      });
+      if (data) {
+        users.value = data.users;
+        return data.users;
       }
-      return null;
-    } catch {
-      return null;
-    } finally {
-      isLoading.value = false;
     }
+    return null;
   };
 
   const fetchProfile = async (userId: string): Promise<Nullable<Profile>> => {
@@ -213,6 +215,45 @@ export const useUsers = () => {
     return null;
   };
 
+  const deleteUser = async (id: string): Promise<Nullable<User>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: deleteUserMutation,
+        variables: { userId: id },
+      });
+      if (data) {
+        return data.user;
+      }
+    }
+    return null;
+  };
+
+  const updateUser = async (user: UpdateUserInput): Promise<Nullable<User>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: updateUserMutation,
+        variables: { user: user },
+      });
+      if (data) {
+        return data.user;
+      }
+    }
+    return null;
+  };
+
+  const createUser = async (user: CreateProfileInput): Promise<Nullable<User>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: createUserMutation,
+        variables: { user: user },
+      });
+      if (data) {
+        return data.user;
+      }
+    }
+    return null;
+  };
+
   const clearUsers = (): void => {
     users.value = [];
   };
@@ -246,5 +287,8 @@ export const useUsers = () => {
     updateProfileLanguage,
     deleteProfileLanguage,
     clearUsers,
+    deleteUser,
+    updateUser,
+    createUser,
   };
 };

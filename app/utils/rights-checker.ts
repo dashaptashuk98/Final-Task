@@ -4,7 +4,7 @@ export const checkRights = (userId?: string): boolean => {
     if (!userId) {
       return authUser.value.role === "Admin";
     }
-    return String(authId.value) === userId;
+    return String(authId.value) === userId || authUser.value.role === "Admin";
   }
   return false;
 };

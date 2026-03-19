@@ -1,6 +1,13 @@
-export const userQuery = gql`
-  query ($userId: ID!) {
-    user(userId: $userId) {
+export const deleteUserMutation = gql`
+  mutation deleteUser($userId: ID!) {
+    deleteUser(userId: $userId) {
+      affected
+    }
+  }
+`;
+export const updateUserMutation = gql`
+  mutation updateUser($user: UpdateUserInput!) {
+    updateUser(user: $user) {
       id
       created_at
       email
@@ -53,32 +60,9 @@ export const userQuery = gql`
     }
   }
 `;
-
-export const profileQuery = gql`
-  query profile($userId: ID!) {
-    profile(userId: $userId) {
-      id
-      created_at
-      first_name
-      last_name
-      full_name
-      avatar
-      skills {
-        name
-        categoryId
-        mastery
-      }
-      languages {
-        name
-        proficiency
-      }
-    }
-  }
-`;
-
-export const usersQuery = gql`
-  query {
-    users {
+export const createUserMutation = gql`
+  mutation createUser($user: CreateUserInput!) {
+    createUser(user: $user) {
       id
       created_at
       email

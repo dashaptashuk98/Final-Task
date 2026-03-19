@@ -1,19 +1,25 @@
 <script setup lang="ts">
   import type { Cv } from "~/types/cvs";
-  import type { MenuData, Nullable, sheetColumn } from "~/types/types";
+  import type { MenuData, sheetColumn } from "~/types/types";
 
   definePageMeta({
     middleware: "auth",
   });
 
   const { fetchCvs, createCv, updateCv, deleteCv } = useCvs();
+  const {
+    isModalVisible,
+    isDeleteModalVisible,
+    modalHeader,
+    activateModal,
+    sheetData,
+    selectedRow,
+    updateSheetItem,
+    handleMutateConfirmation,
+    deleteSheetItem,
+  } = useDataTable();
   const { authId } = useAuth();
-  const cvsList = useState<Nullable<Cv[]>>(() => null);
-  const isModalVisible = ref<boolean>(false);
-  const modalHeader = ref<string>("");
-  const isDeleteModalVisible = ref(false);
-  cvsList.value = await fetchCvs();
-  const selectedCv = ref<Nullable<Cv>>(null);
+  sheetData.value = await fetchCvs();
   const columns = ref<sheetColumn[]>([
     { field: "name", header: "Name" },
     { field: "education", header: "Education" },
@@ -26,73 +32,32 @@
     description: "",
   });
 
-  const activateModal = (header: string, cvData?: Nullable<Cv>): void => {
-    modalHeader.value = header;
-    isModalVisible.value = true;
-    if (cvData) {
-      formData.value.name = cvData.name;
-      formData.value.education = cvData.education;
-      formData.value.description = cvData.description;
-    } else {
-      formData.value.name = "";
-      formData.value.education = "";
-      formData.value.description = "";
-    }
-  };
-
-  const handleFormConfirmation = async (): Promise<void> => {
-    if (cvsList.value) {
-      cvsList.value = await fetchCvs();
-    }
-    isModalVisible.value = false;
-    selectedCv.value = null;
-  };
-
-  const submitForm = (
+  const submitForm = async (
     id: string = String(authId.value),
     data: Pick<Cv, "name" | "education" | "description">,
-  ): void => {
+  ): Promise<void> => {
     if (modalHeader.value === "Update CV") {
-      updateUserCv(data, selectedCv.value?.id || "");
+      const variables = Object.assign(data, { cvId: selectedRow.value?.id });
+      updateSheetItem(variables, updateCv);
     }
     if (modalHeader.value === "Create CV") {
-      createUserCv(data, id);
+      const variables = Object.assign(data, { userId: id });
+      updateSheetItem(variables, createCv);
     }
-    handleFormConfirmation();
-  };
-
-  const createUserCv = async (
-    changedData: Pick<Cv, "name" | "education" | "description">,
-    id: string,
-  ): Promise<void> => {
-    if (changedData) {
-      await createCv(Object.assign({ userId: id }, changedData));
-    }
-  };
-
-  const updateUserCv = async (
-    changedData: Pick<Cv, "name" | "education" | "description">,
-    id: string,
-  ): Promise<void> => {
-    if (changedData) {
-      await updateCv(Object.assign({ cvId: id }, changedData));
-    }
+    await handleMutateConfirmation(fetchCvs);
   };
 
   const deleteUserCv = async (): Promise<void> => {
-    if (selectedCv.value) {
-      const cvId = Number(selectedCv.value.id);
-      await deleteCv({ cvId });
+    if (selectedRow.value) {
+      const cvId = { cvId: Number(selectedRow.value.id) };
+      await deleteSheetItem(deleteCv, fetchCvs, cvId);
     }
-    isDeleteModalVisible.value = false;
-    selectedCv.value = null;
-    cvsList.value = await fetchCvs();
   };
 
   const contextMenuOptions = ref<MenuData[]>([
     {
       label: "Update CV",
-      command: () => activateModal("Update CV", selectedCv.value),
+      command: () => activateModal("Update CV", formData.value, selectedRow.value),
     },
     {
       label: "Delete CV",
@@ -108,15 +73,15 @@
     <CvsSheet
       :columns
       :user-id="String(authId)"
-      :sheet-data="cvsList"
+      :sheet-data="sheetData"
       :context-menu="contextMenuOptions"
       button-label="Create CV"
       page="cvs"
-      @handle-selected-item="(cv) => (selectedCv = cv)"
-      @activate-form="activateModal" />
+      @handle-selected-item="(cv) => (selectedRow = cv)"
+      @activate-form="(value) => activateModal(value, formData)" />
     <ModalDialog v-model:visible="isDeleteModalVisible" header="Delete Cv">
       <ActionModal
-        :item-name="selectedCv?.name"
+        :item-name="selectedRow?.name"
         item-type="cv"
         @cancel="isDeleteModalVisible = false"
         @confirm="deleteUserCv" />
@@ -124,8 +89,8 @@
     <ModalDialog v-model:visible="isModalVisible" :header="modalHeader">
       <CvForm
         :data="formData"
-        :user-id="selectedCv && selectedCv.user ? selectedCv.user.id : String(authId)"
-        :cv-id="selectedCv?.id as string"
+        :user-id="selectedRow && selectedRow.user ? selectedRow.user.id : String(authId)"
+        :cv-id="selectedRow?.id as string"
         @submit-cv="submitForm" />
     </ModalDialog>
   </section>

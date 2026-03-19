@@ -9,12 +9,16 @@
               v-if="item.type === 'InputText'"
               :id="item.key"
               v-model="item.value as string"
+              :disabled="item.disabled"
               class="custom-input" />
             <Select
               v-else-if="item.type === 'Select'"
               v-model="item.value"
               :options="item.values"
-              :disabled="action === 'Update' && (item.key === 'language' || item.key === 'skill')"
+              :disabled="
+                (action === 'Update' && (item.key === 'language' || item.key === 'skill')) ||
+                item.disabled
+              "
               option-label="name"
               option-value="name"
               class="custom-select"

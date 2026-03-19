@@ -1,13 +1,27 @@
 <template>
-  <div class="users-page">
+  <div class="users-sheet">
     <div v-if="loading" class="loading-container">Загрузка пользователей...</div>
     <div v-else>
+      <ContextMenu
+        ref="cm"
+        :model="contextMenu"
+        :pt="{
+          root: {
+            style: {
+              'background-color': '#FFFFFF',
+              border: '1px #2E2E2E solid',
+              padding: '5px 10px',
+              'border-radius': '15px',
+            },
+          },
+          itemLabel: { style: { font: '400 14px/24px Roboto' } },
+          item: { style: { padding: '3px' } },
+        }" />
       <DataTable
         :value="displayUsers"
         paginator
         :rows="10"
         :rows-per-page-options="[5, 10, 25, 50]"
-        table-style="min-width: 70rem"
         striped-rows
         sort-mode="single"
         class="custom-table"
@@ -31,6 +45,10 @@
         <Column field="profile.first_name" header="First Name" sortable>
           <template #body="{ data }">
             {{ data.profile?.first_name || "-" }}
+          </template>
+          <template #sorticon="{ sortOrder }">
+            <i v-if="sortOrder === 1" class="pi pi-arrow-up" />
+            <i v-else-if="sortOrder === -1" class="pi pi-arrow-down" />
           </template>
         </Column>
 
@@ -64,26 +82,17 @@
           <template #header> <span /> </template>
           <template #body="{ data }">
             <Button
-              v-if="data.email === currentUserEmail"
-              icon="pi pi-ellipsis-v"
+              :icon="checkRights(data.id) ? 'pi pi-ellipsis-v' : 'pi pi-angle-right'"
               class="action-button"
               text
               rounded
-              severity="secondary" />
-
-            <Button
-              v-else
-              icon="pi pi-angle-right"
-              class="action-button"
-              text
-              rounded
-              severity="secondary" />
+              severity="secondary"
+              @click="
+                (e: MouseEvent) =>
+                  checkRights(data.id) ? activateCM(e, data) : handleRowClick({ data: data })
+              " />
           </template>
         </Column>
-
-        <template #empty>
-          <div class="text-center p-4">Нет данных для отображения</div>
-        </template>
       </DataTable>
     </div>
   </div>
@@ -94,11 +103,17 @@
   import { useUsers } from "~/composables/useUsers";
   import { useAuth } from "~/composables/useAuth";
   import type { User } from "~/types/user";
+  import type { MenuData } from "~/types/types";
+
+  const { contextMenu } = defineProps<{ contextMenu: MenuData[] }>();
+
+  const emit = defineEmits<{ (event: "activateModal", value: User): void }>();
 
   const { users, loading, fetchUsers } = useUsers();
   const { authUser } = useAuth();
 
   const displayUsers = ref<User[]>([]);
+  const cm = ref();
 
   const currentUserEmail = computed(() => authUser.value?.email);
 
@@ -110,6 +125,13 @@
   const handleRowClick = (event: { data: User }) => {
     const userId = event.data.id;
     navigateTo(`/users/${userId}/profile`);
+  };
+
+  const activateCM = (e: MouseEvent, data: User) => {
+    if (checkRights(data.id)) {
+      emit("activateModal", data);
+    }
+    cm.value.show(e);
   };
 
   const sortUsers = () => {
@@ -147,8 +169,7 @@
 </script>
 
 <style scoped>
-  .users-page {
-    padding: 20px;
+  .users-sheet {
     font-family: "Roboto", sans-serif;
   }
 

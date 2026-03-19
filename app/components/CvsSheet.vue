@@ -30,6 +30,8 @@
     if (e.data) {
       if (page === "cvs") {
         return navigateTo(`/${page}/${e.data.id}/details`);
+      } else if (page === "users") {
+        return navigateTo(`/${page}/${e.data.id}/profile`);
       }
       if (page === "projects") {
         return navigateTo(`/projects/${e.data.id}`);
@@ -60,13 +62,16 @@
     }" />
   <SheetHeader
     :button-label
-    :is-visible="userId ? checkRights(userId) : checkRights()"
+    :is-visible="userId && page !== 'users' ? checkRights(userId) : checkRights()"
     @activate-form="emit('activateForm', buttonLabel)"
     @submit-search="(input: string) => (filters.name.value = input)" />
   <DataTable
     v-model:filters="filters"
     :value="sheetData"
     removable-sort
+    :paginator="page === 'users'"
+    :rows="10"
+    :rows-per-page-options="[10, 25, 50]"
     :row-group-mode="page === 'cvs' ? 'subheader' : undefined"
     selection-mode="single"
     :group-rows-by="page === 'cvs' ? 'description' : undefined"
@@ -77,18 +82,37 @@
       :key="col.field"
       :field="col.field"
       :header="col.header"
-      sortable
+      :sortable="!!col.header"
       :pt="{ bodyCell: { class: 'p-body-cell' } }">
       <template #sorticon="{ sortOrder }">
         <i v-if="sortOrder === 1" class="pi pi-arrow-up" />
         <i v-else-if="sortOrder === -1" class="pi pi-arrow-down" />
+      </template>
+      <template v-if="col.field === 'profile.avatar'" #body="{ data }">
+        <Avatar
+          :label="!data.profile.avatar ? data.email[0].toUpperCase() : null"
+          :image="data.profile.avatar ? data.profile.avatar : null"
+          shape="circle"
+          style="
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            font-weight: 400;
+            color: #ffffff;
+            background-color: #bdbdbd;
+            display: flex;
+          " />
       </template>
     </Column>
 
     <Column header-style="width: 5rem" :pt="{ bodyCell: { class: 'p-body-cell' } }">
       <template #body="slotProps">
         <Button
-          v-if="userId ? checkRights(userId) : checkRights(slotProps.data?.user?.id)"
+          v-if="
+            userId && page !== 'users'
+              ? checkRights(userId)
+              : checkRights(slotProps.data.user ? slotProps.data.user.id : slotProps.data.id)
+          "
           :icon="'pi pi-ellipsis-v'"
           rounded
           @click="(e: MouseEvent) => handleOptionPick(e, slotProps.data)" />
@@ -121,7 +145,7 @@
     font: 400 14px/20px "Roboto";
     letter-spacing: 0.15px;
     color: #2e2e2e;
-    padding: 20px;
+    padding: 15px;
     outline: 0;
     border: 0;
     border-top: 1px #e0e0e0 solid;
@@ -157,5 +181,43 @@
 
   .p-button:not(:disabled):active {
     background-color: #00000030;
+  }
+
+  :deep(.p-datatable-paginator-bottom) {
+    border: 0;
+    outline: 0;
+  }
+  :deep(.p-paginator) {
+    padding-top: 10px;
+    font: 400 16px/24px "Roboto";
+    color: #2e2e2e;
+  }
+
+  :deep(.p-paginator-pages) {
+    gap: 20px;
+  }
+  :deep(.p-paginator-last),
+  :deep(.p-paginator-first),
+  :deep(.p-paginator-previous),
+  :deep(.p-paginator-next),
+  :deep(.p-paginator-page) {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+  }
+  :deep(.p-paginator-page.p-paginator-page-selected) {
+    background: #00000010;
+  }
+  :deep(.p-paginator-content) {
+    gap: 20px;
+  }
+  :deep(.p-paginator-rpp-dropdown) {
+    outline: 1px #2e2e2e solid;
+    border-radius: 12px;
+    padding: 5px 10px;
+    gap: 15px;
+  }
+  :deep(.p-paginator-rpp-dropdown > *) {
+    font: 400 16px/22px "Roboto";
   }
 </style>

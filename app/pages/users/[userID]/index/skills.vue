@@ -21,6 +21,7 @@
           (type) => {
             modalType = type;
             visible = true;
+            errorMessage = '';
           }
         "
         @toggle-mode="deleteMode = !deleteMode"

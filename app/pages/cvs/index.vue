@@ -70,7 +70,6 @@
 
 <template>
   <section>
-    <HeaderComponent />
     <CvsSheet
       :columns
       :user-id="String(authId)"

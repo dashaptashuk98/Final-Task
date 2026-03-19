@@ -33,6 +33,9 @@
       } else if (page === "users") {
         return navigateTo(`/${page}/${e.data.id}/profile`);
       }
+      if (page === "projects") {
+        return navigateTo(`/projects/${e.data.id}`);
+      }
     }
   };
   const handleOptionPick = (e: MouseEvent, item: T): void => {
@@ -69,9 +72,9 @@
     :paginator="page === 'users'"
     :rows="10"
     :rows-per-page-options="[10, 25, 50]"
-    row-group-mode="subheader"
+    :row-group-mode="page === 'cvs' ? 'subheader' : undefined"
     selection-mode="single"
-    group-rows-by="description"
+    :group-rows-by="page === 'cvs' ? 'description' : undefined"
     :pt="{ rowGroupFooterCell: { class: 'p-footer-cell' } }"
     @row-select="handleRowClick">
     <Column

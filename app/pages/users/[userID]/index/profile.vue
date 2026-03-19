@@ -10,7 +10,6 @@
   const { user, departments, positions, fetchUser, fetchDepartments, fetchPositions } = useUsers();
   const route = useRoute();
   const userId = ref<string>(route.params.userID as string);
-
   const profileFormData = computed<Record<ProfileForm, InputType> | null>(() => {
     if (!user.value) return null;
 
@@ -77,7 +76,7 @@
           email: user.email,
           profile: { avatar: user.profile?.avatar ?? undefined },
         }"
-        :disabled="checkRights(userId)"
+        :disabled="!checkRights(userId)"
         @avatar-updated="handleAvatarUpdate" />
 
       <div class="profile-avatar__container">

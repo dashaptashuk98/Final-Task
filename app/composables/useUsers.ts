@@ -1,12 +1,10 @@
 import type { Department } from "~/types/departments";
-import type { Position } from "~/types/positions";
 import type { UserSkill, Skill } from "~/types/skills";
 import type { SkillCategory } from "~/types/skillCategory";
 import type { CreateProfileInput, Profile, UpdateUserInput, User } from "~/types/user";
 import type { Nullable } from "~/types/types";
 import { profileQuery, userQuery, usersQuery } from "~/graphQL/user/user.query";
 import { departmentsQuery } from "~/graphQL/departments/departments.query";
-import { positionsQuery } from "~/graphQL/positions/positions.query";
 import { userSkillsQuery } from "~/graphQL/skills/skillsUsers.query";
 import { skillCategoryQuery } from "~/graphQL/skills/skillsCategory.query";
 import { skillsQuery } from "~/graphQL/skills/skill.query";
@@ -28,7 +26,6 @@ export const useUsers = () => {
   const user = useState<Nullable<User>>("user", () => null);
   const departments = useState<Nullable<Department[]>>("departments", () => []);
   const skillCategories = useState<Nullable<SkillCategory[]>>("skillCategories", () => []);
-  const positions = useState<Position[]>("positions", () => []);
   const users = useState<User[]>("users", () => []);
   const skills = useState<Nullable<Skill[]>>("skills", () => []);
   const userSkills = useState<Nullable<UserSkill[]>>("userSkills", () => []);
@@ -109,19 +106,6 @@ export const useUsers = () => {
       if (data.value?.skillCategories) {
         skillCategories.value = data.value.skillCategories;
         return data.value.skillCategories;
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
-  const fetchPositions = async (): Promise<Nullable<Position[]>> => {
-    try {
-      const { data } = await useAsyncQuery<Record<"positions", Position[]>>(positionsQuery);
-      if (data.value) {
-        positions.value = data.value.positions;
-        return data.value.positions;
       }
       return null;
     } catch {
@@ -261,7 +245,6 @@ export const useUsers = () => {
   return {
     user,
     departments,
-    positions,
     users,
     skills,
     skillCategories,
@@ -276,7 +259,6 @@ export const useUsers = () => {
 
     fetchUser,
     fetchDepartments,
-    fetchPositions,
     fetchUserSkills,
     fetchSkillCategories,
     fetchSkills,

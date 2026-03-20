@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { useDepartments } from "~/composables/useDepartments";
   import { useUsers } from "~/composables/useUsers";
   import type { InputType } from "~/types/types";
   import type { ProfileForm } from "~/types/user";
@@ -7,8 +8,9 @@
     middleware: "auth",
   });
 
-  const { user, departments, positions, fetchUser, fetchPositions } = useUsers();
-  const { fetchDepartments } = useDepartments();
+  const { user, fetchUser } = useUsers();
+  const { fetchDepartments, departments } = useDepartments();
+  const { positions, fetchPositions } = usePositions();
   const route = useRoute();
   const userId = ref<string>(route.params.userID as string);
 

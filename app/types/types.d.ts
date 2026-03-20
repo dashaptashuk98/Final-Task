@@ -17,6 +17,8 @@ export interface Tabs {
   to: string;
 }
 
+export type DepartmentFormKey = "name";
+
 export type ProjectFormKey = "name" | "domain" | "start" | "end" | "description" | "environment";
 
 export type CvProjectFormKey = ProjectFormKey | "responsibilities";

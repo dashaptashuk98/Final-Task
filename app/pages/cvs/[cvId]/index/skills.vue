@@ -11,40 +11,38 @@
       @skill-click="handleSkillClick"
       @toggle-skill="handleToggleSkill" />
 
-    <div v-if="String(authId) === String(cvOwnerId)" class="actions__wrapper">
-      <AddRemoveButtons
-        :is-select-mode="deleteMode"
-        :select-counter="selectedSkillsToDelete.size"
-        page-title="skill"
-        @activate-modal="
-          (type) => {
-            modalType = type;
-            errorMessage = '';
-            visible = true;
-          }
-        "
-        @toggle-mode="deleteMode = !deleteMode"
-        @handle-remove="handleDeleteSkills" />
+    <AddRemoveButtons
+      :is-select-mode="deleteMode"
+      :select-counter="selectedSkillsToDelete.size"
+      page-title="skill"
+      @activate-modal="
+        (type) => {
+          modalType = type;
+          errorMessage = '';
+          visible = true;
+        }
+      "
+      @toggle-mode="deleteMode = !deleteMode"
+      @handle-remove="handleDeleteSkills" />
 
-      <ModalDialog
-        v-model:visible="visible"
-        :header="`${modalType} skill`"
-        @update:visible="(value) => (visible = value)">
-        <SkillForm
-          :data="formData"
-          :loading="mutationLoading"
-          :error-message="errorMessage"
-          :action="modalType"
-          :disabled="checkRights(cvOwnerId as string)"
-          @save="handleFormSubmit"
-          @cancel="() => (visible = false)" />
-      </ModalDialog>
-    </div>
+    <ModalDialog
+      v-model:visible="visible"
+      :header="`${modalType} skill`"
+      @update:visible="(value) => (visible = value)">
+      <SkillForm
+        :data="formData"
+        :loading="mutationLoading"
+        :error-message="errorMessage"
+        :action="modalType"
+        :disabled="!checkRights(cvOwnerId as string)"
+        @save="handleFormSubmit"
+        @cancel="() => (visible = false)" />
+    </ModalDialog>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, reactive, watch } from "vue";
+  import { ref, computed, reactive, watch } from "vue";
   import { useUsers } from "~/composables/useUsers";
   import SkillsComponent from "~/components/SkillsComponent.vue";
   import SkillForm from "~/components/SkillForm.vue";
@@ -56,7 +54,6 @@
 
   const { fetchSkillCategories, fetchSkills, skills } = useUsers();
   const { cv, fetchCv, addCvSkill, updateCvSkill, deleteCvSkill } = useCvs();
-  const { authId } = useAuth();
   const route = useRoute();
   const cvId = route.params.cvId as string;
   const cvOwnerId = ref<string | null>(null);
@@ -75,6 +72,19 @@
     middleware: "auth",
     layout: "default",
   });
+
+  try {
+    await fetchCv(cvId);
+    if (cv.value?.user?.id) {
+      cvOwnerId.value = cv.value.user.id;
+      route.params.userID = cv.value.user.id;
+    }
+    await Promise.all([fetchSkillCategories(), fetchSkills()]);
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : "Error loading skills";
+  } finally {
+    loading.value = false;
+  }
 
   const formData = reactive<Record<SkillFormKey, InputType>>({
     skill: {
@@ -189,25 +199,6 @@
     },
     { immediate: true },
   );
-
-  onMounted(async () => {
-    try {
-      loading.value = true;
-      error.value = null;
-
-      await fetchCv(cvId);
-      if (cv.value?.user?.id) {
-        cvOwnerId.value = cv.value.user.id;
-        route.params.userID = cv.value.user.id;
-      }
-
-      await Promise.all([fetchSkillCategories(), fetchSkills()]);
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : "Error loading skills";
-    } finally {
-      loading.value = false;
-    }
-  });
 
   const normalizeSkillsData = (skillsData: SkillMastery[]) => {
     const uniqueSkills = new Map<string, SkillMastery>();

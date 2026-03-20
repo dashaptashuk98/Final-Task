@@ -12,7 +12,7 @@
       @skill-click="handleSkillClick"
       @toggle-skill="toggleSkillForDeletion" />
 
-    <div v-if="isOwner" class="actions__wrapper">
+    <div v-if="checkRights(userId)" class="actions__wrapper">
       <AddRemoveButtons
         :is-select-mode="deleteMode"
         :select-counter="selectedSkillsToDelete.size"

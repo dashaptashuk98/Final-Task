@@ -5,7 +5,7 @@ import type { SkillCategory } from "~/types/skillCategory";
 import type { CreateProfileInput, Profile, UpdateUserInput, User } from "~/types/user";
 import type { Nullable } from "~/types/types";
 import { profileQuery, userQuery, usersQuery } from "~/graphQL/user/user.query";
-import { departmentsQuery } from "~/graphQL/departments/departments.query";
+
 import { positionsQuery } from "~/graphQL/positions/positions.query";
 import { userSkillsQuery } from "~/graphQL/skills/skillsUsers.query";
 import { skillCategoryQuery } from "~/graphQL/skills/skillsCategory.query";
@@ -47,7 +47,7 @@ export const useUsers = () => {
     if (clients) {
       const { data } = await clients.default.query({
         query: userQuery,
-        variables: { userId: userId },
+        variables: { userId },
         fetchPolicy: "network-only",
       });
       if (data) {
@@ -56,19 +56,6 @@ export const useUsers = () => {
       }
     }
     return null;
-  };
-
-  const fetchDepartments = async (): Promise<Nullable<Department[]>> => {
-    try {
-      const { data } = await useAsyncQuery<Record<"departments", Department[]>>(departmentsQuery);
-      if (data.value) {
-        departments.value = data.value.departments;
-        return data.value.departments;
-      }
-      return null;
-    } catch {
-      return null;
-    }
   };
 
   const fetchSkills = async (): Promise<Nullable<Skill[]>> => {
@@ -90,7 +77,6 @@ export const useUsers = () => {
         userSkillsQuery,
         { userId },
       );
-
       if (data.value?.user?.profile?.skills) {
         userSkills.value = data.value.user.profile.skills;
         return data.value.user.profile.skills;
@@ -105,7 +91,6 @@ export const useUsers = () => {
     try {
       const { data } =
         await useAsyncQuery<Record<"skillCategories", SkillCategory[]>>(skillCategoryQuery);
-
       if (data.value?.skillCategories) {
         skillCategories.value = data.value.skillCategories;
         return data.value.skillCategories;
@@ -178,11 +163,9 @@ export const useUsers = () => {
     if (clients) {
       const { data } = await clients.default.mutate<Record<"addProfileLanguage", Profile>>({
         mutation: addProfileLanguageMutation,
-        variables: { language: language },
+        variables: { language },
       });
-      if (data) {
-        return data.addProfileLanguage;
-      }
+      if (data) return data.addProfileLanguage;
     }
     return null;
   };
@@ -193,11 +176,9 @@ export const useUsers = () => {
     if (clients) {
       const { data } = await clients.default.mutate<Record<"updateProfileLanguage", Profile>>({
         mutation: updateProfileLanguageMutation,
-        variables: { language: language },
+        variables: { language },
       });
-      if (data) {
-        return data.updateProfileLanguage;
-      }
+      if (data) return data.updateProfileLanguage;
     }
     return null;
   };
@@ -206,11 +187,9 @@ export const useUsers = () => {
     if (clients) {
       const { data } = await clients.default.mutate<Record<"deleteProfileLanguage", Profile>>({
         mutation: deleteProfileLanguageMutation,
-        variables: { language: language },
+        variables: { language },
       });
-      if (data) {
-        return data.deleteProfileLanguage;
-      }
+      if (data) return data.deleteProfileLanguage;
     }
     return null;
   };
@@ -221,9 +200,7 @@ export const useUsers = () => {
         mutation: deleteUserMutation,
         variables: { userId: id },
       });
-      if (data) {
-        return data.user;
-      }
+      if (data) return data.user;
     }
     return null;
   };
@@ -232,11 +209,9 @@ export const useUsers = () => {
     if (clients) {
       const { data } = await clients.default.mutate({
         mutation: updateUserMutation,
-        variables: { user: user },
+        variables: { user },
       });
-      if (data) {
-        return data.user;
-      }
+      if (data) return data.user;
     }
     return null;
   };
@@ -245,11 +220,9 @@ export const useUsers = () => {
     if (clients) {
       const { data } = await clients.default.mutate({
         mutation: createUserMutation,
-        variables: { user: user },
+        variables: { user },
       });
-      if (data) {
-        return data.user;
-      }
+      if (data) return data.user;
     }
     return null;
   };
@@ -275,7 +248,6 @@ export const useUsers = () => {
     getUserSkills,
 
     fetchUser,
-    fetchDepartments,
     fetchPositions,
     fetchUserSkills,
     fetchSkillCategories,

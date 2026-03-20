@@ -7,7 +7,8 @@
     middleware: "auth",
   });
 
-  const { user, departments, positions, fetchUser, fetchDepartments, fetchPositions } = useUsers();
+  const { user, departments, positions, fetchUser, fetchPositions } = useUsers();
+  const { fetchDepartments } = useDepartments();
   const route = useRoute();
   const userId = ref<string>(route.params.userID as string);
 
@@ -77,7 +78,7 @@
           email: user.email,
           profile: { avatar: user.profile?.avatar ?? undefined },
         }"
-        :disabled="checkRights(userId)"
+        :disabled="!checkRights(userId)"
         @avatar-updated="handleAvatarUpdate" />
 
       <div class="profile-avatar__container">

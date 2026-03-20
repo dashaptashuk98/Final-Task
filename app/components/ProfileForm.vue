@@ -10,7 +10,8 @@
     data: Record<ProfileForm, InputType> | null;
     userId?: string;
   }>();
-  const { user, departments, positions } = useUsers();
+  const { user, departments } = useUsers();
+  const { positions } = usePositions();
   const route = useRoute();
 
   const formData = ref<Record<ProfileForm, InputType> | null>(null);

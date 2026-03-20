@@ -34,15 +34,8 @@
     layout: "default",
     middleware: "auth",
   });
-  const {
-    fetchDepartments,
-    fetchPositions,
-    users,
-    fetchUsers,
-    deleteUser,
-    updateUser,
-    createUser,
-  } = useUsers();
+  const { fetchDepartments, users, fetchUsers, deleteUser, updateUser, createUser } = useUsers();
+  const { fetchPositions } = usePositions();
   const { authId } = useAuth();
   const isVisible = ref<boolean>(false);
   const selectedRow = ref<Nullable<User>>(null);

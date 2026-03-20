@@ -7,7 +7,8 @@
     middleware: "auth",
   });
 
-  const { user, departments, positions, fetchUser, fetchDepartments, fetchPositions } = useUsers();
+  const { user, departments, fetchUser, fetchDepartments } = useUsers();
+  const { positions, fetchPositions } = usePositions();
   const route = useRoute();
   const userId = ref<string>(route.params.userID as string);
 

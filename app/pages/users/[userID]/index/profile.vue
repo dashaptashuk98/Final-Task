@@ -8,8 +8,8 @@
     middleware: "auth",
   });
 
-  const { user, fetchUser } = useUsers();
   const { fetchDepartments, departments } = useDepartments();
+  const { user, fetchUser } = useUsers();
   const { positions, fetchPositions } = usePositions();
   const route = useRoute();
   const userId = ref<string>(route.params.userID as string);

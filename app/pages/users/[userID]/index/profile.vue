@@ -9,6 +9,7 @@
 
   const { user, departments, positions, fetchUser, fetchPositions } = useUsers();
   const { fetchDepartments } = useDepartments();
+  const { positions, fetchPositions } = usePositions();
   const route = useRoute();
   const userId = ref<string>(route.params.userID as string);
 

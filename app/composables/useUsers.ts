@@ -8,8 +8,7 @@ import { departmentsQuery } from "~/graphQL/departments/departments.query";
 import { userSkillsQuery } from "~/graphQL/skills/skillsUsers.query";
 import { skillCategoryQuery } from "~/graphQL/skills/skillsCategory.query";
 import { skillsQuery } from "~/graphQL/skills/skill.query";
-import type { Language, LanguageQueryVars, LanguageQueryVarsExt } from "~/types/languages";
-import { languagesQuery } from "~/graphQL/languages/languages.query";
+import type { LanguageQueryVars, LanguageQueryVarsExt } from "~/types/languages";
 import {
   addProfileLanguageMutation,
   deleteProfileLanguageMutation,
@@ -143,21 +142,6 @@ export const useUsers = () => {
     }
   };
 
-  const fetchLanguages = async (): Promise<Nullable<Language[]>> => {
-    isLoading.value = true;
-    try {
-      const { data } = await useAsyncQuery<Record<"languages", Language[]>>(languagesQuery);
-      if (data.value) {
-        return data.value.languages;
-      }
-      return null;
-    } catch {
-      return null;
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
   const addProfileLanguage = async (language: LanguageQueryVarsExt): Promise<Nullable<Profile>> => {
     if (clients) {
       const { data } = await clients.default.mutate<Record<"addProfileLanguage", Profile>>({
@@ -264,7 +248,6 @@ export const useUsers = () => {
     fetchSkills,
     fetchUsers,
     fetchProfile,
-    fetchLanguages,
     addProfileLanguage,
     updateProfileLanguage,
     deleteProfileLanguage,

@@ -63,3 +63,33 @@ export const deleteProfileLanguageMutation = gql`
     }
   }
 `;
+
+export const updateLanguageMutation = gql`
+  mutation updateLanguage($language: UpdateLanguageInput!) {
+    updateLanguage(language: $language) {
+      id
+      created_at
+      iso2
+      name
+      native_name
+    }
+  }
+`;
+export const createLanguageMutation = gql`
+  mutation createLanguage($language: CreateLanguageInput!) {
+    createLanguage(language: $language) {
+      id
+      created_at
+      iso2
+      name
+      native_name
+    }
+  }
+`;
+export const deleteLanguageMutation = gql`
+  mutation deleteLanguage($language: DeleteLanguageInput!) {
+    deleteLanguage(language: $language) {
+      affected
+    }
+  }
+`;

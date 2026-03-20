@@ -13,13 +13,9 @@
     middleware: "auth",
     layout: "default",
   });
-  const {
-    fetchProfile,
-    fetchLanguages,
-    addProfileLanguage,
-    updateProfileLanguage,
-    deleteProfileLanguage,
-  } = useUsers();
+  const { fetchProfile, addProfileLanguage, updateProfileLanguage, deleteProfileLanguage } =
+    useUsers();
+  const { fetchLanguages } = useLanguages();
   const route = useRoute();
   const isSelectMode = ref<boolean>(false);
   const isModalVisible = ref<boolean>(false);

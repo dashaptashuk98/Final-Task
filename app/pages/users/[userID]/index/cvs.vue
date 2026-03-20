@@ -115,7 +115,7 @@
       :context-menu="contextMenuOptions"
       :user-id="user?.id"
       button-label="Create CV"
-      page="cvs"
+      page="user-cvs"
       @handle-selected-item="(cv) => (selectedCv = cv)"
       @activate-form="activateModal" />
     <ModalDialog v-model:visible="isModalVisible" :header="modalHeader">

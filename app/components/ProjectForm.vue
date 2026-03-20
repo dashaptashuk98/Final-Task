@@ -13,7 +13,7 @@
               v-if="item.type === 'InputText'"
               :id="item.key"
               v-model="item.value as string"
-              :disabled="isFieldDisabled(item.key)"
+              :disabled="!checkRights()"
               class="custom-input"
               :pt="{
                 root: { style: { overflowX: 'auto', whiteSpace: 'nowrap' } },
@@ -24,7 +24,7 @@
               v-model="item.value"
               :options="item.values"
               class="custom-select"
-              :disabled="isFieldDisabled(item.key)"
+              :disabled="!checkRights()"
               :pt="{
                 optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
                 list: { style: { backgroundColor: '#FFFFFF' } },
@@ -33,8 +33,9 @@
               v-else-if="item.type === 'DatePicker'"
               :id="item.key"
               v-model="item.value as Date"
+              date-format="yy-mm-dd"
               show-icon
-              :disabled="isFieldDisabled(item.key)"
+              :disabled="!checkRights()"
               fluid
               :show-on-focus="false"
               class="custom-datepicker" />
@@ -43,7 +44,7 @@
               :id="item.key"
               v-model="item.value as string"
               rows="3"
-              :disabled="isFieldDisabled(item.key)"
+              :disabled="!checkRights()"
               auto-resize
               class="custom-textarea" />
             <MultiSelect
@@ -51,7 +52,7 @@
               v-model="item.value"
               :options="item.values"
               display="chip"
-              :disabled="isFieldDisabled(item.key)"
+              :disabled="!checkRights()"
               class="custom-multiselect"
               :pt="{
                 optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
@@ -69,41 +70,26 @@
 </template>
 
 <script setup lang="ts">
-  import type { InputType } from "~/types/types";
+  import type { InputType, ProjectFormKey } from "~/types/types";
   import Select from "primevue/select";
   import MultiSelect from "primevue/multiselect";
   import InputText from "primevue/inputtext";
   import Textarea from "primevue/textarea";
 
-  type SkillForm = "skill" | "mastery";
   const {
     data,
     twoColumns = false,
     action = "Add",
   } = defineProps<{
-    data: Record<SkillForm, InputType> | null;
+    data: Record<ProjectFormKey, InputType> | null;
     twoColumns?: boolean;
     disableField?: boolean;
     action?: string;
   }>();
 
-  const isFieldDisabled = (fieldKey: string) => {
-    if (!data) return false;
-
-    if (action === "Add") {
-      return fieldKey !== "project";
-    }
-
-    if (action === "Update" || action === "Edit") {
-      return fieldKey !== "responsibilities";
-    }
-
-    return data[fieldKey as SkillForm]?.disabled || false;
-  };
-
   defineEmits<{
     cancel: [];
-    save: [data: Record<SkillForm, InputType>];
+    save: [data: Record<ProjectFormKey, InputType>];
   }>();
 </script>
 

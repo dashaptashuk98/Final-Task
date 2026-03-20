@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import type { InputType, ProjectFormKey, MenuData, sheetColumn } from "~/types/types";
-  import type { CvProject, AddCvProjectInput, UpdateCvProjectInput } from "~/types/cvs";
+  import type { InputType, MenuData, sheetColumn, Nullable, CvProjectFormKey } from "~/types/types";
+  import type { CvProject, AddCvProjectInput, UpdateCvProjectInput, Project } from "~/types/cvs";
   definePageMeta({
     middleware: "auth",
     layout: "default",
@@ -14,17 +14,11 @@
   const modalType = ref("");
   const selectedCvProject = ref<CvProject | null>(null);
   const isEditMode = ref(false);
-  const {
-    projects,
-    fetchProject,
-    cv,
-    fetchCv,
-    addCvProject,
-    updateCvProjectData,
-    deleteCvProject,
-  } = useCvs();
+  const projects = useState<Nullable<Project[]>>(() => null);
+  const { fetchProject, cv, fetchCv, addCvProject, updateCvProjectData, deleteCvProject } =
+    useCvs();
 
-  await fetchProject();
+  projects.value = await fetchProject();
   await fetchCv(cvId);
 
   if (cv.value?.user?.id) {
@@ -35,17 +29,19 @@
     addedProjects.value = cv.value.projects;
   }
 
-  const projectOptions = computed(() => projects.value.map((project) => project.name));
+  const projectOptions = computed(() =>
+    projects.value ? projects.value.map((project) => project.name) : [],
+  );
 
-  const formData = reactive<Record<ProjectFormKey, InputType>>({
-    skill: {
+  const formData = reactive<Record<CvProjectFormKey, InputType>>({
+    name: {
       key: "project",
       label: "Project",
       value: "",
       type: "Select",
       values: projectOptions.value,
     },
-    mastery: {
+    domain: {
       key: "domain",
       label: "Domain",
       value: "",
@@ -90,8 +86,8 @@
   });
 
   const fillProjectDataForEdit = (cvProject: CvProject) => {
-    formData.skill.value = (cvProject.project?.name || cvProject.name) ?? "";
-    formData.mastery.value = (cvProject.project?.domain || cvProject.domain) ?? "";
+    formData.name.value = (cvProject.project?.name || cvProject.name) ?? "";
+    formData.domain.value = (cvProject.project?.domain || cvProject.domain) ?? "";
     formData.start.value = new Date(cvProject.project?.start_date || cvProject.start_date);
     const endDate = cvProject.project?.end_date || cvProject.end_date;
     formData.end.value = endDate ? new Date(endDate) : "";
@@ -102,21 +98,23 @@
   };
 
   const fillProjectData = (projectName: string) => {
-    const selectedProject = projects.value.find((p) => p.name === projectName);
-    if (selectedProject) {
-      formData.mastery.value = selectedProject.domain;
-      formData.start.value = new Date(selectedProject.start_date);
-      formData.end.value = selectedProject.end_date ? new Date(selectedProject.end_date) : "";
-      formData.description.value = selectedProject.description;
-      formData.environment.value = selectedProject.environment;
-      formData.environment.values = selectedProject.environment;
-      formData.responsibilities.value = "";
+    if (projects.value) {
+      const selectedProject = projects.value.find((p) => p.name === projectName);
+      if (selectedProject) {
+        formData.domain.value = selectedProject.domain;
+        formData.start.value = new Date(selectedProject.start_date);
+        formData.end.value = selectedProject.end_date ? new Date(selectedProject.end_date) : "";
+        formData.description.value = selectedProject.description;
+        formData.environment.value = selectedProject.environment;
+        formData.environment.values = selectedProject.environment;
+        formData.responsibilities.value = "";
+      }
     }
   };
 
   const resetForm = () => {
-    formData.skill.value = "";
-    formData.mastery.value = "";
+    formData.name.value = "";
+    formData.domain.value = "";
     formData.start.value = "";
     formData.end.value = "";
     formData.description.value = "";
@@ -135,34 +133,36 @@
   };
 
   const handleProjectAdd = async () => {
-    const selectedProject = projects.value.find((p) => p.name === formData.skill.value);
-    if (!selectedProject) {
-      return;
-    }
+    if (projects.value) {
+      const selectedProject = projects.value.find((p) => p.name === formData.name.value);
+      if (!selectedProject) {
+        return;
+      }
 
-    if (!formData.start.value) {
-      return;
-    }
+      if (!formData.start.value) {
+        return;
+      }
 
-    const startDate = formData.start.value;
-    const projectInput: AddCvProjectInput = {
-      cvId,
-      projectId: selectedProject.id as string,
-      start_date: (startDate as Date).toISOString().split("T")[0] as string,
-      end_date: formData.end.value
-        ? (formData.end.value as Date).toISOString().split("T")[0]
-        : null,
-      roles: [],
-      responsibilities: formData.responsibilities.value
-        ? [formData.responsibilities.value as string]
-        : [],
-    };
+      const startDate = formData.start.value;
+      const projectInput: AddCvProjectInput = {
+        cvId,
+        projectId: selectedProject.id as string,
+        start_date: (startDate as Date).toISOString().split("T")[0] as string,
+        end_date: formData.end.value
+          ? (formData.end.value as Date).toISOString().split("T")[0]
+          : null,
+        roles: [],
+        responsibilities: formData.responsibilities.value
+          ? [formData.responsibilities.value as string]
+          : [],
+      };
 
-    const result = await addCvProject(projectInput);
-    if (result) {
-      addedProjects.value = [...(result.projects || [])];
-      isModalVisible.value = false;
-      resetForm();
+      const result = await addCvProject(projectInput);
+      if (result) {
+        addedProjects.value = [...(result.projects || [])];
+        isModalVisible.value = false;
+        resetForm();
+      }
     }
   };
 
@@ -214,7 +214,7 @@
   };
 
   watch(
-    () => formData.skill.value,
+    () => formData.name.value,
     (newProjectName) => {
       if (newProjectName && !isEditMode.value) {
         fillProjectData(newProjectName as string);
@@ -223,7 +223,7 @@
   );
 
   watch(projects, () => {
-    formData.skill.values = projectOptions.value;
+    formData.name.values = projectOptions.value;
   });
 
   const columns: sheetColumn[] = [

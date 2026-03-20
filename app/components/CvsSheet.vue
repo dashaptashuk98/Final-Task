@@ -34,7 +34,10 @@
         return navigateTo(`/${page}/${e.data.id}/profile`);
       }
       if (page === "projects") {
-        return navigateTo(`/projects/${e.data.id}`);
+        return navigateTo(`/${page}/${e.data.id}`);
+      }
+      if (page === "user-cvs") {
+        return navigateTo(`/cvs/${e.data.id}/details`);
       }
     }
   };
@@ -69,7 +72,7 @@
     v-model:filters="filters"
     :value="sheetData"
     removable-sort
-    :paginator="page === 'users'"
+    :paginator="!!sheetData && sheetData.length > 10"
     :rows="10"
     :rows-per-page-options="[10, 25, 50]"
     :row-group-mode="page === 'cvs' ? 'subheader' : undefined"
@@ -109,7 +112,7 @@
       <template #body="slotProps">
         <Button
           v-if="
-            userId && page !== 'users'
+            userId && page !== 'users' && page !== 'cvs'
               ? checkRights(userId)
               : checkRights(slotProps.data.user ? slotProps.data.user.id : slotProps.data.id)
           "
@@ -128,6 +131,9 @@
 </template>
 
 <style scoped>
+  :deep(.p-datatable-table-container) {
+    min-height: 750px;
+  }
   :deep(.p-datatable-header-cell) {
     font: 500 14px/24px "Roboto";
     letter-spacing: 0.15px;

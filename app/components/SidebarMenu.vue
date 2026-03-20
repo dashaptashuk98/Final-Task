@@ -24,12 +24,9 @@
           :to="authUser?.id ? `/users/${authUser.id}/profile` : '/'"
           class="sidebar__profile-link">
           <Avatar
-            :image="authUser?.profile?.avatar || undefined"
-            :label="
-              authUser?.email && !authUser?.profile?.avatar
-                ? authUser.email[0].toUpperCase()
-                : undefined
-            "
+            v-if="authUser && authUser.email[0]"
+            :label="!authUser.profile.avatar ? authUser.email[0].toUpperCase() : undefined"
+            :image="authUser.profile.avatar ? authUser.profile.avatar : undefined"
             shape="circle"
             class="sidebar__avatar" />
           <span class="sidebar__profile-name">{{
@@ -125,7 +122,7 @@
     position: fixed;
     left: 0;
     top: 0;
-    z-index: 1000;
+    z-index: 10;
   }
 
   .sidebar--left :deep(.p-panel-header) {

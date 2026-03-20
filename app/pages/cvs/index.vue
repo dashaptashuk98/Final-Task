@@ -17,7 +17,7 @@
     updateSheetItem,
     handleMutateConfirmation,
     deleteSheetItem,
-  } = useDataTable();
+  } = useDataTable<Cv>();
   const { authId } = useAuth();
   sheetData.value = await fetchCvs();
   const columns = ref<sheetColumn[]>([

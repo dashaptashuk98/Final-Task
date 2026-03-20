@@ -20,14 +20,14 @@ describe("AddRemoveButtons", () => {
     checkRightsMock.mockReturnValue(true);
   });
 
-  it("рендерится только при наличии прав", () => {
+  it("does not render without rights", () => {
     checkRightsMock.mockReturnValueOnce(false);
     const wrapper = mount(AddRemoveButtons, { props: defaultProps });
     expect(wrapper.find(".user-action-buttons").exists()).toBe(false);
   });
 
-  describe("режим просмотра (isSelectMode = false)", () => {
-    it("отображает кнопки Add и Remove", () => {
+  describe("view mode (isSelectMode = false)", () => {
+    it("renders Add and Remove buttons", () => {
       const wrapper = mount(AddRemoveButtons, { props: defaultProps });
       const buttons = wrapper.findAllComponents({ name: "Button" });
 
@@ -40,33 +40,33 @@ describe("AddRemoveButtons", () => {
       expect(buttons[1].classes()).toContain("btn-remove");
     });
 
-    it("показывает иконку IconRemove на второй кнопке", () => {
+    it("shows IconRemove icon on second button", () => {
       const wrapper = mount(AddRemoveButtons, { props: defaultProps });
       expect(wrapper.findComponent(IconRemove).exists()).toBe(true);
     });
 
-    it("не показывает badge на второй кнопке", () => {
+    it("does not show badge on second button", () => {
       const wrapper = mount(AddRemoveButtons, { props: defaultProps });
       expect(wrapper.findAllComponents({ name: "Button" })[1].props("badge")).toBe("");
     });
 
-    it("эмитит activateModal при клике на Add", async () => {
+    it("emits activateModal on Add click", async () => {
       const wrapper = mount(AddRemoveButtons, { props: defaultProps });
       await wrapper.findAllComponents({ name: "Button" })[0].trigger("click");
       expect(wrapper.emitted("activateModal")?.[0]).toEqual(["Add"]);
     });
 
-    it("эмитит toggleMode при клике на Remove", async () => {
+    it("emits toggleMode on Remove click", async () => {
       const wrapper = mount(AddRemoveButtons, { props: defaultProps });
       await wrapper.findAllComponents({ name: "Button" })[1].trigger("click");
       expect(wrapper.emitted("toggleMode")).toBeTruthy();
     });
   });
 
-  describe("режим выбора (isSelectMode = true)", () => {
+  describe("select mode (isSelectMode = true)", () => {
     const selectProps = { ...defaultProps, isSelectMode: true, selectCounter: 3 };
 
-    it("отображает кнопки Cancel и Delete", () => {
+    it("renders Cancel and Delete buttons", () => {
       const wrapper = mount(AddRemoveButtons, { props: selectProps });
       const buttons = wrapper.findAllComponents({ name: "Button" });
 
@@ -77,31 +77,31 @@ describe("AddRemoveButtons", () => {
       expect(buttons[1].classes()).toContain("btn-delete");
     });
 
-    it("не показывает IconRemove", () => {
+    it("does not show IconRemove", () => {
       const wrapper = mount(AddRemoveButtons, { props: selectProps });
       expect(wrapper.findComponent(IconRemove).exists()).toBe(false);
     });
 
-    it("показывает badge с количеством выбранных элементов", () => {
+    it("shows badge with selected items count", () => {
       const wrapper = mount(AddRemoveButtons, { props: selectProps });
       const deleteButton = wrapper.findAllComponents({ name: "Button" })[1];
       expect(deleteButton.props("badge")).toBe("3");
     });
 
-    it("эмитит toggleMode при клике на Cancel", async () => {
+    it("emits toggleMode on Cancel click", async () => {
       const wrapper = mount(AddRemoveButtons, { props: selectProps });
       await wrapper.findAllComponents({ name: "Button" })[0].trigger("click");
       expect(wrapper.emitted("toggleMode")).toBeTruthy();
     });
 
-    it("эмитит handleRemove при клике на Delete", async () => {
+    it("emits handleRemove on Delete click", async () => {
       const wrapper = mount(AddRemoveButtons, { props: selectProps });
       await wrapper.findAllComponents({ name: "Button" })[1].trigger("click");
       expect(wrapper.emitted("handleRemove")).toBeTruthy();
     });
   });
 
-  it("обновляет label при изменении pageTitle", () => {
+  it("updates label when pageTitle changes", () => {
     const wrapper = mount(AddRemoveButtons, {
       props: { ...defaultProps, pageTitle: "language" },
     });

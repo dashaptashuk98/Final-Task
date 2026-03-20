@@ -1,12 +1,23 @@
 import type { Department } from "~/types/departments";
-import type { UserSkill, Skill } from "~/types/skills";
+import type {
+  UserSkill,
+  Skill,
+  CreateSkillInput,
+  UpdateSkillInput,
+  DeleteSkillInput,
+} from "~/types/skills";
 import type { SkillCategory } from "~/types/skillCategory";
 import type { CreateProfileInput, Profile, UpdateUserInput, User } from "~/types/user";
 import type { Nullable } from "~/types/types";
 import { profileQuery, userQuery, usersQuery } from "~/graphQL/user/user.query";
 import { userSkillsQuery } from "~/graphQL/skills/skillsUsers.query";
 import { skillCategoryQuery } from "~/graphQL/skills/skillsCategory.query";
-import { skillsQuery } from "~/graphQL/skills/skill.query";
+import {
+  createSkillMutation,
+  deleteSkillMutation,
+  skillsQuery,
+  updateSkillMutation,
+} from "~/graphQL/skills/skill.query";
 import type { Language, LanguageQueryVars, LanguageQueryVarsExt } from "~/types/languages";
 import { languagesQuery } from "~/graphQL/languages/languages.query";
 import {
@@ -55,16 +66,17 @@ export const useUsers = () => {
   };
 
   const fetchSkills = async (): Promise<Nullable<Skill[]>> => {
-    try {
-      const { data } = await useAsyncQuery<Record<"skills", Skill[]>>(skillsQuery);
-      if (data.value) {
-        skills.value = data.value.skills;
-        return data.value.skills;
+    if (clients) {
+      const { data } = await clients.default.query({
+        query: skillsQuery,
+        fetchPolicy: "network-only",
+      });
+      if (data) {
+        skills.value = data.skills;
+        return data.skills;
       }
-      return null;
-    } catch {
-      return null;
     }
+    return null;
   };
 
   const fetchUserSkills = async (userId: string): Promise<Nullable<UserSkill[]>> => {
@@ -210,6 +222,45 @@ export const useUsers = () => {
     return null;
   };
 
+  const createSkill = async (skill: CreateSkillInput): Promise<Nullable<Skill>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: createSkillMutation,
+        variables: { skill: skill },
+      });
+      if (data) {
+        return data.createSkill;
+      }
+    }
+    return null;
+  };
+
+  const updateSkill = async (skill: UpdateSkillInput): Promise<Nullable<Skill>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: updateSkillMutation,
+        variables: { skill: skill },
+      });
+      if (data) {
+        return data.updateSkill;
+      }
+    }
+    return null;
+  };
+
+  const deleteSkill = async (skill: DeleteSkillInput): Promise<Nullable<{ affected: number }>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: deleteSkillMutation,
+        variables: { skill: skill },
+      });
+      if (data) {
+        return data.deleteSkill;
+      }
+    }
+    return null;
+  };
+
   const clearUsers = (): void => {
     users.value = [];
   };
@@ -240,6 +291,9 @@ export const useUsers = () => {
     updateProfileLanguage,
     deleteProfileLanguage,
     clearUsers,
+    createSkill,
+    updateSkill,
+    deleteSkill,
     deleteUser,
     updateUser,
     createUser,

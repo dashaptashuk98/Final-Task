@@ -9,6 +9,7 @@
     data: Record<ProfileForm, InputType> | null;
     userId?: string;
   }>();
+  const emit = defineEmits<{ (event: "cancel"): void }>();
   const { user, departments } = useUsers();
   const { positions } = usePositions();
   const route = useRoute();
@@ -112,12 +113,18 @@
           </div>
         </template>
       </div>
-      <Button
-        v-if="checkRights(props.userId as string)"
-        :label="'Update'.toLocaleUpperCase()"
-        :disabled="!hasChanges || loading"
-        :loading="loading"
-        @click="handleUpdate" />
+      <div class="form-buttons">
+        <Button
+          :label="'cancel'.toLocaleUpperCase()"
+          style="background-color: #ffffff; color: #2e2e2e; border: 1px #2e2e2e solid"
+          @click="() => emit('cancel')" />
+        <Button
+          v-if="checkRights(props.userId as string)"
+          :label="'Update'.toLocaleUpperCase()"
+          :disabled="!hasChanges || loading"
+          :loading="loading"
+          @click="handleUpdate" />
+      </div>
     </Form>
   </div>
 </template>
@@ -155,6 +162,11 @@
     color: #00000099;
   }
 
+  .form-buttons {
+    display: flex;
+    gap: 30px;
+  }
+
   :deep(.p-inputtext),
   .p-select {
     width: 410px;
@@ -171,27 +183,40 @@
   }
 
   .p-button {
-    width: 410px;
+    width: 220px;
     height: 48px;
-    background-color: #3c39391f;
     border-radius: 40px;
-    border: none;
     font:
       500 14px/24px "Roboto",
       sans-serif;
-    color: white;
     letter-spacing: 0.4px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
   }
 
-  .p-button:hover:not(:disabled) {
-    background-color: #767a7f;
+  .p-button:not(.p-button-secondary) {
+    background-color: #c63031;
+    color: white;
+    border: none;
   }
 
-  .p-button:disabled {
+  .p-button:not(.p-button-secondary):hover:not(:disabled) {
+    background-color: #c63031;
+  }
+
+  .p-button:not(.p-button-secondary):disabled {
     background-color: #0000001f;
     color: #00000042;
     cursor: not-allowed;
+  }
+
+  .p-button.p-button-secondary {
+    background-color: transparent;
+    border: 1px solid #0000003b;
+    color: #00000099;
+  }
+
+  .p-button.p-button-secondary:hover {
+    background-color: rgba(0, 0, 0, 0.04);
   }
 </style>

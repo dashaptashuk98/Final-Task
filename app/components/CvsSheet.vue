@@ -127,7 +127,9 @@
     </Column>
     <template v-if="page === 'cvs'" #groupfooter="{ data }">
       <div class="p-footer-cell__content" @click="handleRowClick({ data: data })">
-        {{ data.description }}
+        {{
+          data.description.length > 400 ? `${data.description.slice(0, 400)}...` : data.description
+        }}
       </div>
     </template>
   </DataTable>

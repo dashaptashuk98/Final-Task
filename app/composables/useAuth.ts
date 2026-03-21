@@ -71,6 +71,7 @@ export const useAuth = () => {
     onLogout();
     useCookie("authId").value = null;
     useCookie("refreshToken").value = null;
+    navigateTo("/auth/login");
     isLoading.value = false;
   };
 

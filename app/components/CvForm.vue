@@ -19,12 +19,17 @@
     education: "",
     description: "",
   });
+  const initialData = ref<Nullable<Pick<Cv, "name" | "education" | "description">>>(null);
 
   watchEffect(() => {
     if (data) {
       formData.value = { ...data };
+      initialData.value = { ...data };
     }
   });
+  const isDisabled = computed<boolean>(
+    () => JSON.stringify(formData.value) === JSON.stringify(initialData.value),
+  );
 </script>
 
 <template>
@@ -49,6 +54,7 @@
     </div>
     <Button
       v-if="checkRights(userId as string)"
+      :disabled="isDisabled"
       label="UPDATE"
       @click="
         () =>

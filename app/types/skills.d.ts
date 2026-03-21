@@ -67,4 +67,19 @@ export interface SkillMastery {
   __typename?: string;
 }
 
+export interface CreateSkillInput {
+  name: string;
+  categoryId?: string | null;
+}
+
+export interface UpdateSkillInput {
+  skillId: string;
+  name: string;
+  categoryId?: string | null;
+}
+
+export interface DeleteSkillInput {
+  skillId: string;
+}
+
 export type SkillFormKey = "skill" | "mastery";

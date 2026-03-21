@@ -35,10 +35,16 @@ export const useCvs = () => {
   const cv = useState<Nullable<Cv>>("cv", () => null);
   const projects = useState<Project[]>("projects", () => []);
   const fetchCv = async (cvId: string): Promise<Nullable<Cv>> => {
-    const { data } = await useAsyncQuery<Nullable<Record<"cv", Cv>>>(cvQuery, { cvId });
-    if (data.value) {
-      cv.value = data.value.cv;
-      return data.value.cv;
+    if (clients) {
+      const { data } = await clients.default.query({
+        query: cvQuery,
+        variables: { cvId },
+        fetchPolicy: "no-cache",
+      });
+      if (data) {
+        cv.value = data.cv;
+        return data.cv;
+      }
     }
     return null;
   };
@@ -112,7 +118,7 @@ export const useCvs = () => {
     if (clients) {
       const { data } = await clients.default.query({
         query: cvsQuery,
-        fetchPolicy: "network-only",
+        fetchPolicy: "no-cache",
       });
       if (data) {
         return data.cvs;

@@ -36,6 +36,9 @@
       if (page === "projects") {
         return navigateTo(`/${page}/${e.data.id}`);
       }
+      if (page === "cvs-projects") {
+        return navigateTo(`/projects/${e.data.project.id}`);
+      }
       if (page === "user-cvs") {
         return navigateTo(`/cvs/${e.data.id}/details`);
       }
@@ -124,7 +127,9 @@
     </Column>
     <template v-if="page === 'cvs'" #groupfooter="{ data }">
       <div class="p-footer-cell__content" @click="handleRowClick({ data: data })">
-        {{ data.description }}
+        {{
+          data.description.length > 400 ? `${data.description.slice(0, 400)}...` : data.description
+        }}
       </div>
     </template>
   </DataTable>

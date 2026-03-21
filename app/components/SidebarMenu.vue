@@ -77,9 +77,9 @@
     },
     {
       icon: "pi pi-file",
-      name: "position",
-      title: "Position",
-      to: "/position",
+      name: "positions",
+      title: "Positions",
+      to: "/positions",
     },
     {
       name: "skills",

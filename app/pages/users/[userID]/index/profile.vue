@@ -1,6 +1,4 @@
 <script setup lang="ts">
-  import { useDepartments } from "~/composables/useDepartments";
-  import { useUsers } from "~/composables/useUsers";
   import type { InputType } from "~/types/types";
   import type { ProfileForm } from "~/types/user";
 
@@ -10,9 +8,11 @@
 
   const { fetchDepartments, departments } = useDepartments();
   const { user, fetchUser } = useUsers();
+  const { authId } = useAuth();
   const { positions, fetchPositions } = usePositions();
   const route = useRoute();
   const userId = ref<string>(route.params.userID as string);
+  const isEditing = ref<boolean>(false);
 
   const profileFormData = computed<Record<ProfileForm, InputType> | null>(() => {
     if (!user.value) return null;
@@ -80,10 +80,10 @@
           email: user.email,
           profile: { avatar: user.profile?.avatar ?? undefined },
         }"
-        :disabled="!checkRights(userId)"
+        :disabled="!checkRights(String(authId))"
         @avatar-updated="handleAvatarUpdate" />
 
-      <div class="profile-avatar__container">
+      <div v-if="checkRights(String(authId))" class="profile-avatar__container">
         <div class="profile-avatar__container-info">
           <span class="pi pi-upload" style="font-size: 32px; color: #2e2e2e; height: 32px" />
           <h3 class="profile-avatar__container-title">Upload avatar image</h3>
@@ -96,7 +96,21 @@
       <a :href="`mailto:${user.email}`" class="profile-data__email">{{ user.email }}</a>
       <p class="profile-data__member">{{ formattedMemberSince }}</p>
     </div>
-    <ProfileForm :data="profileFormData" :user-id="userId" />
+    <div v-if="!isEditing" class="profile-info">
+      <div class="profile-item">
+        <h3 class="profile-item__title">Department:</h3>
+        <p class="profile-item__desc">{{ user.department_name }}</p>
+      </div>
+      <div class="profile-item">
+        <h3 class="profile-item__title">Position:</h3>
+        <p class="profile-item__desc">{{ user.position_name }}</p>
+      </div>
+      <Button
+        v-if="checkRights(String(userId))"
+        :label="'Edit profile'.toLocaleUpperCase()"
+        @click="() => (isEditing = true)" />
+    </div>
+    <ProfileForm v-else :data="profileFormData" :user-id="userId" @cancel="isEditing = false" />
   </section>
 </template>
 
@@ -167,11 +181,31 @@
   }
 
   .profile-data {
-    margin-top: 32px;
+    margin: 32px 0 65px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 5px;
+  }
+
+  .profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .profile-item {
+    font-family: "Roboto";
+    text-align: center;
+    display: flex;
+    gap: 10px;
+  }
+
+  .profile-item__title,
+  .profile-item__desc {
+    line-height: 30px;
+    margin: 0;
+    font-size: 20px;
   }
 
   .profile-data__title {
@@ -199,5 +233,44 @@
   .profile-data__member {
     color: #2e2e2e;
     margin: 0;
+  }
+  .p-button {
+    width: 220px;
+    height: 48px;
+    border-radius: 40px;
+    font:
+      500 14px/24px "Roboto",
+      sans-serif;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    align-self: flex-end;
+    margin-top: 22px;
+  }
+
+  .p-button:not(.p-button-secondary) {
+    background-color: #c63031;
+    color: white;
+    border: none;
+  }
+
+  .p-button:not(.p-button-secondary):hover:not(:disabled) {
+    background-color: #c63031;
+  }
+
+  .p-button:not(.p-button-secondary):disabled {
+    background-color: #0000001f;
+    color: #00000042;
+    cursor: not-allowed;
+  }
+
+  .p-button.p-button-secondary {
+    background-color: transparent;
+    border: 1px solid #0000003b;
+    color: #00000099;
+  }
+
+  .p-button.p-button-secondary:hover {
+    background-color: rgba(0, 0, 0, 0.04);
   }
 </style>

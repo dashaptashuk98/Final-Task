@@ -58,10 +58,9 @@
 
   const { user, userSkills, fetchUserSkills, fetchSkillCategories, fetchSkills, skills } =
     useUsers();
-  const { authUser, authId } = useAuth();
   const route = useRoute();
   const userId = route.params.userID as string;
-  const isOwner = computed(() => String(authUser.value?.id) === userId);
+  const isOwner = computed(() => checkRights(userId));
   const modalType = ref<string>("");
   const loading = ref(true);
   const error = ref<string | null>(null);
@@ -89,7 +88,7 @@
   });
 
   const handleSkillClick = (skill: UserSkill) => {
-    if (!checkRights(String(authId.value)) || deleteMode.value) return;
+    if (!checkRights(userId) || deleteMode.value) return;
     selectedSkill.value = skill;
     const matchingSkill = skills.value?.find((s) => s.name === skill.name);
     formData.skill.value = matchingSkill?.name || skill.name;

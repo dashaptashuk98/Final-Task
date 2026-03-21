@@ -18,7 +18,9 @@
             <label :for="`skill-${skill.name}`" class="checkbox-label" />
           </div>
 
-          <div class="skill-content" @click="!props.deleteMode && $emit('skill-click', skill)">
+          <div
+            class="skill-content"
+            @click="!props.deleteMode && !props.readOnly && $emit('skill-click', skill)">
             <ProgressBar
               :value="getMasteryPercentage(skill.mastery)"
               class="skill-progress"
@@ -49,6 +51,7 @@
     skills: UserSkill[];
     deleteMode?: boolean;
     selectedSkills?: Set<string>;
+    readOnly?: boolean;
   }
 
   const props = defineProps<Props>();

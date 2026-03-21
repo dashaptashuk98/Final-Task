@@ -8,6 +8,7 @@
       :skills="cvSkillsList"
       :delete-mode="deleteMode"
       :selected-skills="selectedSkillsToDelete"
+      :read-only="!checkRights(cvOwnerId as string)"
       @skill-click="handleSkillClick"
       @toggle-skill="handleToggleSkill" />
 
@@ -34,7 +35,6 @@
         :loading="mutationLoading"
         :error-message="errorMessage"
         :action="modalType"
-        :disabled="!checkRights(cvOwnerId as string)"
         @save="handleFormSubmit"
         @cancel="() => (visible = false)" />
     </ModalDialog>
@@ -147,6 +147,7 @@
 
   const handleSkillClick = (skill: UserSkill) => {
     if (deleteMode.value) return;
+    if (!checkRights(cvOwnerId.value as string)) return;
     formData.skill.value = skill.name;
     formData.mastery.value = skill.mastery;
     selectedSkill.value = skill;

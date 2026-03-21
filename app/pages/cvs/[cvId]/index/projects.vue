@@ -264,7 +264,7 @@
     }
   };
 
-  const { authUser } = useAuth();
+  const { authUser, authId } = useAuth();
 
   const contextMenuOptions = computed<MenuData[]>(() => [
     ...(authUser.value?.role === "Admin"
@@ -317,6 +317,7 @@
       <ProjectForm
         :data="formData"
         :action="modalType"
+        :user-id="cv && cv.user ? cv.user.id : String(authId)"
         @save="handleSave"
         @cancel="isModalVisible = false" />
     </ModalDialog>

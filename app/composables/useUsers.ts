@@ -7,7 +7,13 @@ import type {
   DeleteSkillInput,
 } from "~/types/skills";
 import type { SkillCategory } from "~/types/skillCategory";
-import type { CreateProfileInput, Profile, UpdateUserInput, User } from "~/types/user";
+import type {
+  CreateProfileInput,
+  Profile,
+  UpdateProfileInput,
+  UpdateUserInput,
+  User,
+} from "~/types/user";
 import type { Nullable } from "~/types/types";
 import { profileQuery, userQuery, usersQuery } from "~/graphQL/user/user.query";
 import { userSkillsQuery } from "~/graphQL/skills/skillsUsers.query";
@@ -29,6 +35,7 @@ import {
   deleteUserMutation,
   updateUserMutation,
 } from "~/graphQL/user/user.mutation";
+import { updateProfileMutation } from "~/graphQL/user/userProfileUpdate.mutation";
 
 export const useUsers = () => {
   const { clients } = useApollo();
@@ -92,6 +99,17 @@ export const useUsers = () => {
     } catch {
       return null;
     }
+  };
+
+  const updateProfile = async (profile: UpdateProfileInput): Promise<Nullable<Profile>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: updateProfileMutation,
+        variables: { profile: profile },
+      });
+      if (data) return data.updateProfile;
+    }
+    return null;
   };
 
   const fetchSkillCategories = async (): Promise<Nullable<SkillCategory[]>> => {
@@ -270,6 +288,7 @@ export const useUsers = () => {
     fetchSkills,
     fetchUsers,
     fetchProfile,
+    updateProfile,
     addProfileLanguage,
     updateProfileLanguage,
     deleteProfileLanguage,

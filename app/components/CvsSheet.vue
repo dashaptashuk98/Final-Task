@@ -88,7 +88,10 @@
     :row-group-mode="page === 'cvs' ? 'subheader' : undefined"
     selection-mode="single"
     :group-rows-by="page === 'cvs' ? 'description' : undefined"
-    :pt="{ rowGroupFooterCell: { class: 'p-footer-cell' } }"
+    :pt="{
+      rowGroupFooterCell: { class: 'p-footer-cell' },
+      bodyRow: { style: { '--p-datatable-row-hover-background': '#2e2e2e10' } },
+    }"
     @row-select="handleRowClick">
     <Column
       v-for="col in columns"

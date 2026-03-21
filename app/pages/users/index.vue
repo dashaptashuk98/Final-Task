@@ -26,6 +26,7 @@
   import type { InputType, MenuData, Nullable, sheetColumn } from "~/types/types";
   import type {
     CreateUserInput,
+    UpdateProfileInput,
     UpdateUserInput,
     User,
     UserFormKeys,
@@ -36,7 +37,7 @@
     middleware: "auth",
   });
   const { fetchDepartments } = useDepartments();
-  const { users, fetchUsers, deleteUser, updateUser, createUser } = useUsers();
+  const { users, fetchUsers, deleteUser, updateUser, createUser, updateProfile } = useUsers();
   const { fetchPositions } = usePositions();
   const { authId } = useAuth();
   const isVisible = ref<boolean>(false);
@@ -146,6 +147,12 @@
         positionId: Number(positions.value?.find((item) => item.name === data.position.value)?.id),
         role: data.role.value as UserRole,
       };
+      const mutateProfileVars: UpdateProfileInput = {
+        userId: Number(selectedRow.value.id),
+        first_name: data.first_name.value as string,
+        last_name: data.last_name.value as string,
+      };
+      await updateProfile(mutateProfileVars);
       await updateUser(mutateUserVars);
     }
   };

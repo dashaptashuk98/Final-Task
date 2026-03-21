@@ -85,3 +85,9 @@ export interface CreateUserInput {
 }
 
 export type CreateProfileInput = Pick<"first_name" | "last_name", Profile>;
+
+export interface UpdateProfileInput {
+  userId: number;
+  first_name: string;
+  last_name: string;
+}

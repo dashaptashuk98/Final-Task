@@ -13,7 +13,7 @@
               v-if="item.type === 'InputText'"
               :id="item.key"
               v-model="item.value as string"
-              :disabled="!checkRights()"
+              :disabled="!checkRights(userId) && item.key === 'responsibilies'"
               class="custom-input"
               :pt="{
                 root: { style: { overflowX: 'auto', whiteSpace: 'nowrap' } },
@@ -24,7 +24,7 @@
               v-model="item.value"
               :options="item.values"
               class="custom-select"
-              :disabled="!checkRights()"
+              :disabled="!checkRights(userId)"
               :pt="{
                 optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
                 list: { style: { backgroundColor: '#FFFFFF' } },
@@ -78,11 +78,12 @@
     data,
     twoColumns = false,
     action = "Add",
+    userId = "",
   } = defineProps<{
     data: Record<ProjectFormKey, InputType> | null;
     twoColumns?: boolean;
-    disableField?: boolean;
     action?: string;
+    userId?: string;
   }>();
 
   defineEmits<{

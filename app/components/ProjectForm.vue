@@ -51,11 +51,14 @@
               v-else-if="item.type === 'MultiSelect'"
               v-model="item.value"
               :options="item.values"
+              show-clear
               display="chip"
               :disabled="!checkRights()"
               class="custom-multiselect"
               :pt="{
                 optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
+                option: { style: { gap: '10px', padding: '0 10px' } },
+                overlay: { style: { border: '1px #2e2e2e50 solid' } },
                 list: { style: { backgroundColor: '#FFFFFF' } },
               }" />
           </div>
@@ -71,11 +74,6 @@
 
 <script setup lang="ts">
   import type { InputType, ProjectFormKey } from "~/types/types";
-  import Select from "primevue/select";
-  import MultiSelect from "primevue/multiselect";
-  import InputText from "primevue/inputtext";
-  import Textarea from "primevue/textarea";
-
   const {
     data,
     twoColumns = false,
@@ -156,12 +154,14 @@
   .custom-multiselect {
     width: 100%;
     min-height: 48px;
+    display: flex;
+    gap: 10px;
     font:
       400 16px/24px "Roboto",
       sans-serif;
     border: 1px solid #0000003b;
     border-radius: 4px;
-    padding: 12px 12px 0 12px;
+    padding: 8px 12px;
     transition: border-color 0.2s;
   }
 
@@ -173,6 +173,10 @@
     outline: none;
     border-color: #c63031;
     box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+  }
+
+  :deep(.p-multiselect-label) {
+    flex-wrap: wrap;
   }
 
   .custom-textarea {
@@ -227,9 +231,9 @@
   }
 
   .custom-multiselect :deep(.p-chip) {
-    background-color: #b7b2b2;
-    color: white;
-    padding: 8px;
+    background-color: #c6303199;
+    color: #ffffff;
+    padding: 8px 16px;
     border-radius: 40px;
     margin: 2px;
     gap: 8px;

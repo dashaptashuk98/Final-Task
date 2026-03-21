@@ -44,19 +44,12 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, reactive, watch } from "vue";
-  import { useUsers } from "~/composables/useUsers";
-  import SkillsComponent from "~/components/SkillsComponent.vue";
-  import SkillForm from "~/components/SkillForm.vue";
-  import ModalDialog from "~/components/ModalDialog.vue";
-  import AddRemoveButtons from "~/components/AddRemoveButtons.vue";
   import type { InputType } from "~/types/types";
   import type { UserSkill, SkillFormKey } from "~/types/skills.d";
   import { MASTERY_OPTIONS } from "~/types/skills.d";
   import { updateSkillMutation } from "~/graphQL/skills/skillsUpdate.mutation";
   import { createSkillMutation } from "~/graphQL/skills/skillsCreate.mutations";
   import { deleteProfileSkillMutation } from "~/graphQL/skills/skillDelete.mutation";
-  import { checkRights } from "~/utils/rights-checker";
 
   definePageMeta({
     middleware: "auth",
@@ -65,7 +58,7 @@
 
   const { user, userSkills, fetchUserSkills, fetchSkillCategories, fetchSkills, skills } =
     useUsers();
-  const { authUser } = useAuth();
+  const { authUser, authId } = useAuth();
   const route = useRoute();
   const userId = route.params.userID as string;
   const isOwner = computed(() => String(authUser.value?.id) === userId);
@@ -96,7 +89,7 @@
   });
 
   const handleSkillClick = (skill: UserSkill) => {
-    if (!isOwner.value || deleteMode.value) return;
+    if (!checkRights(String(authId.value)) || deleteMode.value) return;
     selectedSkill.value = skill;
     const matchingSkill = skills.value?.find((s) => s.name === skill.name);
     formData.skill.value = matchingSkill?.name || skill.name;

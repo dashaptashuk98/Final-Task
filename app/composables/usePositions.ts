@@ -22,6 +22,7 @@ export const usePositions = () => {
         fetchPolicy: "no-cache",
       });
       if (data) {
+        positions.value = data.positions;
         return data.positions;
       }
     }

@@ -293,7 +293,7 @@
       :context-menu="contextMenuOptions"
       :user-id="cv?.user?.id"
       :button-label="checkRights(cv?.user?.id || '') ? 'Add Project' : ''"
-      page="cvs"
+      page="cvs-projects"
       @handle-selected-item="(p: CvProject) => (selectedCvProject = p)"
       @activate-form="() => checkRights(cv?.user?.id || '') && activateModal('Add')" />
 

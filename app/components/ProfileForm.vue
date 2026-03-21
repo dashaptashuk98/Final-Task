@@ -1,5 +1,4 @@
-<script setup lang="ts" generic="T">
-  import { ref, computed, watch } from "vue";
+<script setup lang="ts">
   import type { ProfileForm } from "~/types/user";
   import type { InputType } from "~/types/types";
   import { updateUserMutation } from "~/graphQL/user/userUpdate.mutation";
@@ -81,8 +80,6 @@
       }
 
       initialData.value = JSON.parse(JSON.stringify(formData.value));
-    } catch {
-      // игнорим
     } finally {
       loading.value = false;
     }

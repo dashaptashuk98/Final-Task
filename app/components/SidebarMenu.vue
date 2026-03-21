@@ -79,7 +79,7 @@
       icon: "pi pi-check-circle",
       name: "position",
       title: "Position",
-      to: "/position",
+      to: "/positions",
     },
     {
       name: "skills",

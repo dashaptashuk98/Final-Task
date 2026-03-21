@@ -18,8 +18,7 @@ import {
   skillsQuery,
   updateSkillMutation,
 } from "~/graphQL/skills/skill.query";
-import type { Language, LanguageQueryVars, LanguageQueryVarsExt } from "~/types/languages";
-import { languagesQuery } from "~/graphQL/languages/languages.query";
+import type { LanguageQueryVars, LanguageQueryVarsExt } from "~/types/languages";
 import {
   addProfileLanguageMutation,
   deleteProfileLanguageMutation,

@@ -36,6 +36,9 @@
       if (page === "projects") {
         return navigateTo(`/${page}/${e.data.id}`);
       }
+      if (page === "cvs-projects") {
+        return navigateTo(`/projects/${e.data.project.id}`);
+      }
       if (page === "user-cvs") {
         return navigateTo(`/cvs/${e.data.id}/details`);
       }

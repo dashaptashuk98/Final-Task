@@ -4,6 +4,7 @@
       <div class="project-header">
         <h2 class="project-header__title">{{ project.name }}</h2>
         <Button
+          v-if="checkRights()"
           :label="'Update project'.toLocaleUpperCase()"
           type="button"
           icon="pi pi-plus"
@@ -17,7 +18,11 @@
       </div>
     </div>
     <ModalDialog v-model:visible="isModalVisible" header="Update project" width="900px">
-      <ProjectForm :data="formData" @cancel="() => (isModalVisible = false)" @save="submitForm" />
+      <ProjectForm
+        :data="formData"
+        action="Update"
+        @cancel="() => (isModalVisible = false)"
+        @save="submitForm" />
     </ModalDialog>
   </div>
 </template>

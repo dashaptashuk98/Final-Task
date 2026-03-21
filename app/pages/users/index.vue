@@ -51,7 +51,7 @@
     { field: "profile.avatar" },
     { field: "profile.first_name", header: "First name" },
     { field: "profile.last_name", header: "Last name" },
-    { field: "email", header: "Name" },
+    { field: "email", header: "Email" },
     { field: "department.name", header: "Department" },
     { field: "position.name", header: "Position" },
   ]);

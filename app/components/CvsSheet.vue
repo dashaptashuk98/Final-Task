@@ -23,7 +23,7 @@
   }>();
   const cm = ref();
   const filters = ref({
-    name: { value: "", matchMode: FilterMatchMode.STARTS_WITH },
+    global: { value: "", matchMode: FilterMatchMode.CONTAINS },
   });
 
   const handleRowClick = (e: Record<"data", T>) => {
@@ -70,11 +70,18 @@
     :button-label
     :is-visible="userId && page !== 'users' ? checkRights(userId) : checkRights()"
     @activate-form="emit('activateForm', buttonLabel)"
-    @submit-search="(input: string) => (filters.name.value = input)" />
+    @submit-search="(input: string) => (filters.global.value = input)" />
   <DataTable
     v-model:filters="filters"
     :value="sheetData"
     removable-sort
+    :global-filter-fields="[
+      'name',
+      'internal_name',
+      'description',
+      'profile.full_name',
+      'user.profile.full_name',
+    ]"
     :paginator="!!sheetData && sheetData.length > 10"
     :rows="10"
     :rows-per-page-options="[10, 25, 50]"

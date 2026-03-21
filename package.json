@@ -26,6 +26,7 @@
     "axios": "^1.13.6",
     "normalize.css": "^8.0.1",
     "nuxt": "^4.3.1",
+    "nuxt-lottie": "^1.0.8",
     "primeicons": "^7.0.0",
     "primevue": "^4.5.4",
     "vue": "^3.5.28",

@@ -26,7 +26,11 @@
   }
 
   if (cv.value?.projects) {
-    addedProjects.value = cv.value.projects;
+    addedProjects.value = cv.value.projects.map((p) => ({
+      ...p,
+      end_date: p.end_date ?? "Till now",
+      project: p.project ? { ...p.project, end_date: p.project.end_date ?? "Till now" } : p.project,
+    }));
   }
 
   const projectOptions = computed(() =>
@@ -90,7 +94,7 @@
     formData.domain.value = (cvProject.project?.domain || cvProject.domain) ?? "";
     formData.start.value = new Date(cvProject.project?.start_date || cvProject.start_date);
     const endDate = cvProject.project?.end_date || cvProject.end_date;
-    formData.end.value = endDate ? new Date(endDate) : "";
+    formData.end.value = endDate ? new Date(endDate) : "Till now";
     formData.description.value = cvProject.project?.description || cvProject.description;
     formData.environment.value = cvProject.project?.environment || cvProject.environment || [];
     formData.environment.values = cvProject.project?.environment || cvProject.environment || [];
@@ -103,7 +107,9 @@
       if (selectedProject) {
         formData.domain.value = selectedProject.domain;
         formData.start.value = new Date(selectedProject.start_date);
-        formData.end.value = selectedProject.end_date ? new Date(selectedProject.end_date) : "";
+        formData.end.value = selectedProject.end_date
+          ? new Date(selectedProject.end_date)
+          : "Till now";
         formData.description.value = selectedProject.description;
         formData.environment.value = selectedProject.environment;
         formData.environment.values = selectedProject.environment;
@@ -159,7 +165,13 @@
 
       const result = await addCvProject(projectInput);
       if (result) {
-        addedProjects.value = [...(result.projects || [])];
+        addedProjects.value = (result.projects || []).map((p) => ({
+          ...p,
+          end_date: p.end_date ?? "Till now",
+          project: p.project
+            ? { ...p.project, end_date: p.project.end_date ?? "Till now" }
+            : p.project,
+        }));
         isModalVisible.value = false;
         resetForm();
       }
@@ -192,7 +204,13 @@
 
     const result = await updateCvProjectData(projectInput);
     if (result) {
-      addedProjects.value = [...(result.projects || [])];
+      addedProjects.value = (result.projects || []).map((p) => ({
+        ...p,
+        end_date: p.end_date ?? "Till now",
+        project: p.project
+          ? { ...p.project, end_date: p.project.end_date ?? "Till now" }
+          : p.project,
+      }));
       isModalVisible.value = false;
       resetForm();
     }

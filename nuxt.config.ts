@@ -11,6 +11,7 @@ export default defineNuxtConfig({
   modules: [
     "@nuxt/test-utils/module",
     "@nuxt/eslint",
+    "nuxt-lottie",
     "@nuxtjs/apollo",
     [
       "@primevue/nuxt-module",
@@ -19,15 +20,7 @@ export default defineNuxtConfig({
         autoImport: true,
       },
     ],
-    [
-      "@primevue/nuxt-module",
-      {
-        unstyled: true,
-        autoImport: true,
-      },
-    ],
   ],
-
   apollo: {
     autoImports: true,
     authType: "Bearer",

@@ -11,7 +11,11 @@
         (header) => activateModal<Record<LanguageForm, InputType>>(header, formData)
       " />
     <ModalDialog v-model:visible="isModalVisible" :header="modalHeader" width="900px">
-      <SkillForm :data="formData" @save="submitForm" @cancel="() => (isModalVisible = false)" />
+      <SkillForm
+        :data="formData"
+        :error-message="isoError"
+        @save="submitForm"
+        @cancel="() => (isModalVisible = false)" />
     </ModalDialog>
   </div>
 </template>
@@ -42,7 +46,7 @@
     deleteSheetItem,
     handleMutateConfirmation,
   } = useDataTable<Language>();
-
+  const isoError = ref<string>("");
   sheetData.value = await fetchLanguages();
 
   const columns: sheetColumn[] = [
@@ -100,6 +104,11 @@
   };
 
   const submitForm = async (data: Record<LanguageForm, InputType>): Promise<void> => {
+    isoError.value = "";
+    if ((data.iso2.value as string).length !== 2) {
+      isoError.value = "ISO2 must be exactly 2 characters";
+      return;
+    }
     if (modalHeader.value === "Update language") {
       const variables = Object.assign(formMapper(data), {
         languageId: Number(selectedRow.value?.id),

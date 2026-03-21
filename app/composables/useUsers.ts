@@ -18,8 +18,7 @@ import {
   skillsQuery,
   updateSkillMutation,
 } from "~/graphQL/skills/skill.query";
-import type { Language, LanguageQueryVars, LanguageQueryVarsExt } from "~/types/languages";
-import { languagesQuery } from "~/graphQL/languages/languages.query";
+import type { LanguageQueryVars, LanguageQueryVarsExt } from "~/types/languages";
 import {
   addProfileLanguageMutation,
   deleteProfileLanguageMutation,
@@ -55,7 +54,7 @@ export const useUsers = () => {
       const { data } = await clients.default.query({
         query: userQuery,
         variables: { userId },
-        fetchPolicy: "network-only",
+        fetchPolicy: "no-cache",
       });
       if (data) {
         user.value = data.user;
@@ -69,7 +68,7 @@ export const useUsers = () => {
     if (clients) {
       const { data } = await clients.default.query({
         query: skillsQuery,
-        fetchPolicy: "network-only",
+        fetchPolicy: "no-cache",
       });
       if (data) {
         skills.value = data.skills;

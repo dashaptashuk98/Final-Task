@@ -20,7 +20,7 @@ export const useDepartments = () => {
     if (clients) {
       const { data } = await clients.default.query({
         query: departmentsQuery,
-        fetchPolicy: "network-only",
+        fetchPolicy: "no-cache",
       });
       if (data) {
         departments.value = data.departments;

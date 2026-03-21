@@ -35,3 +35,18 @@ export interface LanguageQueryVars {
 export interface LanguageQueryVarsExt extends LanguageQueryVars {
   proficiency: string;
 }
+
+export interface createLanguageInput {
+  iso2: string;
+  name: string;
+  native_name: string;
+}
+
+export interface updateLanguageInput extends createLanguageInput {
+  languageId: number;
+}
+
+export interface deleteLanguageInput {
+  languageId: number;
+}
+export type LanguageForm = keyof createLanguageInput;

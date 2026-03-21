@@ -103,6 +103,7 @@
     formData.mastery.value = skill.mastery || "Novice";
     modalType.value = "Update";
     visible.value = true;
+    errorMessage.value = "";
   };
 
   const handleFormSubmit = async (

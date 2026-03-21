@@ -58,7 +58,7 @@
       to: "/users",
     },
     {
-      icon: "pi pi-users",
+      icon: "pi pi-folder",
       name: "projects",
       title: "Projects",
       to: `/projects`,
@@ -70,13 +70,13 @@
       to: "/cvs",
     },
     {
-      icon: "pi pi-file",
+      icon: "pi pi-building-columns",
       name: "departments",
       title: "Departments",
       to: "/departments",
     },
     {
-      icon: "pi pi-file",
+      icon: "pi pi-check-circle",
       name: "position",
       title: "Position",
       to: "/position",

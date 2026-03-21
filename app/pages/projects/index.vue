@@ -49,7 +49,11 @@
     skillsList.value = skills.value.map((item) => item.name);
   }
   await callOnce(() => fetchProject());
-  sheetData.value = await fetchProject();
+  sheetData.value =
+    (await fetchProject())?.map((p) => ({
+      ...p,
+      end_date: p.end_date ?? "Till now",
+    })) ?? null;
 
   const columns: sheetColumn[] = [
     { field: "name", header: "Name" },

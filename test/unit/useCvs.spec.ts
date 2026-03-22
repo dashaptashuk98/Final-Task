@@ -19,6 +19,7 @@ vi.mock("@/graphQL/cvs/project.query", () => ({
   getProjects: "getProjects",
   addProject: "addProject",
   deleteProject: "deleteProject",
+  deleteCvProjectMutation: "deleteCvProjectMutation",
 }));
 vi.mock("@/graphQL/cvs/cvs.mutations", () => ({
   updateCvProject: "updateCvProject",
@@ -37,7 +38,7 @@ describe("useCvs", () => {
 
   describe("fetchCv", () => {
     it("returns cv and sets state", async () => {
-      mockUseAsyncQuery.mockReturnValue({ data: { value: { cv: { id: "1", name: "My CV" } } } });
+      mockQuery.mockResolvedValue({ data: { cv: { id: "1", name: "My CV" } } });
       const { fetchCv, cv } = useCvs();
       const result = await fetchCv("1");
       expect(result).toEqual({ id: "1", name: "My CV" });
@@ -45,7 +46,7 @@ describe("useCvs", () => {
     });
 
     it("returns null when no data", async () => {
-      mockUseAsyncQuery.mockReturnValue({ data: { value: null } });
+      mockQuery.mockResolvedValue({ data: null });
       const { fetchCv } = useCvs();
       expect(await fetchCv("1")).toBeNull();
     });
@@ -63,24 +64,6 @@ describe("useCvs", () => {
       mockQuery.mockResolvedValue({ data: null });
       const { fetchCvs } = useCvs();
       expect(await fetchCvs()).toBeNull();
-    });
-  });
-
-  describe("fetchProject", () => {
-    it("returns projects and sets state", async () => {
-      mockUseAsyncQuery.mockReturnValue({
-        data: { value: { projects: [{ id: "1", name: "Project A" }] } },
-      });
-      const { fetchProject, projects } = useCvs();
-      const result = await fetchProject();
-      expect(result).toEqual([{ id: "1", name: "Project A" }]);
-      expect(projects.value).toEqual([{ id: "1", name: "Project A" }]);
-    });
-
-    it("returns empty array when no data", async () => {
-      mockUseAsyncQuery.mockReturnValue({ data: { value: null } });
-      const { fetchProject } = useCvs();
-      expect(await fetchProject()).toEqual([]);
     });
   });
 

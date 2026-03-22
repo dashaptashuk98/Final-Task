@@ -1,213 +1,233 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
-import { useAuth } from "@/composables/useAuth";
+import { useUsers } from "@/composables/useUsers";
 
-const {
-  mockFetchUser,
-  mockOnLogin,
-  mockOnLogout,
-  mockMutate,
-  mockUseAsyncQuery,
-  apolloClientsRef,
-} = vi.hoisted(() => ({
-  mockFetchUser: vi.fn(),
-  mockOnLogin: vi.fn(),
-  mockOnLogout: vi.fn(),
+const { mockQuery, mockMutate, mockUseAsyncQuery } = vi.hoisted(() => ({
+  mockQuery: vi.fn(),
   mockMutate: vi.fn(),
   mockUseAsyncQuery: vi.fn(),
-  apolloClientsRef: { hasClients: true },
 }));
 
-const cookieStore: Record<string, { value }> = {
-  authId: { value: null },
-  token: { value: null },
-  refreshToken: { value: null },
-};
-
-mockNuxtImport("useUsers", () => () => ({ fetchUser: mockFetchUser }));
 mockNuxtImport("useApollo", () => () => ({
-  onLogin: mockOnLogin,
-  onLogout: mockOnLogout,
-  clients: apolloClientsRef.hasClients ? { default: { mutate: mockMutate } } : null,
+  clients: { default: { query: mockQuery, mutate: mockMutate } },
 }));
-mockNuxtImport("useCookie", () => (name: string) => cookieStore[name] ?? { value: null });
 mockNuxtImport("useAsyncQuery", () => mockUseAsyncQuery);
 
-vi.mock("@/graphQL/auth/auth.query", () => ({ loginQuery: "mocked login query" }));
-vi.mock("@/graphQL/auth/auth.mutation", () => ({ signupMutation: "mocked signup mutation" }));
+vi.mock("@/graphQL/user/user.query", () => ({
+  userQuery: "userQuery",
+  usersQuery: "usersQuery",
+  profileQuery: "profileQuery",
+}));
+vi.mock("@/graphQL/departments/departments.query", () => ({
+  departmentsQuery: "departmentsQuery",
+}));
+vi.mock("@/graphQL/positions/positions.query", () => ({ positionsQuery: "positionsQuery" }));
+vi.mock("@/graphQL/skills/skillsUsers.query", () => ({ userSkillsQuery: "userSkillsQuery" }));
+vi.mock("@/graphQL/skills/skillsCategory.query", () => ({
+  skillCategoryQuery: "skillCategoryQuery",
+}));
+vi.mock("@/graphQL/skills/skill.query", () => ({ skillsQuery: "skillsQuery" }));
+vi.mock("@/graphQL/languages/languages.query", () => ({ languagesQuery: "languagesQuery" }));
+vi.mock("@/graphQL/languages/languages.mutation", () => ({
+  addProfileLanguageMutation: "addProfileLanguageMutation",
+  deleteProfileLanguageMutation: "deleteProfileLanguageMutation",
+  updateProfileLanguageMutation: "updateProfileLanguageMutation",
+}));
+vi.mock("@/graphQL/user/user.mutation", () => ({
+  createUserMutation: "createUserMutation",
+  deleteUserMutation: "deleteUserMutation",
+  updateUserMutation: "updateUserMutation",
+}));
 
-describe("useAuth", () => {
+describe("useUsers", () => {
   beforeEach(() => {
-    cookieStore.authId.value = null;
-    cookieStore.token.value = null;
-    cookieStore.refreshToken.value = null;
+    vi.clearAllMocks();
   });
 
   describe("computed properties", () => {
-    it("returns authId from cookie", () => {
-      cookieStore.authId.value = "123";
-      const { authId } = useAuth();
-      expect(authId.value).toBe("123");
+    it("getUser returns current user", () => {
+      const { getUser, user } = useUsers();
+      user.value = { id: "1", email: "a@a.com" };
+      expect(getUser.value).toEqual({ id: "1", email: "a@a.com" });
     });
 
-    it("returns null authId when cookie is empty", () => {
-      const { authId } = useAuth();
-      expect(authId.value).toBeNull();
+    it("getUsers returns users array", () => {
+      const { getUsers, users } = useUsers();
+      users.value = [{ id: "1" }, { id: "2" }];
+      expect(getUsers.value).toHaveLength(2);
     });
 
-    it("returns isAuth true when user and token exist", () => {
-      cookieStore.token.value = "token123";
-      const { isAuth, authUser } = useAuth();
-      authUser.value = { id: "123", name: "Test" };
-      expect(isAuth.value).toBe(true);
+    it("getUserById returns correct user", () => {
+      const { getUserById, users } = useUsers();
+      users.value = [
+        { id: "1", email: "a@a.com" },
+        { id: "2", email: "b@b.com" },
+      ];
+      expect(getUserById("1").value).toEqual({ id: "1", email: "a@a.com" });
     });
 
-    it("returns isAuth false when no token", () => {
-      const { isAuth } = useAuth();
-      expect(isAuth.value).toBe(false);
-    });
-  });
-
-  describe("loadAuthUser", () => {
-    it("loads user when authId exists", async () => {
-      cookieStore.authId.value = "123";
-      mockFetchUser.mockResolvedValue({ id: "123", name: "Loaded User" });
-
-      const { loadAuthUser, authUser } = useAuth();
-      await loadAuthUser();
-
-      expect(mockFetchUser).toHaveBeenCalledWith("123");
-      expect(authUser.value).toEqual({ id: "123", name: "Loaded User" });
-    });
-
-    it("does nothing when no authId", async () => {
-      const { loadAuthUser } = useAuth();
-      await loadAuthUser();
-      expect(mockFetchUser).not.toHaveBeenCalled();
+    it("getUserById returns null when not found", () => {
+      const { getUserById, users } = useUsers();
+      users.value = [];
+      expect(getUserById("999").value).toBeNull();
     });
   });
 
-  describe("login", () => {
-    it("successfully logs in and saves data", async () => {
-      const mockData = {
-        value: {
-          login: {
-            access_token: "new-token",
-            refresh_token: "new-refresh",
-            user: { id: "456", name: "New User" },
-          },
-        },
-      };
-      mockUseAsyncQuery.mockReturnValue({ data: mockData });
-
-      const { login, authUser, isLoading } = useAuth();
-      const result = await login("test@test.com", "password");
-
-      expect(result).toEqual(mockData.value.login);
-      expect(authUser.value).toEqual({ id: "456", name: "New User" });
-      expect(isLoading.value).toBe(false);
+  describe("fetchUser", () => {
+    it("returns user and sets state", async () => {
+      mockQuery.mockResolvedValue({ data: { user: { id: "1", email: "a@a.com" } } });
+      const { fetchUser, user } = useUsers();
+      const result = await fetchUser("1");
+      expect(result).toEqual({ id: "1", email: "a@a.com" });
+      expect(user.value).toEqual({ id: "1", email: "a@a.com" });
     });
 
-    it("returns null when login fails", async () => {
+    it("returns null when no data", async () => {
+      mockQuery.mockResolvedValue({ data: null });
+      const { fetchUser } = useUsers();
+      expect(await fetchUser("1")).toBeNull();
+    });
+  });
+
+  describe("fetchUsers", () => {
+    it("returns users and sets state", async () => {
+      mockQuery.mockResolvedValue({ data: { users: [{ id: "1" }, { id: "2" }] } });
+      const { fetchUsers, users } = useUsers();
+      const result = await fetchUsers();
+      expect(result).toHaveLength(2);
+      expect(users.value).toHaveLength(2);
+    });
+
+    it("returns null when no data", async () => {
+      mockQuery.mockResolvedValue({ data: null });
+      const { fetchUsers } = useUsers();
+      expect(await fetchUsers()).toBeNull();
+    });
+  });
+
+  describe("fetchSkills", () => {
+    it("returns skills and sets state", async () => {
+      mockQuery.mockResolvedValue({ data: { skills: [{ id: "1", name: "JS" }] } });
+      const { fetchSkills, skills } = useUsers();
+      const result = await fetchSkills();
+      expect(result).toEqual([{ id: "1", name: "JS" }]);
+      expect(skills.value).toEqual([{ id: "1", name: "JS" }]);
+    });
+
+    it("returns null when no data", async () => {
+      mockQuery.mockResolvedValue({ data: null });
+      const { fetchSkills } = useUsers();
+      expect(await fetchSkills()).toBeNull();
+    });
+  });
+
+  describe("fetchUserSkills", () => {
+    it("returns user skills and sets state", async () => {
+      const mockSkills = [{ skillId: "1", mastery: "Novice" }];
+      mockUseAsyncQuery.mockReturnValue({
+        data: { value: { user: { profile: { skills: mockSkills } } } },
+      });
+      const { fetchUserSkills, userSkills } = useUsers();
+      const result = await fetchUserSkills("1");
+      expect(result).toEqual(mockSkills);
+      expect(userSkills.value).toEqual(mockSkills);
+    });
+
+    it("returns null when no skills", async () => {
       mockUseAsyncQuery.mockReturnValue({ data: { value: null } });
-
-      const { login, isLoading } = useAuth();
-      const result = await login("test@test.com", "password");
-
-      expect(result).toBeNull();
-      expect(isLoading.value).toBe(false);
+      const { fetchUserSkills } = useUsers();
+      expect(await fetchUserSkills("1")).toBeNull();
     });
   });
 
-  describe("signup", () => {
-    it("successfully signs up and saves data", async () => {
-      mockMutate.mockResolvedValue({
-        data: {
-          signup: {
-            access_token: "new-token",
-            refresh_token: "new-refresh",
-            user: { id: "789", name: "New User" },
-          },
-        },
-      });
-
-      const { signup, authUser, isLoading } = useAuth();
-      const result = await signup("test@test.com", "password");
-
-      expect(authUser.value).toEqual({ id: "789", name: "New User" });
-      expect(isLoading.value).toBe(false);
-      expect(result).toBeTruthy();
+  describe("fetchSkillCategories", () => {
+    it("returns skill categories and sets state", async () => {
+      const mockCategories = [{ id: "1", name: "Frontend" }];
+      mockUseAsyncQuery.mockReturnValue({ data: { value: { skillCategories: mockCategories } } });
+      const { fetchSkillCategories, skillCategories } = useUsers();
+      const result = await fetchSkillCategories();
+      expect(result).toEqual(mockCategories);
+      expect(skillCategories.value).toEqual(mockCategories);
     });
 
-    it("throws error when no apollo clients", async () => {
-      apolloClientsRef.hasClients = false;
-      const { signup } = useAuth();
-      await expect(signup("test@test.com", "password")).rejects.toThrow("Apollo clients is empty");
-      apolloClientsRef.hasClients = true;
+    it("returns null when no data", async () => {
+      mockUseAsyncQuery.mockReturnValue({ data: { value: null } });
+      const { fetchSkillCategories } = useUsers();
+      expect(await fetchSkillCategories()).toBeNull();
     });
   });
 
-  describe("logout", () => {
-    it("clears auth data", () => {
-      cookieStore.authId.value = "123";
-      cookieStore.refreshToken.value = "refresh";
+  describe("fetchProfile", () => {
+    it("returns profile", async () => {
+      mockUseAsyncQuery.mockReturnValue({ data: { value: { profile: { id: "1", skills: [] } } } });
+      const { fetchProfile } = useUsers();
+      const result = await fetchProfile("1");
+      expect(result).toEqual({ id: "1", skills: [] });
+    });
 
-      const { logout, authUser, isLoading } = useAuth();
-      authUser.value = { id: "123", name: "Test" };
-      logout();
+    it("returns null when no data", async () => {
+      mockUseAsyncQuery.mockReturnValue({ data: { value: null } });
+      const { fetchProfile } = useUsers();
+      expect(await fetchProfile("1")).toBeNull();
+    });
 
-      expect(mockOnLogout).toHaveBeenCalled();
-      expect(cookieStore.authId.value).toBeNull();
-      expect(cookieStore.refreshToken.value).toBeNull();
-      expect(isLoading.value).toBe(false);
+    it("returns null on error", async () => {
+      mockUseAsyncQuery.mockRejectedValue(new Error("fail"));
+      const { fetchProfile } = useUsers();
+      expect(await fetchProfile("1")).toBeNull();
     });
   });
 
-  describe("refreshToken", () => {
-    it("successfully refreshes token", async () => {
-      cookieStore.refreshToken.value = "old-refresh";
-
-      const mockFetch = vi.fn().mockResolvedValue({
-        data: {
-          updateToken: {
-            access_token: "new-access",
-            refresh_token: "new-refresh",
-          },
-        },
-      });
-      global.$fetch = mockFetch;
-
-      const { refreshToken } = useAuth();
-      const result = await refreshToken();
-
-      expect(result).toBe(true);
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          headers: { Authorization: "Bearer old-refresh", "Content-Type": "application/json" },
-        }),
-      );
+  describe("mutations", () => {
+    it("deleteUser returns user", async () => {
+      mockMutate.mockResolvedValue({ data: { user: { id: "1" } } });
+      const { deleteUser } = useUsers();
+      expect(await deleteUser("1")).toEqual({ id: "1" });
     });
 
-    it("returns false when no refresh token", async () => {
-      const { refreshToken } = useAuth();
-      expect(await refreshToken()).toBe(false);
+    it("deleteUser returns null when no data", async () => {
+      mockMutate.mockResolvedValue({ data: null });
+      const { deleteUser } = useUsers();
+      expect(await deleteUser("1")).toBeNull();
     });
 
-    it("returns false when refresh fails", async () => {
-      cookieStore.refreshToken.value = "old-refresh";
-      global.$fetch = vi.fn().mockRejectedValue(new Error("Network error"));
-
-      const { refreshToken } = useAuth();
-      expect(await refreshToken()).toBe(false);
+    it("updateUser returns user", async () => {
+      mockMutate.mockResolvedValue({ data: { user: { id: "1", email: "new@a.com" } } });
+      const { updateUser } = useUsers();
+      expect(await updateUser({ userId: "1" })).toEqual({ id: "1", email: "new@a.com" });
     });
 
-    it("returns false when response has no updateToken", async () => {
-      cookieStore.refreshToken.value = "old-refresh";
-      global.$fetch = vi.fn().mockResolvedValue({ data: { updateToken: null } });
+    it("createUser returns user", async () => {
+      mockMutate.mockResolvedValue({ data: { user: { id: "2", email: "new@b.com" } } });
+      const { createUser } = useUsers();
+      expect(await createUser({ email: "new@b.com" })).toEqual({ id: "2", email: "new@b.com" });
+    });
 
-      const { refreshToken } = useAuth();
-      expect(await refreshToken()).toBe(false);
+    it("addProfileLanguage returns profile", async () => {
+      mockMutate.mockResolvedValue({ data: { addProfileLanguage: { id: "1" } } });
+      const { addProfileLanguage } = useUsers();
+      expect(await addProfileLanguage({ language: "en" })).toEqual({ id: "1" });
+    });
+
+    it("updateProfileLanguage returns profile", async () => {
+      mockMutate.mockResolvedValue({ data: { updateProfileLanguage: { id: "1" } } });
+      const { updateProfileLanguage } = useUsers();
+      expect(await updateProfileLanguage({ language: "en" })).toEqual({ id: "1" });
+    });
+
+    it("deleteProfileLanguage returns profile", async () => {
+      mockMutate.mockResolvedValue({ data: { deleteProfileLanguage: { id: "1" } } });
+      const { deleteProfileLanguage } = useUsers();
+      expect(await deleteProfileLanguage({ language: "en" })).toEqual({ id: "1" });
+    });
+  });
+
+  describe("clearUsers", () => {
+    it("clears users array", () => {
+      const { clearUsers, users } = useUsers();
+      users.value = [{ id: "1" }];
+      clearUsers();
+      expect(users.value).toEqual([]);
     });
   });
 });

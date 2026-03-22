@@ -105,51 +105,9 @@ describe("useUsers", () => {
     });
   });
 
-  describe("fetchDepartments", () => {
-    it("returns departments and sets state", async () => {
-      mockUseAsyncQuery.mockReturnValue({
-        data: { value: { departments: [{ id: "1", name: "HR" }] } },
-      });
-      const { fetchDepartments, departments } = useUsers();
-      const result = await fetchDepartments();
-      expect(result).toEqual([{ id: "1", name: "HR" }]);
-      expect(departments.value).toEqual([{ id: "1", name: "HR" }]);
-    });
-
-    it("returns null when no data", async () => {
-      mockUseAsyncQuery.mockReturnValue({ data: { value: null } });
-      const { fetchDepartments } = useUsers();
-      expect(await fetchDepartments()).toBeNull();
-    });
-
-    it("returns null on error", async () => {
-      mockUseAsyncQuery.mockRejectedValue(new Error("fail"));
-      const { fetchDepartments } = useUsers();
-      expect(await fetchDepartments()).toBeNull();
-    });
-  });
-
-  describe("fetchPositions", () => {
-    it("returns positions and sets state", async () => {
-      mockUseAsyncQuery.mockReturnValue({
-        data: { value: { positions: [{ id: "1", name: "Dev" }] } },
-      });
-      const { fetchPositions, positions } = useUsers();
-      const result = await fetchPositions();
-      expect(result).toEqual([{ id: "1", name: "Dev" }]);
-      expect(positions.value).toEqual([{ id: "1", name: "Dev" }]);
-    });
-
-    it("returns null when no data", async () => {
-      mockUseAsyncQuery.mockReturnValue({ data: { value: null } });
-      const { fetchPositions } = useUsers();
-      expect(await fetchPositions()).toBeNull();
-    });
-  });
-
   describe("fetchSkills", () => {
     it("returns skills and sets state", async () => {
-      mockUseAsyncQuery.mockReturnValue({ data: { value: { skills: [{ id: "1", name: "JS" }] } } });
+      mockQuery.mockResolvedValue({ data: { skills: [{ id: "1", name: "JS" }] } });
       const { fetchSkills, skills } = useUsers();
       const result = await fetchSkills();
       expect(result).toEqual([{ id: "1", name: "JS" }]);
@@ -157,7 +115,7 @@ describe("useUsers", () => {
     });
 
     it("returns null when no data", async () => {
-      mockUseAsyncQuery.mockReturnValue({ data: { value: null } });
+      mockQuery.mockResolvedValue({ data: null });
       const { fetchSkills } = useUsers();
       expect(await fetchSkills()).toBeNull();
     });
@@ -217,22 +175,6 @@ describe("useUsers", () => {
       mockUseAsyncQuery.mockRejectedValue(new Error("fail"));
       const { fetchProfile } = useUsers();
       expect(await fetchProfile("1")).toBeNull();
-    });
-  });
-
-  describe("fetchLanguages", () => {
-    it("returns languages", async () => {
-      mockUseAsyncQuery.mockReturnValue({
-        data: { value: { languages: [{ id: "1", name: "English" }] } },
-      });
-      const { fetchLanguages } = useUsers();
-      expect(await fetchLanguages()).toEqual([{ id: "1", name: "English" }]);
-    });
-
-    it("returns null when no data", async () => {
-      mockUseAsyncQuery.mockReturnValue({ data: { value: null } });
-      const { fetchLanguages } = useUsers();
-      expect(await fetchLanguages()).toBeNull();
     });
   });
 

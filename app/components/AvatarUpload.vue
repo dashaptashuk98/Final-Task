@@ -28,9 +28,11 @@
 <script setup lang="ts">
   import { ref } from "vue";
   import { uploadAvatarMutation } from "~/graphQL/user/userUpload.mutation";
-  import type { uploadPhotoProps } from "~/types/user";
 
-  const props = defineProps<uploadPhotoProps>();
+  const props = defineProps<{
+    user: { id: string; email: string; profile?: { avatar?: string | null } | null };
+    disabled?: boolean;
+  }>();
   const emit = defineEmits<{
     avatarUpdated: [avatar: string];
   }>();

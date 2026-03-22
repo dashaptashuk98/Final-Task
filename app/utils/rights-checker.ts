@@ -8,3 +8,5 @@ export const checkRights = (userId?: string): boolean => {
   }
   return false;
 };
+
+export default checkRights;

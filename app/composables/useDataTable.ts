@@ -10,7 +10,9 @@ export const useDataTable = <T>() => {
   const activateModal = <F extends object>(header: string, form: F, data?: Partial<F> | null) => {
     modalHeader.value = header;
     isModalVisible.value = true;
-    formMapper<F>(form, data);
+    if (header.includes("CV")) {
+      formMapper<F>(form, data);
+    }
   };
 
   const formMapper = <F extends object>(form: F, data?: Partial<F> | null): void => {

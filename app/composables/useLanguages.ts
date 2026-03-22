@@ -33,7 +33,7 @@ export const useLanguages = () => {
         variables: { language: language },
       });
       if (data) {
-        return data.createPosition;
+        return data.createLanguage;
       }
     }
     return null;
@@ -45,7 +45,7 @@ export const useLanguages = () => {
         variables: { language: language },
       });
       if (data) {
-        return data.updatePosition;
+        return data.updateLanguage;
       }
     }
     return null;
@@ -57,7 +57,7 @@ export const useLanguages = () => {
         variables: { language: languageId },
       });
       if (data) {
-        return data.deletePosition;
+        return data.deleteLanguage;
       }
     }
     return null;

@@ -9,7 +9,7 @@
 
 <template>
   <IconField>
-    <InputIcon class="pi pi-search" />
+    <InputIcon class="pi pi-search" @click="emit('submitSearch', input)" />
     <InputText v-model="input" placeholder="Search" @keydown.enter="emit('submitSearch', input)" />
     <Button v-if="input.length > 0" icon="pi pi-times" @click="clearSearchInput" />
   </IconField>
@@ -31,6 +31,7 @@
   .p-inputicon {
     position: static;
     color: #0000008a;
+    cursor: pointer;
   }
 
   .p-inputtext {

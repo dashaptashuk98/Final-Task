@@ -1,6 +1,6 @@
 import { cvQuery, cvsQuery } from "~/graphQL/cvs/cvs.query";
 import { ExportPdf } from "~/graphQL/cvs/exportProfile.mutation";
-import { getProjects, addProject, deleteProject } from "~/graphQL/cvs/project.query";
+import { getProjects, addProject, deleteCvProjectMutation } from "~/graphQL/cvs/project.query";
 import {
   updateCvProject,
   AddSkillMutation,
@@ -23,26 +23,81 @@ import type {
   DeleteCvInput,
 } from "~/types/cvs";
 import type { Nullable } from "~/types/types";
+import {
+  createProjectMutation,
+  deleteProjectMutation,
+  updateProjectMutation,
+} from "~/graphQL/project/project.mutation";
+import type { CreateProjectInput, DeleteProjectInput, UpdateProjectInput } from "~/types/projects";
 
 export const useCvs = () => {
   const { clients } = useApollo();
   const cv = useState<Nullable<Cv>>("cv", () => null);
   const projects = useState<Project[]>("projects", () => []);
   const fetchCv = async (cvId: string): Promise<Nullable<Cv>> => {
-    const { data } = await useAsyncQuery<Nullable<Record<"cv", Cv>>>(cvQuery, { cvId });
-    if (data.value) {
-      cv.value = data.value.cv;
-      return data.value.cv;
+    if (clients) {
+      const { data } = await clients.default.query({
+        query: cvQuery,
+        variables: { cvId },
+        fetchPolicy: "no-cache",
+      });
+      if (data) {
+        cv.value = data.cv;
+        return data.cv;
+      }
     }
     return null;
   };
-  const fetchProject = async (): Promise<Project[]> => {
-    const { data } = await useAsyncQuery<Nullable<Record<"projects", Project[]>>>(getProjects);
-    if (data.value?.projects) {
-      projects.value = data.value.projects;
-      return data.value.projects;
+  const fetchProjects = async (): Promise<Nullable<Project[]>> => {
+    if (clients) {
+      const { data } = await clients.default.query({
+        query: getProjects,
+        fetchPolicy: "no-cache",
+      });
+      if (data) {
+        return data.projects;
+      }
     }
-    return [];
+    return null;
+  };
+
+  const createProject = async (project: CreateProjectInput): Promise<Nullable<Project>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: createProjectMutation,
+        variables: { project: project },
+      });
+      if (data) {
+        return data.createProject;
+      }
+    }
+    return null;
+  };
+
+  const updateProject = async (project: UpdateProjectInput): Promise<Nullable<Project>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: updateProjectMutation,
+        variables: { project: project },
+      });
+      if (data) {
+        return data.updateProject;
+      }
+    }
+    return null;
+  };
+
+  const deleteProject = async (id: DeleteProjectInput): Promise<Nullable<void>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: deleteProjectMutation,
+        variables: { project: id },
+      });
+      if (data) {
+        return data;
+      }
+    }
+    return null;
   };
 
   const addCvSkill = async (skill: AddCvSkillInput): Promise<Nullable<Cv>> => {
@@ -63,7 +118,7 @@ export const useCvs = () => {
     if (clients) {
       const { data } = await clients.default.query({
         query: cvsQuery,
-        fetchPolicy: "network-only",
+        fetchPolicy: "no-cache",
       });
       if (data) {
         return data.cvs;
@@ -182,8 +237,8 @@ export const useCvs = () => {
   const deleteCvProject = async (cvId: string, projectId: string): Promise<Nullable<Cv>> => {
     if (clients) {
       const { data } = await clients.default.mutate({
-        mutation: deleteProject,
-        variables: { cvId, projectId },
+        mutation: deleteCvProjectMutation,
+        variables: { project: { cvId: cvId, projectId: projectId } },
       });
       if (data?.removeCvProject) {
         cv.value = data.removeCvProject;
@@ -198,7 +253,10 @@ export const useCvs = () => {
     fetchCv,
     updateCv,
     exportPdf,
-    fetchProject,
+    fetchProject: fetchProjects,
+    updateProject,
+    deleteProject,
+    createProject,
     projects,
     addCvProject,
     updateCvProjectData,

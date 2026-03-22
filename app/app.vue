@@ -1,11 +1,22 @@
 <template>
   <div>
+    <AppLoader :visible="visible" />
     <NuxtLayout>
       <NuxtPage />
       <Toast />
     </NuxtLayout>
   </div>
 </template>
+
+<script setup lang="ts">
+  const { isLoading } = useLoadingIndicator();
+  const isMounted = ref(false);
+  const visible = computed(() => !isMounted.value || isLoading.value);
+
+  onMounted(() => {
+    isMounted.value = true;
+  });
+</script>
 
 <style>
   .p-toast {

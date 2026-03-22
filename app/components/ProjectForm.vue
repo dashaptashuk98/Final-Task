@@ -13,7 +13,7 @@
               v-if="item.type === 'InputText'"
               :id="item.key"
               v-model="item.value as string"
-              :disabled="isFieldDisabled(item.key)"
+              :disabled="!checkRights()"
               class="custom-input"
               :pt="{
                 root: { style: { overflowX: 'auto', whiteSpace: 'nowrap' } },
@@ -24,7 +24,7 @@
               v-model="item.value"
               :options="item.values"
               class="custom-select"
-              :disabled="isFieldDisabled(item.key)"
+              :disabled="!checkRights()"
               :pt="{
                 optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
                 list: { style: { backgroundColor: '#FFFFFF' } },
@@ -33,8 +33,9 @@
               v-else-if="item.type === 'DatePicker'"
               :id="item.key"
               v-model="item.value as Date"
+              date-format="yy-mm-dd"
               show-icon
-              :disabled="isFieldDisabled(item.key)"
+              :disabled="!checkRights()"
               fluid
               :show-on-focus="false"
               class="custom-datepicker" />
@@ -43,18 +44,21 @@
               :id="item.key"
               v-model="item.value as string"
               rows="3"
-              :disabled="isFieldDisabled(item.key)"
+              :disabled="!checkRights()"
               auto-resize
               class="custom-textarea" />
             <MultiSelect
               v-else-if="item.type === 'MultiSelect'"
               v-model="item.value"
               :options="item.values"
+              show-clear
               display="chip"
-              :disabled="isFieldDisabled(item.key)"
+              :disabled="!checkRights()"
               class="custom-multiselect"
               :pt="{
                 optionLabel: { style: { font: '400 16px/32px Roboto, sans-serif' } },
+                option: { style: { gap: '10px', padding: '0 10px' } },
+                overlay: { style: { border: '1px #2e2e2e50 solid' } },
                 list: { style: { backgroundColor: '#FFFFFF' } },
               }" />
           </div>
@@ -69,41 +73,21 @@
 </template>
 
 <script setup lang="ts">
-  import type { InputType } from "~/types/types";
-  import Select from "primevue/select";
-  import MultiSelect from "primevue/multiselect";
-  import InputText from "primevue/inputtext";
-  import Textarea from "primevue/textarea";
-
-  type SkillForm = "skill" | "mastery";
+  import type { InputType, ProjectFormKey } from "~/types/types";
   const {
     data,
     twoColumns = false,
     action = "Add",
   } = defineProps<{
-    data: Record<SkillForm, InputType> | null;
+    data: Record<ProjectFormKey, InputType> | null;
     twoColumns?: boolean;
     disableField?: boolean;
     action?: string;
   }>();
 
-  const isFieldDisabled = (fieldKey: string) => {
-    if (!data) return false;
-
-    if (action === "Add") {
-      return fieldKey !== "project";
-    }
-
-    if (action === "Update" || action === "Edit") {
-      return fieldKey !== "responsibilities";
-    }
-
-    return data[fieldKey as SkillForm]?.disabled || false;
-  };
-
   defineEmits<{
     cancel: [];
-    save: [data: Record<SkillForm, InputType>];
+    save: [data: Record<ProjectFormKey, InputType>];
   }>();
 </script>
 
@@ -170,12 +154,14 @@
   .custom-multiselect {
     width: 100%;
     min-height: 48px;
+    display: flex;
+    gap: 10px;
     font:
       400 16px/24px "Roboto",
       sans-serif;
     border: 1px solid #0000003b;
     border-radius: 4px;
-    padding: 12px 12px 0 12px;
+    padding: 8px 12px;
     transition: border-color 0.2s;
   }
 
@@ -187,6 +173,10 @@
     outline: none;
     border-color: #c63031;
     box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+  }
+
+  :deep(.p-multiselect-label) {
+    flex-wrap: wrap;
   }
 
   .custom-textarea {
@@ -241,9 +231,9 @@
   }
 
   .custom-multiselect :deep(.p-chip) {
-    background-color: #b7b2b2;
-    color: white;
-    padding: 8px;
+    background-color: #c6303199;
+    color: #ffffff;
+    padding: 8px 16px;
     border-radius: 40px;
     margin: 2px;
     gap: 8px;

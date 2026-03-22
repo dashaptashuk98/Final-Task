@@ -17,15 +17,13 @@ export interface Tabs {
   to: string;
 }
 
-export type ProjectFormKey =
-  | "skill"
-  | "mastery"
-  | "start"
-  | "end"
-  | "description"
-  | "environment"
-  | "responsibilities";
+export type DepartmentFormKey = "name";
 
+export type SkillAdminFormKey = "name" | "category";
+
+export type ProjectFormKey = "name" | "domain" | "start" | "end" | "description" | "environment";
+
+export type CvProjectFormKey = ProjectFormKey | "responsibilities";
 export interface sheetColumn {
   field: string;
   header?: string;

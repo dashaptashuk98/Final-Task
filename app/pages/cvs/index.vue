@@ -17,7 +17,7 @@
     updateSheetItem,
     handleMutateConfirmation,
     deleteSheetItem,
-  } = useDataTable();
+  } = useDataTable<Cv>();
   const { authId } = useAuth();
   sheetData.value = await fetchCvs();
   const columns = ref<sheetColumn[]>([
@@ -38,11 +38,11 @@
   ): Promise<void> => {
     if (modalHeader.value === "Update CV") {
       const variables = Object.assign(data, { cvId: selectedRow.value?.id });
-      updateSheetItem(variables, updateCv);
+      await updateSheetItem(variables, updateCv);
     }
     if (modalHeader.value === "Create CV") {
       const variables = Object.assign(data, { userId: id });
-      updateSheetItem(variables, createCv);
+      await updateSheetItem(variables, createCv);
     }
     await handleMutateConfirmation(fetchCvs);
   };

@@ -32,14 +32,14 @@
 <style>
   .p-dialog-mask {
     background-color: rgba(0, 0, 0, 0.5) !important;
-    z-index: 9999 !important;
+    z-index: 50 !important;
   }
 
   .p-dialog {
     border-radius: 12px !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
     background: white !important;
-    z-index: 10000 !important;
+    z-index: 100 !important;
   }
 
   .p-dialog-header {

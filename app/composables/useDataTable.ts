@@ -1,49 +1,43 @@
-import type { Cv } from "~/types/cvs";
 import type { Nullable } from "~/types/types";
 
-export const useDataTable = () => {
+export const useDataTable = <T>() => {
   const isModalVisible = ref<boolean>(false);
   const isDeleteModalVisible = ref<boolean>(false);
-  const sheetData = useState<Nullable<Cv[]>>(() => null);
+  const sheetData = useState<Nullable<T[]>>(() => null);
   const modalHeader = ref<string>("");
-  const selectedRow = ref<Nullable<Cv>>(null);
+  const selectedRow = ref<Nullable<T>>(null);
 
-  const activateModal = <T extends Record<string, unknown>>(
-    header: string,
-    form: T,
-    data?: Partial<T> | null,
-  ) => {
+  const activateModal = <F extends object>(header: string, form: F, data?: Partial<F> | null) => {
     modalHeader.value = header;
     isModalVisible.value = true;
-    formMapper(form, data);
+    if (header.includes("CV")) {
+      formMapper<F>(form, data);
+    }
   };
 
-  const formMapper = <T extends Record<string, unknown>>(
-    form: T,
-    data?: Partial<T> | null,
-  ): void => {
+  const formMapper = <F extends object>(form: F, data?: Partial<F> | null): void => {
     if (!data) {
-      Object.keys(form).forEach((key) => (form[key as keyof T] = "" as T[keyof T]));
+      Object.keys(form).forEach((key) => (form[key as keyof F] = "" as F[keyof F]));
       return;
     }
     Object.keys(form).forEach(
-      (key) => (form[key as keyof T] = data[key as keyof T] ?? form[key as keyof T]),
+      (key) => (form[key as keyof F] = data[key as keyof F] ?? form[key as keyof F]),
     );
   };
 
-  const updateSheetItem = async <T>(
-    changedData: T,
-    updateService: (vars: T) => unknown,
+  const updateSheetItem = async <V>(
+    changedData: V,
+    updateService: (vars: V) => unknown,
   ): Promise<void> => {
     if (changedData) {
       await updateService(changedData);
     }
   };
 
-  const deleteSheetItem = async <T, K>(
-    deleteService: (vars: K) => unknown,
-    updateSheetService: (vars?: T) => Promise<Nullable<Cv[]>>,
-    variable: K,
+  const deleteSheetItem = async <V, K>(
+    deleteService: (vars: V) => unknown,
+    updateSheetService: (vars?: K) => Promise<Nullable<T[]>>,
+    variable: V,
   ): Promise<void> => {
     if (selectedRow.value) {
       await deleteService(variable);
@@ -53,8 +47,8 @@ export const useDataTable = () => {
     sheetData.value = await updateSheetService();
   };
 
-  const handleMutateConfirmation = async <T>(
-    updateSheetService: (vars?: T) => Promise<Nullable<Cv[]>>,
+  const handleMutateConfirmation = async <V>(
+    updateSheetService: (vars?: V) => Promise<Nullable<T[]>>,
   ): Promise<void> => {
     if (sheetData.value) {
       sheetData.value = await updateSheetService();

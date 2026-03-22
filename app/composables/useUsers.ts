@@ -1,17 +1,24 @@
 import type { Department } from "~/types/departments";
-import type { Position } from "~/types/positions";
-import type { UserSkill, Skill } from "~/types/skills";
+import type {
+  UserSkill,
+  Skill,
+  CreateSkillInput,
+  UpdateSkillInput,
+  DeleteSkillInput,
+} from "~/types/skills";
 import type { SkillCategory } from "~/types/skillCategory";
 import type { CreateProfileInput, Profile, UpdateUserInput, User } from "~/types/user";
 import type { Nullable } from "~/types/types";
 import { profileQuery, userQuery, usersQuery } from "~/graphQL/user/user.query";
-import { departmentsQuery } from "~/graphQL/departments/departments.query";
-import { positionsQuery } from "~/graphQL/positions/positions.query";
 import { userSkillsQuery } from "~/graphQL/skills/skillsUsers.query";
 import { skillCategoryQuery } from "~/graphQL/skills/skillsCategory.query";
-import { skillsQuery } from "~/graphQL/skills/skill.query";
-import type { Language, LanguageQueryVars, LanguageQueryVarsExt } from "~/types/languages";
-import { languagesQuery } from "~/graphQL/languages/languages.query";
+import {
+  createSkillMutation,
+  deleteSkillMutation,
+  skillsQuery,
+  updateSkillMutation,
+} from "~/graphQL/skills/skill.query";
+import type { LanguageQueryVars, LanguageQueryVarsExt } from "~/types/languages";
 import {
   addProfileLanguageMutation,
   deleteProfileLanguageMutation,
@@ -28,7 +35,6 @@ export const useUsers = () => {
   const user = useState<Nullable<User>>("user", () => null);
   const departments = useState<Nullable<Department[]>>("departments", () => []);
   const skillCategories = useState<Nullable<SkillCategory[]>>("skillCategories", () => []);
-  const positions = useState<Position[]>("positions", () => []);
   const users = useState<User[]>("users", () => []);
   const skills = useState<Nullable<Skill[]>>("skills", () => []);
   const userSkills = useState<Nullable<UserSkill[]>>("userSkills", () => []);
@@ -47,8 +53,8 @@ export const useUsers = () => {
     if (clients) {
       const { data } = await clients.default.query({
         query: userQuery,
-        variables: { userId: userId },
-        fetchPolicy: "network-only",
+        variables: { userId },
+        fetchPolicy: "no-cache",
       });
       if (data) {
         user.value = data.user;
@@ -58,30 +64,18 @@ export const useUsers = () => {
     return null;
   };
 
-  const fetchDepartments = async (): Promise<Nullable<Department[]>> => {
-    try {
-      const { data } = await useAsyncQuery<Record<"departments", Department[]>>(departmentsQuery);
-      if (data.value) {
-        departments.value = data.value.departments;
-        return data.value.departments;
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
   const fetchSkills = async (): Promise<Nullable<Skill[]>> => {
-    try {
-      const { data } = await useAsyncQuery<Record<"skills", Skill[]>>(skillsQuery);
-      if (data.value) {
-        skills.value = data.value.skills;
-        return data.value.skills;
+    if (clients) {
+      const { data } = await clients.default.query({
+        query: skillsQuery,
+        fetchPolicy: "no-cache",
+      });
+      if (data) {
+        skills.value = data.skills;
+        return data.skills;
       }
-      return null;
-    } catch {
-      return null;
     }
+    return null;
   };
 
   const fetchUserSkills = async (userId: string): Promise<Nullable<UserSkill[]>> => {
@@ -90,7 +84,6 @@ export const useUsers = () => {
         userSkillsQuery,
         { userId },
       );
-
       if (data.value?.user?.profile?.skills) {
         userSkills.value = data.value.user.profile.skills;
         return data.value.user.profile.skills;
@@ -105,23 +98,9 @@ export const useUsers = () => {
     try {
       const { data } =
         await useAsyncQuery<Record<"skillCategories", SkillCategory[]>>(skillCategoryQuery);
-
       if (data.value?.skillCategories) {
         skillCategories.value = data.value.skillCategories;
         return data.value.skillCategories;
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
-  const fetchPositions = async (): Promise<Nullable<Position[]>> => {
-    try {
-      const { data } = await useAsyncQuery<Record<"positions", Position[]>>(positionsQuery);
-      if (data.value) {
-        positions.value = data.value.positions;
-        return data.value.positions;
       }
       return null;
     } catch {
@@ -159,30 +138,13 @@ export const useUsers = () => {
     }
   };
 
-  const fetchLanguages = async (): Promise<Nullable<Language[]>> => {
-    isLoading.value = true;
-    try {
-      const { data } = await useAsyncQuery<Record<"languages", Language[]>>(languagesQuery);
-      if (data.value) {
-        return data.value.languages;
-      }
-      return null;
-    } catch {
-      return null;
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
   const addProfileLanguage = async (language: LanguageQueryVarsExt): Promise<Nullable<Profile>> => {
     if (clients) {
       const { data } = await clients.default.mutate<Record<"addProfileLanguage", Profile>>({
         mutation: addProfileLanguageMutation,
-        variables: { language: language },
+        variables: { language },
       });
-      if (data) {
-        return data.addProfileLanguage;
-      }
+      if (data) return data.addProfileLanguage;
     }
     return null;
   };
@@ -193,11 +155,9 @@ export const useUsers = () => {
     if (clients) {
       const { data } = await clients.default.mutate<Record<"updateProfileLanguage", Profile>>({
         mutation: updateProfileLanguageMutation,
-        variables: { language: language },
+        variables: { language },
       });
-      if (data) {
-        return data.updateProfileLanguage;
-      }
+      if (data) return data.updateProfileLanguage;
     }
     return null;
   };
@@ -206,11 +166,9 @@ export const useUsers = () => {
     if (clients) {
       const { data } = await clients.default.mutate<Record<"deleteProfileLanguage", Profile>>({
         mutation: deleteProfileLanguageMutation,
-        variables: { language: language },
+        variables: { language },
       });
-      if (data) {
-        return data.deleteProfileLanguage;
-      }
+      if (data) return data.deleteProfileLanguage;
     }
     return null;
   };
@@ -221,9 +179,7 @@ export const useUsers = () => {
         mutation: deleteUserMutation,
         variables: { userId: id },
       });
-      if (data) {
-        return data.user;
-      }
+      if (data) return data.user;
     }
     return null;
   };
@@ -232,11 +188,9 @@ export const useUsers = () => {
     if (clients) {
       const { data } = await clients.default.mutate({
         mutation: updateUserMutation,
-        variables: { user: user },
+        variables: { user },
       });
-      if (data) {
-        return data.user;
-      }
+      if (data) return data.user;
     }
     return null;
   };
@@ -245,10 +199,47 @@ export const useUsers = () => {
     if (clients) {
       const { data } = await clients.default.mutate({
         mutation: createUserMutation,
-        variables: { user: user },
+        variables: { user },
+      });
+      if (data) return data.user;
+    }
+    return null;
+  };
+
+  const createSkill = async (skill: CreateSkillInput): Promise<Nullable<Skill>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: createSkillMutation,
+        variables: { skill: skill },
       });
       if (data) {
-        return data.user;
+        return data.createSkill;
+      }
+    }
+    return null;
+  };
+
+  const updateSkill = async (skill: UpdateSkillInput): Promise<Nullable<Skill>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: updateSkillMutation,
+        variables: { skill: skill },
+      });
+      if (data) {
+        return data.updateSkill;
+      }
+    }
+    return null;
+  };
+
+  const deleteSkill = async (skill: DeleteSkillInput): Promise<Nullable<{ affected: number }>> => {
+    if (clients) {
+      const { data } = await clients.default.mutate({
+        mutation: deleteSkillMutation,
+        variables: { skill: skill },
+      });
+      if (data) {
+        return data.deleteSkill;
       }
     }
     return null;
@@ -261,7 +252,6 @@ export const useUsers = () => {
   return {
     user,
     departments,
-    positions,
     users,
     skills,
     skillCategories,
@@ -275,18 +265,18 @@ export const useUsers = () => {
     getUserSkills,
 
     fetchUser,
-    fetchDepartments,
-    fetchPositions,
     fetchUserSkills,
     fetchSkillCategories,
     fetchSkills,
     fetchUsers,
     fetchProfile,
-    fetchLanguages,
     addProfileLanguage,
     updateProfileLanguage,
     deleteProfileLanguage,
     clearUsers,
+    createSkill,
+    updateSkill,
+    deleteSkill,
     deleteUser,
     updateUser,
     createUser,

@@ -239,6 +239,7 @@
     padding: 20px;
     display: flex;
     flex-direction: column;
+    font-family: "Roboto", sans-serif;
   }
 
   .cv-header {
@@ -299,8 +300,7 @@
     display: grid;
     grid-template-columns: 260px 1fr;
   }
-
-  .education__title {
+  h3 {
     font-family: "Roboto";
     font-style: normal;
     font-weight: 700;
@@ -413,10 +413,11 @@
   }
 
   .category-title {
-    font-size: 1.1rem;
-    font-weight: bold;
     margin: 0 0 10px 0;
     color: #333;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 0.15px;
   }
   .project-role {
     margin-bottom: 30px;
@@ -490,7 +491,7 @@
   :deep(.p-datatable .p-datatable-tbody > tr > td) {
     min-height: 54px;
     height: auto;
-    padding: 16px 12px;
+    padding: 16px 12px 16px 0;
     vertical-align: top;
   }
 

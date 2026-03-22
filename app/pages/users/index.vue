@@ -20,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useDepartments } from "~/composables/useDepartments";
   import type { Department } from "~/types/departments";
   import type { Position } from "~/types/positions";
   import type { InputType, MenuData, Nullable, sheetColumn } from "~/types/types";
@@ -34,15 +35,9 @@
     layout: "default",
     middleware: "auth",
   });
-  const {
-    fetchDepartments,
-    fetchPositions,
-    users,
-    fetchUsers,
-    deleteUser,
-    updateUser,
-    createUser,
-  } = useUsers();
+  const { fetchDepartments } = useDepartments();
+  const { users, fetchUsers, deleteUser, updateUser, createUser } = useUsers();
+  const { fetchPositions } = usePositions();
   const { authId } = useAuth();
   const isVisible = ref<boolean>(false);
   const selectedRow = ref<Nullable<User>>(null);
@@ -56,7 +51,7 @@
     { field: "profile.avatar" },
     { field: "profile.first_name", header: "First name" },
     { field: "profile.last_name", header: "Last name" },
-    { field: "email", header: "Name" },
+    { field: "email", header: "Email" },
     { field: "department.name", header: "Department" },
     { field: "position.name", header: "Position" },
   ]);

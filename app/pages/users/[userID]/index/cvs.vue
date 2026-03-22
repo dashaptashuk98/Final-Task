@@ -47,17 +47,17 @@
     selectedCv.value = null;
   };
 
-  const submitForm = (
+  const submitForm = async (
     id: string = String(authId.value),
     data: Pick<Cv, "name" | "education" | "description">,
-  ): void => {
+  ): Promise<void> => {
     if (modalHeader.value === "Update CV") {
-      updateUserCv(data, id);
+      await updateUserCv(data, id);
     }
     if (modalHeader.value === "Create CV") {
-      createUserCv(data, id);
+      await createUserCv(data, id);
     }
-    handleFormConfirmation();
+    await handleFormConfirmation();
   };
 
   const createUserCv = async (
@@ -115,13 +115,17 @@
       :context-menu="contextMenuOptions"
       :user-id="user?.id"
       button-label="Create CV"
-      page="cvs"
+      page="user-cvs"
       @handle-selected-item="(cv) => (selectedCv = cv)"
       @activate-form="activateModal" />
     <ModalDialog v-model:visible="isModalVisible" :header="modalHeader">
       <CvForm
         :data="formData"
-        :user-id="selectedCv && selectedCv.user ? selectedCv.user.id : String(authId)"
+        :user-id="
+          selectedCv && selectedCv.user
+            ? selectedCv.user.id
+            : ((route.params.userID as string) ?? String(authId))
+        "
         :cv-id="selectedCv?.id as string"
         @submit-cv="submitForm" />
     </ModalDialog>

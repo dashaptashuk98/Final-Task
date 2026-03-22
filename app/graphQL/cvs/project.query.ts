@@ -84,9 +84,9 @@ export const updateProject = gql`
   }
 `;
 
-export const deleteProject = gql`
-  mutation RemoveCvProject($cvId: ID!, $projectId: ID!) {
-    removeCvProject(project: { cvId: $cvId, projectId: $projectId }) {
+export const deleteCvProjectMutation = gql`
+  mutation RemoveCvProject($project: RemoveCvProjectInput!) {
+    removeCvProject(project: $project) {
       id
       projects {
         id

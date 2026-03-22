@@ -23,7 +23,7 @@
   }>();
   const cm = ref();
   const filters = ref({
-    name: { value: "", matchMode: FilterMatchMode.STARTS_WITH },
+    global: { value: "", matchMode: FilterMatchMode.CONTAINS },
   });
 
   const handleRowClick = (e: Record<"data", T>) => {
@@ -34,7 +34,13 @@
         return navigateTo(`/${page}/${e.data.id}/profile`);
       }
       if (page === "projects") {
-        return navigateTo(`/projects/${e.data.id}`);
+        return navigateTo(`/${page}/${e.data.id}`);
+      }
+      if (page === "cvs-projects") {
+        return navigateTo(`/projects/${e.data.project.id}`);
+      }
+      if (page === "user-cvs") {
+        return navigateTo(`/cvs/${e.data.id}/details`);
       }
     }
   };
@@ -64,12 +70,19 @@
     :button-label
     :is-visible="userId && page !== 'users' ? checkRights(userId) : checkRights()"
     @activate-form="emit('activateForm', buttonLabel)"
-    @submit-search="(input: string) => (filters.name.value = input)" />
+    @submit-search="(input: string) => (filters.global.value = input)" />
   <DataTable
     v-model:filters="filters"
     :value="sheetData"
     removable-sort
-    :paginator="page === 'users'"
+    :global-filter-fields="[
+      'name',
+      'internal_name',
+      'description',
+      'profile.full_name',
+      'user.profile.full_name',
+    ]"
+    :paginator="!!sheetData && sheetData.length > 10"
     :rows="10"
     :rows-per-page-options="[10, 25, 50]"
     :row-group-mode="page === 'cvs' ? 'subheader' : undefined"
@@ -109,7 +122,7 @@
       <template #body="slotProps">
         <Button
           v-if="
-            userId && page !== 'users'
+            userId && page !== 'users' && page !== 'cvs'
               ? checkRights(userId)
               : checkRights(slotProps.data.user ? slotProps.data.user.id : slotProps.data.id)
           "
@@ -121,13 +134,18 @@
     </Column>
     <template v-if="page === 'cvs'" #groupfooter="{ data }">
       <div class="p-footer-cell__content" @click="handleRowClick({ data: data })">
-        {{ data.description }}
+        {{
+          data.description.length > 400 ? `${data.description.slice(0, 400)}...` : data.description
+        }}
       </div>
     </template>
   </DataTable>
 </template>
 
 <style scoped>
+  :deep(.p-datatable-table-container) {
+    min-height: 750px;
+  }
   :deep(.p-datatable-header-cell) {
     font: 500 14px/24px "Roboto";
     letter-spacing: 0.15px;

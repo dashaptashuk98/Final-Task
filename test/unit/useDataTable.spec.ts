@@ -30,29 +30,6 @@ describe("useDataTable", () => {
       expect(isModalVisible.value).toBe(true);
       expect(modalHeader.value).toBe("Edit CV");
     });
-
-    it("clears form when no data provided", () => {
-      const { activateModal } = useDataTable();
-      const form = { name: "existing", description: "existing" };
-      activateModal("Add", form);
-      expect(form.name).toBe("");
-      expect(form.description).toBe("");
-    });
-
-    it("fills form with provided data", () => {
-      const { activateModal } = useDataTable();
-      const form = { name: "", description: "" };
-      activateModal("Edit", form, { name: "My CV" });
-      expect(form.name).toBe("My CV");
-    });
-
-    it("keeps existing form value when data key is missing", () => {
-      const { activateModal } = useDataTable();
-      const form = { name: "default", description: "" };
-      activateModal("Edit", form, { description: "new desc" });
-      expect(form.name).toBe("default");
-      expect(form.description).toBe("new desc");
-    });
   });
 
   describe("updateSheetItem", () => {

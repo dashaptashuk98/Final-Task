@@ -103,7 +103,6 @@ export const useAuth = () => {
         const token = response.data.updateToken.access_token;
         onLogin(token);
         useCookie("refreshToken").value = response.data.updateToken.refresh_token;
-        // loadAuthUser();
         return true;
       }
 

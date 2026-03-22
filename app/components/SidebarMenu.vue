@@ -317,8 +317,24 @@
       padding: 12px 8px;
     }
 
+    .sidebar__profile-link {
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      max-width: 60px;
+    }
+
     .sidebar__profile-name {
       display: none;
+    }
+
+    .sidebar__profile-link :deep(.p-button) {
+      display: flex !important;
+      flex-shrink: 0;
+    }
+
+    .sidebar__profile-link :deep(.p-button-icon) {
+      display: flex !important;
     }
   }
 </style>

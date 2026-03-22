@@ -51,110 +51,149 @@
 </script>
 
 <template>
-  <ContextMenu
-    ref="cm"
-    :model="contextMenu"
-    :pt="{
-      root: {
-        style: {
-          'background-color': '#FFFFFF',
-          border: '1px #2E2E2E solid',
-          padding: '5px 10px',
-          'border-radius': '15px',
-        },
-      },
-      itemLabel: { style: { font: '400 14px/24px Roboto' } },
-      item: { style: { padding: '3px' } },
-    }" />
-  <SheetHeader
-    :button-label
-    :is-visible="userId && page !== 'users' ? checkRights(userId) : checkRights()"
-    @activate-form="emit('activateForm', buttonLabel)"
-    @submit-search="(input: string) => (filters.global.value = input)" />
-  <DataTable
-    v-model:filters="filters"
-    :value="sheetData"
-    removable-sort
-    :global-filter-fields="[
-      'name',
-      'internal_name',
-      'description',
-      'profile.full_name',
-      'user.profile.full_name',
-    ]"
-    :paginator="!!sheetData && sheetData.length > 10"
-    :rows="10"
-    :rows-per-page-options="[10, 25, 50]"
-    :row-group-mode="page === 'cvs' ? 'subheader' : undefined"
-    selection-mode="single"
-    :group-rows-by="page === 'cvs' ? 'description' : undefined"
-    :pt="{
-      rowGroupFooterCell: { class: 'p-footer-cell' },
-      bodyRow: { style: { '--p-datatable-row-hover-background': '#2e2e2e10' } },
-    }"
-    @row-select="handleRowClick">
-    <Column
-      v-for="col in columns"
-      :key="col.field"
-      :field="col.field"
-      :header="col.header"
-      :sortable="!!col.header"
-      :pt="{ bodyCell: { class: 'p-body-cell' } }">
-      <template #sorticon="{ sortOrder }">
-        <i v-if="sortOrder === 1" class="pi pi-arrow-up" />
-        <i v-else-if="sortOrder === -1" class="pi pi-arrow-down" />
-      </template>
-      <template v-if="col.field === 'profile.avatar'" #body="{ data }">
-        <Avatar
-          :label="!data.profile.avatar ? data.email[0].toUpperCase() : null"
-          :image="data.profile.avatar ? data.profile.avatar : null"
-          shape="circle"
-          style="
-            width: 40px;
-            height: 40px;
-            font-size: 20px;
-            font-weight: 400;
-            color: #ffffff;
-            background-color: #bdbdbd;
-            display: flex;
-          " />
-      </template>
-    </Column>
+  <div>
+    <SheetHeader
+      :button-label
+      :is-visible="userId && page !== 'users' ? checkRights(userId) : checkRights()"
+      @activate-form="emit('activateForm', buttonLabel)"
+      @submit-search="(input: string) => (filters.global.value = input)" />
+    <div class="table-wrapper">
+      <DataTable
+        v-model:filters="filters"
+        :value="sheetData"
+        removable-sort
+        :global-filter-fields="[
+          'name',
+          'internal_name',
+          'description',
+          'profile.full_name',
+          'user.profile.full_name',
+        ]"
+        :paginator="!!sheetData && sheetData.length > 10"
+        :rows="10"
+        :rows-per-page-options="[10, 25, 50]"
+        :row-group-mode="page === 'cvs' ? 'subheader' : undefined"
+        selection-mode="single"
+        :group-rows-by="page === 'cvs' ? 'description' : undefined"
+        :pt="{
+          rowGroupFooterCell: { class: 'p-footer-cell' },
+          bodyRow: { style: { '--p-datatable-row-hover-background': '#2e2e2e10' } },
+          tableContainer: { style: { overflow: 'visible', minHeight: 'auto' } },
+        }"
+        @row-select="handleRowClick">
+        <Column
+          v-for="col in columns"
+          :key="col.field"
+          :field="col.field"
+          :header="col.header"
+          :sortable="!!col.header"
+          :pt="{ bodyCell: { class: 'p-body-cell' } }">
+          <template #sorticon="{ sortOrder }">
+            <i v-if="sortOrder === 1" class="pi pi-arrow-up" />
+            <i v-else-if="sortOrder === -1" class="pi pi-arrow-down" />
+          </template>
+          <template v-if="col.field === 'profile.avatar'" #body="{ data }">
+            <Avatar
+              :label="!data.profile.avatar ? data.email[0].toUpperCase() : null"
+              :image="data.profile.avatar ? data.profile.avatar : null"
+              shape="circle"
+              style="
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+                font-weight: 400;
+                color: #ffffff;
+                background-color: #bdbdbd;
+                display: flex;
+              " />
+          </template>
+        </Column>
 
-    <Column header-style="width: 5rem" :pt="{ bodyCell: { class: 'p-body-cell' } }">
-      <template #body="slotProps">
-        <Button
-          v-if="
-            userId && page !== 'users' && page !== 'cvs'
-              ? checkRights(userId)
-              : checkRights(slotProps.data.user ? slotProps.data.user.id : slotProps.data.id)
-          "
-          :icon="'pi pi-ellipsis-v'"
-          rounded
-          @click="(e: MouseEvent) => handleOptionPick(e, slotProps.data)" />
-        <Button v-else icon="pi pi-chevron-right" rounded @click="handleRowClick(slotProps)" />
-      </template>
-    </Column>
-    <template v-if="page === 'cvs'" #groupfooter="{ data }">
-      <div class="p-footer-cell__content" @click="handleRowClick({ data: data })">
-        {{
-          data.description.length > 400 ? `${data.description.slice(0, 400)}...` : data.description
-        }}
-      </div>
-    </template>
-  </DataTable>
+        <Column header-style="width: 5rem" :pt="{ bodyCell: { class: 'p-body-cell' } }">
+          <template #body="slotProps">
+            <Button
+              v-if="
+                userId && page !== 'users' && page !== 'cvs'
+                  ? checkRights(userId)
+                  : checkRights(slotProps.data.user ? slotProps.data.user.id : slotProps.data.id)
+              "
+              :icon="'pi pi-ellipsis-v'"
+              rounded
+              @click="(e: MouseEvent) => handleOptionPick(e, slotProps.data)" />
+            <Button v-else icon="pi pi-chevron-right" rounded @click="handleRowClick(slotProps)" />
+          </template>
+        </Column>
+        <template v-if="page === 'cvs'" #groupfooter="{ data }">
+          <div class="p-footer-cell__content" @click="handleRowClick({ data: data })">
+            {{
+              data.description.length > 400
+                ? `${data.description.slice(0, 400)}...`
+                : data.description
+            }}
+          </div>
+        </template>
+      </DataTable>
+    </div>
+    <ContextMenu
+      ref="cm"
+      :model="contextMenu"
+      :pt="{
+        root: {
+          style: {
+            'background-color': '#FFFFFF',
+            border: '1px #2E2E2E solid',
+            padding: '5px 10px',
+            'border-radius': '15px',
+          },
+        },
+        itemLabel: { style: { font: '400 14px/24px Roboto' } },
+        item: { style: { padding: '3px' } },
+      }" />
+  </div>
 </template>
 
 <style scoped>
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+  }
+
+  :deep(.p-datatable) {
+    width: 100%;
+  }
+
+  :deep(.p-datatable-wrapper) {
+    overflow: visible;
+  }
+
+  :deep(.p-datatable-table-container) {
+    overflow: visible;
+  }
+
+  :deep(.p-datatable-table) {
+    width: 100%;
+    table-layout: auto;
+  }
+
   :deep(.p-datatable-table-container) {
     min-height: 750px;
   }
+
+  @media (max-width: 991.98px) {
+    :deep(.p-datatable-table-container) {
+      min-height: auto;
+    }
+  }
+
   :deep(.p-datatable-header-cell) {
     font: 500 14px/24px "Roboto";
     letter-spacing: 0.15px;
     padding: 20px;
     color: #2e2e2e;
     border: 0;
+    white-space: nowrap;
   }
 
   :deep(.p-row-even),

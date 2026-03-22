@@ -112,122 +112,124 @@
 </script>
 
 <template>
-  <div v-if="cv" ref="cvPreviewRef" class="cv-preview">
-    <div class="cv-header">
-      <div class="cv-header-content">
-        <h1 class="cv-name">{{ cv.user?.profile.full_name }}</h1>
-        <h2 class="cv-titleNAme">{{ cv.user?.position_name }}</h2>
-      </div>
-      <button class="export-btn" @click="handleExportPdf">EXPORT PDF</button>
-    </div>
-
-    <div v-if="exportError" class="export-error">
-      {{ exportError }}
-    </div>
-
-    <div class="cv-body">
-      <div class="cv-sidebar">
-        <div class="cv-section">
-          <h3 class="education__title">Education</h3>
-          <p>{{ cv.education }}</p>
+  <div class="table-responsive">
+    <div v-if="cv" ref="cvPreviewRef" class="cv-preview">
+      <div class="cv-header">
+        <div class="cv-header-content">
+          <h1 class="cv-name">{{ cv.user?.profile.full_name }}</h1>
+          <h2 class="cv-titleNAme">{{ cv.user?.position_name }}</h2>
         </div>
+        <button class="export-btn" @click="handleExportPdf">EXPORT PDF</button>
+      </div>
 
-        <div class="cv-section">
-          <h3 class="education__title">Language proficiency</h3>
-          <div v-for="lang in cv.languages" :key="lang.name" class="language-item">
-            {{ lang.name }} - {{ lang.proficiency }}
+      <div v-if="exportError" class="export-error">
+        {{ exportError }}
+      </div>
+
+      <div class="cv-body">
+        <div class="cv-sidebar">
+          <div class="cv-section">
+            <h3 class="education__title">Education</h3>
+            <p>{{ cv.education }}</p>
+          </div>
+
+          <div class="cv-section">
+            <h3 class="education__title">Language proficiency</h3>
+            <div v-for="lang in cv.languages" :key="lang.name" class="language-item">
+              {{ lang.name }} - {{ lang.proficiency }}
+            </div>
+          </div>
+
+          <div class="cv-section">
+            <h3 class="education__title">Domains</h3>
+            <div v-for="project in cv.projects" :key="project.id" class="language-item">
+              {{ project.project.domain }}
+            </div>
           </div>
         </div>
 
-        <div class="cv-section">
-          <h3 class="education__title">Domains</h3>
-          <div v-for="project in cv.projects" :key="project.id" class="language-item">
-            {{ project.project.domain }}
-          </div>
-        </div>
-      </div>
-
-      <div class="cv-main">
-        <div class="cv-section">
-          <h3>{{ cv.name }}</h3>
-          <p>{{ cv.description }}</p>
-          <div
-            v-for="(skills, categoryName) in skillsByCategory"
-            :key="categoryName"
-            class="skill-category">
-            <h4 class="category-title">{{ categoryName }}</h4>
-            <div class="tags">
-              <span v-for="skill in skills" :key="skill.name" class="tag">
-                {{ skill.name }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <h3 v-if="cv.projects && cv.projects.length" class="cv-title">Projects</h3>
-    <div v-if="cv.projects && cv.projects.length" class="cv-begin">
-      <div class="cv-sidebar">
-        <div v-for="project in cv.projects" :key="project.id" class="project-item">
-          <h4>{{ project.project.name }}</h4>
-          <p>{{ project.project.description }}</p>
-        </div>
-      </div>
-      <div class="cv-main">
-        <div class="cv-section">
-          <h3 class="project__title">Project roles</h3>
-          <div v-for="project in cv.projects" :key="project.id" class="project-role">
-            <div class="role-header">
-              <h4>{{ project.project.internal_name }}</h4>
-            </div>
-            <div class="period">
-              <h3 class="project__title">Period</h3>
-              <p>
-                {{ project.project.start_date }} –
-                {{ project.project.end_date || "Till now" }}
-              </p>
-            </div>
-            <div class="responsibilities">
-              <h3 class="project__title">Responsibilities:</h3>
-              <ul>
-                <li v-for="responsibility in project.responsibilities" :key="responsibility">
-                  {{ responsibility }}
-                </li>
-              </ul>
-            </div>
-            <div class="environment">
-              <h3 class="project__title">Environment:</h3>
-              <div class="tech-tags">
-                <span v-for="tech in project.project.environment" :key="tech" class="tech-tag">
-                  {{ tech }}
+        <div class="cv-main">
+          <div class="cv-section">
+            <h3>{{ cv.name }}</h3>
+            <p>{{ cv.description }}</p>
+            <div
+              v-for="(skills, categoryName) in skillsByCategory"
+              :key="categoryName"
+              class="skill-category">
+              <h4 class="category-title">{{ categoryName }}</h4>
+              <div class="tags">
+                <span v-for="skill in skills" :key="skill.name" class="tag">
+                  {{ skill.name }}
                 </span>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+      <h3 v-if="cv.projects && cv.projects.length" class="cv-title">Projects</h3>
+      <div v-if="cv.projects && cv.projects.length" class="cv-begin">
+        <div class="cv-sidebar">
+          <div v-for="project in cv.projects" :key="project.id" class="project-item">
+            <h4>{{ project.project.name }}</h4>
+            <p>{{ project.project.description }}</p>
+          </div>
+        </div>
+        <div class="cv-main">
+          <div class="cv-section">
+            <h3 class="project__title">Project roles</h3>
+            <div v-for="project in cv.projects" :key="project.id" class="project-role">
+              <div class="role-header">
+                <h4>{{ project.project.internal_name }}</h4>
+              </div>
+              <div class="period">
+                <h3 class="project__title">Period</h3>
+                <p>
+                  {{ project.project.start_date }} –
+                  {{ project.project.end_date || "Till now" }}
+                </p>
+              </div>
+              <div class="responsibilities">
+                <h3 class="project__title">Responsibilities:</h3>
+                <ul>
+                  <li v-for="responsibility in project.responsibilities" :key="responsibility">
+                    {{ responsibility }}
+                  </li>
+                </ul>
+              </div>
+              <div class="environment">
+                <h3 class="project__title">Environment:</h3>
+                <div class="tech-tags">
+                  <span v-for="tech in project.project.environment" :key="tech" class="tech-tag">
+                    {{ tech }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <div class="cv-end">
-      <h3 class="cv-title">Professional skills</h3>
-      <DataTable :value="skillsTableData">
-        <Column field="category" header="SKILLS" style="width: 25%">
-          <template #body="slotProps">
-            <span class="category-name">{{ slotProps.data.category }}</span>
-          </template>
-        </Column>
-        <Column field="skill" style="width: 35%" />
-        <Column field="experience" header="EXPERIENCE IN YEARS" style="width: 20%">
-          <template #body="slotProps">
-            {{ slotProps.data.experience }}
-          </template>
-        </Column>
-        <Column field="lastUsed" header="LAST USED" style="width: 20%">
-          <template #body="slotProps">
-            {{ slotProps.data.lastUsed || "-" }}
-          </template>
-        </Column>
-      </DataTable>
+      <div class="cv-end">
+        <h3 class="cv-title">Professional skills</h3>
+        <DataTable :value="skillsTableData">
+          <Column field="category" header="SKILLS" style="width: 25%">
+            <template #body="slotProps">
+              <span class="category-name">{{ slotProps.data.category }}</span>
+            </template>
+          </Column>
+          <Column field="skill" style="width: 35%" />
+          <Column field="experience" header="EXPERIENCE IN YEARS" style="width: 20%">
+            <template #body="slotProps">
+              {{ slotProps.data.experience }}
+            </template>
+          </Column>
+          <Column field="lastUsed" header="LAST USED" style="width: 20%">
+            <template #body="slotProps">
+              {{ slotProps.data.lastUsed || "-" }}
+            </template>
+          </Column>
+        </DataTable>
+      </div>
     </div>
   </div>
 </template>
@@ -365,6 +367,38 @@
     .cv-header {
       flex-direction: column;
       gap: 15px;
+    }
+  }
+
+  @media (max-width: 566px) {
+    .cv-body,
+    .cv-begin {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .cv-main {
+      border-left: none;
+      padding: 0;
+    }
+
+    .cv-header {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .export-btn {
+      width: 100%;
+    }
+
+    .cv-name {
+      font-size: 24px;
+      line-height: 32px;
+    }
+
+    .cv-title {
+      font-size: 24px;
+      line-height: 32px;
     }
   }
 

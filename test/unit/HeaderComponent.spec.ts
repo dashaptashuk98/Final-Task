@@ -73,4 +73,69 @@ describe("HeaderComponent", () => {
     const vm = wrapper.vm as unknown as { items: unknown[] };
     expect(vm.items).toHaveLength(0);
   });
+
+  it("sets Employee label for /users/123/profile path", async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: "/users/:id/profile", component: { template: "<div />" } }],
+    });
+    await router.push("/users/123/profile");
+    const wrapper = shallowMount(HeaderComponent, {
+      global: { stubs, plugins: [router] },
+    });
+    const vm = wrapper.vm as unknown as { items: { label: string }[] };
+    expect(vm.items[0]?.label).toBe("Employee");
+  });
+
+  it("sets Languages label for /languages path", async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: "/languages", component: { template: "<div />" } }],
+    });
+    await router.push("/languages");
+    const wrapper = shallowMount(HeaderComponent, {
+      global: { stubs, plugins: [router] },
+    });
+    const vm = wrapper.vm as unknown as { items: { label: string }[] };
+    expect(vm.items[0]?.label).toBe("Languages");
+  });
+
+  it("sets Projects label for /projects path", async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: "/projects", component: { template: "<div />" } }],
+    });
+    await router.push("/projects");
+    const wrapper = shallowMount(HeaderComponent, {
+      global: { stubs, plugins: [router] },
+    });
+    const vm = wrapper.vm as unknown as { items: { label: string }[] };
+    expect(vm.items[0]?.label).toBe("Projects");
+  });
+
+  it("sets Position label for /position path", async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: "/position", component: { template: "<div />" } }],
+    });
+    await router.push("/position");
+    const wrapper = shallowMount(HeaderComponent, {
+      global: { stubs, plugins: [router] },
+    });
+    const vm = wrapper.vm as unknown as { items: { label: string }[] };
+    expect(vm.items[0]?.label).toBe("Position");
+  });
+
+  it("sets Departments label for /departments path", async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: "/departments", component: { template: "<div />" } }],
+    });
+    await router.push("/departments");
+    const wrapper = shallowMount(HeaderComponent, {
+      global: { stubs, plugins: [router] },
+    });
+    const vm = wrapper.vm as unknown as { items: { label: string }[] };
+    expect(vm.items[0]?.label).toBe("Departments");
+  });
 });

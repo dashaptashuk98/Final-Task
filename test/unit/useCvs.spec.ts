@@ -36,6 +36,67 @@ describe("useCvs", () => {
     vi.clearAllMocks();
   });
 
+  describe("fetchProject", () => {
+    it("returns projects list", async () => {
+      mockQuery.mockResolvedValue({ data: { projects: [{ id: "1" }, { id: "2" }] } });
+      const { fetchProject } = useCvs();
+      const result = await fetchProject();
+      expect(result).toHaveLength(2);
+    });
+
+    it("returns null when no data", async () => {
+      mockQuery.mockResolvedValue({ data: null });
+      const { fetchProject } = useCvs();
+      expect(await fetchProject()).toBeNull();
+    });
+  });
+
+  describe("createProject", () => {
+    it("returns created project", async () => {
+      mockMutate.mockResolvedValue({ data: { createProject: { id: "1", name: "Test" } } });
+      const { createProject } = useCvs();
+      expect(await createProject({ name: "Test" } as never)).toEqual({ id: "1", name: "Test" });
+    });
+
+    it("returns null when no data", async () => {
+      mockMutate.mockResolvedValue({ data: null });
+      const { createProject } = useCvs();
+      expect(await createProject({ name: "Test" } as never)).toBeNull();
+    });
+  });
+
+  describe("updateProject", () => {
+    it("returns updated project", async () => {
+      mockMutate.mockResolvedValue({ data: { updateProject: { id: "1", name: "Updated" } } });
+      const { updateProject } = useCvs();
+      expect(await updateProject({ name: "Updated" } as never)).toEqual({
+        id: "1",
+        name: "Updated",
+      });
+    });
+
+    it("returns null when no data", async () => {
+      mockMutate.mockResolvedValue({ data: null });
+      const { updateProject } = useCvs();
+      expect(await updateProject({ name: "Updated" } as never)).toBeNull();
+    });
+  });
+
+  describe("deleteProject", () => {
+    it("returns data when successful", async () => {
+      mockMutate.mockResolvedValue({ data: { deleteProject: true } });
+      const { deleteProject } = useCvs();
+      const result = await deleteProject({ projectId: 1 } as never);
+      expect(result).toBeTruthy();
+    });
+
+    it("returns null when no data", async () => {
+      mockMutate.mockResolvedValue({ data: null });
+      const { deleteProject } = useCvs();
+      expect(await deleteProject({ projectId: 1 } as never)).toBeNull();
+    });
+  });
+
   describe("fetchCv", () => {
     it("returns cv and sets state", async () => {
       mockQuery.mockResolvedValue({ data: { cv: { id: "1", name: "My CV" } } });

@@ -194,6 +194,30 @@
     transition: all 0.2s;
   }
 
+  @media (max-width: 562px) {
+    .form {
+      margin-top: 24px;
+    }
+
+    :deep(.p-inputtext),
+    .p-select {
+      width: 100%;
+    }
+
+    .form-input-container {
+      width: 100%;
+    }
+
+    .form-buttons {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .p-button {
+      width: 100%;
+    }
+  }
+
   .p-button:not(.p-button-secondary) {
     background-color: #c63031;
     color: white;

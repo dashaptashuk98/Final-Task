@@ -129,6 +129,27 @@
     align-items: center;
   }
 
+  @media (max-width: 562px) {
+    .profile {
+      margin-top: 16px;
+      padding: 0 8px;
+    }
+
+    .profile-avatar {
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .profile-data {
+      margin: 16px 0 32px 0 !important;
+    }
+
+    .p-button {
+      width: 100% !important;
+      align-self: stretch !important;
+    }
+  }
+
   .profile-avatar__container {
     display: flex;
     flex-direction: column;

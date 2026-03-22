@@ -33,4 +33,16 @@
     width: 220px;
     height: 40px;
   }
+
+  @media (max-width: 560px) {
+    .sheet-inputs {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .p-button {
+      width: 100%;
+    }
+  }
 </style>

@@ -9,7 +9,7 @@
     data: Record<ProfileForm, InputType> | null;
     userId?: string;
   }>();
-  const emit = defineEmits<{ (event: "cancel"): void }>();
+  const emit = defineEmits<{ (event: "cancel" | "submit"): void }>();
   const { user, departments } = useUsers();
   const { positions } = usePositions();
   const route = useRoute();
@@ -83,6 +83,7 @@
       initialData.value = JSON.parse(JSON.stringify(formData.value));
     } finally {
       loading.value = false;
+      emit("submit");
     }
   };
 </script>

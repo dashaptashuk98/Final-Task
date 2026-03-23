@@ -110,7 +110,12 @@
         :label="'Edit profile'.toLocaleUpperCase()"
         @click="() => (isEditing = true)" />
     </div>
-    <ProfileForm v-else :data="profileFormData" :user-id="userId" @cancel="isEditing = false" />
+    <ProfileForm
+      v-else
+      :data="profileFormData"
+      :user-id="userId"
+      @cancel="isEditing = false"
+      @submit="() => (isEditing = false)" />
   </section>
 </template>
 

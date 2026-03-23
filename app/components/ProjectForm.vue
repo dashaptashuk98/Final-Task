@@ -38,6 +38,26 @@
               :disabled="!checkRights()"
               fluid
               :show-on-focus="false"
+              :pt="{
+                panel: {
+                  style: {
+                    '--p-datepicker-panel-background': '#ffffff',
+                    '--p-datepicker-panel-border-color': '#0000003b',
+                    '--p-datepicker-date-hover-background': '#2e2e2e10',
+                    'border-radius': '5px',
+                    'margin-top': '1px',
+                    'font-family': 'Roboto',
+                  },
+                },
+                dayCell: { style: { padding: '5px 0' } },
+                header: {
+                  style: {
+                    '--p-datepicker-header-padding': '15px',
+                    '--p-datepicker-title-font-weight': '600',
+                    '--p-datepicker-title-gap': '10px',
+                  },
+                },
+              }"
               class="custom-datepicker" />
             <Textarea
               v-else-if="item.type === 'Textarea'"

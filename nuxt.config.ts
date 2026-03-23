@@ -2,20 +2,17 @@ import { defineNuxtConfig } from "nuxt/config";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
+  css: [
+    "~/assets/css/main.css",
+    "~/../node_modules/primeicons/primeicons.css",
+    "~/assets/styles/fonts.css",
+    "~/assets/styles/variables.css",
+  ],
   modules: [
-    "@pinia/nuxt",
-    [
-      "@vee-validate/nuxt",
-      {
-        autoImports: true,
-        componentNames: {
-          Form: "VeeForm",
-          Field: "VeeField",
-          FieldArray: "VeeFieldArray",
-          ErrorMessage: "VeeErrorMessage",
-        },
-      },
-    ],
+    "@nuxt/test-utils/module",
+    "@nuxt/eslint",
+    "nuxt-lottie",
+    "@nuxtjs/apollo",
     [
       "@primevue/nuxt-module",
       {
@@ -23,7 +20,26 @@ export default defineNuxtConfig({
         autoImport: true,
       },
     ],
-    "@nuxt/test-utils/module",
   ],
+  apollo: {
+    autoImports: true,
+    authType: "Bearer",
+    authHeader: "Authorization",
+    tokenStorage: "cookie",
+    proxyCookies: true,
+    clients: {
+      default: {
+        httpEndpoint: import.meta.env.VITE_GRAPHQL_URL,
+        httpLinkOptions: {
+          credentials: "same-origin",
+        },
+        connectToDevTools: false,
+        tokenName: "token",
+        tokenStorage: "cookie",
+        authType: "Bearer",
+        authHeader: "Authorization",
+      },
+    },
+  },
   devtools: { enabled: true },
 });

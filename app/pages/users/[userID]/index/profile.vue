@@ -1,0 +1,302 @@
+<script setup lang="ts">
+  import type { InputType } from "~/types/types";
+  import type { ProfileForm } from "~/types/user";
+
+  definePageMeta({
+    middleware: "auth",
+  });
+
+  const { fetchDepartments, departments } = useDepartments();
+  const { user, fetchUser } = useUsers();
+  const { authId } = useAuth();
+  const { positions, fetchPositions } = usePositions();
+  const route = useRoute();
+  const userId = ref<string>(route.params.userID as string);
+  const isEditing = ref<boolean>(false);
+
+  const profileFormData = computed<Record<ProfileForm, InputType> | null>(() => {
+    if (!user.value) return null;
+
+    const formData: Record<ProfileForm, InputType> = {
+      firstName: {
+        key: "firstName",
+        label: "First Name",
+        value: user.value?.profile?.first_name ?? "",
+        type: "InputText",
+      },
+      lastName: {
+        key: "lastName",
+        label: "Last Name",
+        value: user.value?.profile?.last_name ?? "",
+        type: "InputText",
+      },
+      department: {
+        key: "department",
+        label: "Department",
+        value: user.value?.department_name ?? "",
+        type: "Select",
+        values: departments.value?.map((item) => {
+          return { name: item.name };
+        }),
+      },
+      position: {
+        key: "position",
+        label: "Position",
+        value: user.value?.position_name ?? "",
+        type: "Select",
+        values: positions.value?.map((item) => {
+          return { name: item.name };
+        }),
+      },
+    };
+
+    return formData;
+  });
+
+  const formattedMemberSince = computed(() => {
+    if (!user.value?.created_at) return "";
+    const timestamp = parseInt(user.value.created_at);
+    const date = new Date(timestamp);
+    return `A member since ${date.toDateString()}`;
+  });
+
+  const handleAvatarUpdate = (avatar: string) => {
+    if (user.value?.profile) {
+      user.value.profile.avatar = avatar;
+    }
+  };
+
+  await fetchDepartments();
+  await fetchPositions();
+  await fetchUser(userId.value);
+</script>
+
+<template>
+  <section v-if="user" class="profile">
+    <div class="profile-avatar">
+      <AvatarUpload
+        :user="{
+          id: user.id,
+          email: user.email,
+          profile: { avatar: user.profile?.avatar ?? undefined },
+        }"
+        :disabled="!checkRights(String(authId))"
+        @avatar-updated="handleAvatarUpdate" />
+
+      <div v-if="checkRights(String(authId))" class="profile-avatar__container">
+        <div class="profile-avatar__container-info">
+          <span class="pi pi-upload" style="font-size: 32px; color: #2e2e2e; height: 32px" />
+          <h3 class="profile-avatar__container-title">Upload avatar image</h3>
+        </div>
+        <p class="profile-avatar__container-description">png, jpg or gif no more than 0.5MB</p>
+      </div>
+    </div>
+    <div class="profile-data">
+      <h2 class="profile-data__title">{{ user.profile?.full_name }}</h2>
+      <a :href="`mailto:${user.email}`" class="profile-data__email">{{ user.email }}</a>
+      <p class="profile-data__member">{{ formattedMemberSince }}</p>
+    </div>
+    <div v-if="!isEditing" class="profile-info">
+      <div class="profile-item">
+        <h3 class="profile-item__title">Department:</h3>
+        <p class="profile-item__desc">{{ user.department_name }}</p>
+      </div>
+      <div class="profile-item">
+        <h3 class="profile-item__title">Position:</h3>
+        <p class="profile-item__desc">{{ user.position_name }}</p>
+      </div>
+      <Button
+        v-if="checkRights(String(userId))"
+        :label="'Edit profile'.toLocaleUpperCase()"
+        @click="() => (isEditing = true)" />
+    </div>
+    <ProfileForm
+      v-else
+      :data="profileFormData"
+      :user-id="userId"
+      @cancel="isEditing = false"
+      @submit="() => (isEditing = false)" />
+  </section>
+</template>
+
+<style scoped>
+  .profile {
+    margin: 0 auto;
+    margin-top: 32px;
+    max-width: 900px;
+  }
+
+  .profile-avatar {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    text-align: center;
+    align-items: center;
+  }
+
+  @media (max-width: 562px) {
+    .profile {
+      margin-top: 16px;
+      padding: 0 8px;
+    }
+
+    .profile-avatar {
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .profile-data {
+      margin: 16px 0 32px 0 !important;
+    }
+
+    .p-button {
+      width: 100% !important;
+      align-self: stretch !important;
+    }
+  }
+
+  .profile-avatar__container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  :deep(.p-avatar),
+  :deep(.p-avatar-label) {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+  }
+
+  :deep(.p-avatar-label) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font:
+      400 40px/47px "Roboto",
+      sans-serif;
+    color: #f5f5f7;
+    background-color: #bdbdbd;
+  }
+
+  .profile-avatar__container-info {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .profile-avatar__container-title,
+  .profile-avatar__container-description {
+    margin: 0;
+    letter-spacing: 0.15px;
+    color: #2e2e2e;
+  }
+
+  .profile-avatar__container-title {
+    font:
+      500 20px/32px "Roboto",
+      sans-serif;
+  }
+
+  .profile-avatar__container-description {
+    font:
+      400 16px/28px "Roboto",
+      sans-serif;
+    opacity: 60%;
+    padding-bottom: 21px;
+  }
+
+  .profile-data {
+    margin: 32px 0 65px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .profile-item {
+    font-family: "Roboto";
+    text-align: center;
+    display: flex;
+    gap: 10px;
+  }
+
+  .profile-item__title,
+  .profile-item__desc {
+    line-height: 30px;
+    margin: 0;
+    font-size: 20px;
+  }
+
+  .profile-data__title {
+    font:
+      400 24px/32px "Roboto",
+      sans-serif;
+    margin: 0;
+    margin-bottom: 10px;
+    color: #2e2e2e;
+  }
+
+  .profile-data__email,
+  .profile-data__member {
+    font:
+      400 16px/24px "Roboto",
+      sans-serif;
+    letter-spacing: 0.15px;
+  }
+
+  .profile-data__email {
+    color: #00000099;
+    text-decoration: none;
+  }
+
+  .profile-data__member {
+    color: #2e2e2e;
+    margin: 0;
+  }
+  .p-button {
+    width: 220px;
+    height: 48px;
+    border-radius: 40px;
+    font:
+      500 14px/24px "Roboto",
+      sans-serif;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    align-self: flex-end;
+    margin-top: 22px;
+  }
+
+  .p-button:not(.p-button-secondary) {
+    background-color: #c63031;
+    color: white;
+    border: none;
+  }
+
+  .p-button:not(.p-button-secondary):hover:not(:disabled) {
+    background-color: #c63031;
+  }
+
+  .p-button:not(.p-button-secondary):disabled {
+    background-color: #0000001f;
+    color: #00000042;
+    cursor: not-allowed;
+  }
+
+  .p-button.p-button-secondary {
+    background-color: transparent;
+    border: 1px solid #0000003b;
+    color: #00000099;
+  }
+
+  .p-button.p-button-secondary:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+</style>
